@@ -1,0 +1,12 @@
+# Configuración del Servidor
+PORT=5000
+NODE_ENV=development
+
+# MongoDB
+MONGODB_URI=mongodb://localhost:27017/nutracore
+
+# JWT Secret (cambiar en producción)
+JWT_SECRET=nutracore_secret_key_2026_tfg_muy_segura
+
+# CORS (opcional)
+CLIENT_URL=http://localhost:3000
