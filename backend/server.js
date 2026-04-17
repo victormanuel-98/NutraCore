@@ -10,6 +10,7 @@ const dishRoutes = require('./routes/dishes');
 const newsRoutes = require('./routes/news');
 const userRoutes = require('./routes/users');
 const recipeRoutes = require('./routes/recipes');
+const ingredientRoutes = require('./routes/ingredients');
 
 const app = express();
 
@@ -29,6 +30,7 @@ app.use('/api/dishes', dishRoutes);
 app.use('/api/news', newsRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/recipes', recipeRoutes);
+app.use('/api/ingredients', ingredientRoutes);
 
 app.get('/', (req, res) => {
   res.json({
@@ -39,7 +41,8 @@ app.get('/', (req, res) => {
       dishes: '/api/dishes',
       news: '/api/news',
       users: '/api/users',
-      recipes: '/api/recipes'
+      recipes: '/api/recipes',
+      ingredients: '/api/ingredients'
     }
   });
 });

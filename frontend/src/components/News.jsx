@@ -3,7 +3,7 @@ import { Card } from "./ui/card";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
-import { Clock, TrendingUp, BookOpen, Search, Calendar, ArrowRight } from "lucide-react";
+import { Clock, TrendingUp, BookOpen, Search, Calendar, ArrowRight, ImageOff } from "lucide-react";
 
 const newsArticles = [
   {
@@ -76,6 +76,32 @@ const newsArticles = [
 
 const categories = ["Todos", "Nutrición", "Fitness", "Bienestar", "Planificación"];
 
+function NewsImage({ src, alt, featured = false }) {
+  const [imageError, setImageError] = useState(false);
+
+  if (imageError) {
+    return (
+      <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-slate-100 via-slate-50 to-white text-slate-500">
+        <div className="flex flex-col items-center gap-2 text-center">
+          <ImageOff className="h-8 w-8" aria-hidden="true" />
+          <span className={`font-medium ${featured ? "text-base" : "text-sm"}`}>Imagen no disponible</span>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={src}
+      alt={alt}
+      loading="lazy"
+      decoding="async"
+      onError={() => setImageError(true)}
+      className="h-full w-full object-cover object-center transition-transform duration-300 group-hover:scale-105"
+    />
+  );
+}
+
 export function News() {
   const [selectedCategory, setSelectedCategory] = useState("Todos");
   const [searchTerm, setSearchTerm] = useState("");
@@ -92,7 +118,7 @@ export function News() {
   const regularArticles = filteredArticles.filter((a) => !a.isFeatured);
 
   return (
-    <div className="min-h-screen bg-white">`r`n
+    <div className="min-h-screen bg-white">
       <div className="pt-24 pb-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="mb-12">
@@ -142,12 +168,8 @@ export function News() {
               <div className="grid md:grid-cols-2 gap-6">
                 {featuredArticles.map((article) => (
                   <Card key={article.id} className="overflow-hidden hover:shadow-xl transition-shadow group">
-                    <div className="relative h-64 overflow-hidden">
-                      <img
-                        src={article.image}
-                        alt={article.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
+                    <div className="relative overflow-hidden aspect-[16/10] sm:aspect-[3/2] lg:aspect-[16/9]">
+                      <NewsImage src={article.image} alt={article.title} featured />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
                       <Badge className="absolute top-4 left-4 bg-pink-accent text-white">{article.category}</Badge>
                     </div>
@@ -193,12 +215,8 @@ export function News() {
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {regularArticles.map((article) => (
                   <Card key={article.id} className="overflow-hidden hover:shadow-lg transition-shadow group">
-                    <div className="relative h-48 overflow-hidden">
-                      <img
-                        src={article.image}
-                        alt={article.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
+                    <div className="relative overflow-hidden aspect-[4/3] sm:aspect-[3/2] lg:aspect-[16/10]">
+                      <NewsImage src={article.image} alt={article.title} />
                       <Badge className="absolute top-4 left-4 bg-white/90 text-gray-900 hover:bg-white">
                         {article.category}
                       </Badge>
