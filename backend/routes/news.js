@@ -1,14 +1,14 @@
-/**
+﻿/**
  * Rutas de Noticias
  * 
- * Endpoints para artículos y noticias de nutrición
+ * Endpoints para artÃ­culos y noticias de nutriciÃ³n
  */
 
 const express = require('express');
 const router = express.Router();
 const News = require('../models/News');
 const User = require('../models/User');
-const { protect } = require('../middleware/auth');
+const { protect } = require('../config/auth');
 
 /**
  * @route   GET /api/news
@@ -47,7 +47,7 @@ router.get('/', async (req, res) => {
       filter.featured = featured === 'true';
     }
 
-    // Calcular paginación
+    // Calcular paginaciÃ³n
     const skip = (Number(page) - 1) * Number(limit);
 
     // Ejecutar query
@@ -165,7 +165,7 @@ router.post('/:id/save', protect, async (req, res) => {
 
     const user = await User.findById(req.user._id);
 
-    // Verificar si ya está guardada
+    // Verificar si ya estÃ¡ guardada
     const isSaved = user.savedNews.includes(news._id);
 
     if (isSaved) {
@@ -216,7 +216,7 @@ router.post('/:id/like', protect, async (req, res) => {
     }
 
     // Simplificado: solo incrementar likes
-    // En una app real, guardarías qué usuarios dieron like
+    // En una app real, guardarÃ­as quÃ© usuarios dieron like
     await news.addLike();
 
     res.json({
@@ -293,7 +293,7 @@ router.get('/user/saved', protect, async (req, res) => {
 
 /**
  * @route   GET /api/news/categories/list
- * @desc    Obtener lista de categorías con conteo
+ * @desc    Obtener lista de categorÃ­as con conteo
  * @access  Public
  */
 router.get('/categories/list', async (req, res) => {
@@ -309,10 +309,10 @@ router.get('/categories/list', async (req, res) => {
       data: categories
     });
   } catch (error) {
-    console.error('Error al obtener categorías:', error);
+    console.error('Error al obtener categorÃ­as:', error);
     res.status(500).json({
       success: false,
-      error: 'Error al obtener categorías'
+      error: 'Error al obtener categorÃ­as'
     });
   }
 });

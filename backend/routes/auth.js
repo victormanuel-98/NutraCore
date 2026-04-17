@@ -7,7 +7,7 @@
 const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
-const { generateToken, protect } = require('../middleware/auth');
+const { generateToken, protect } = require('../config/auth');
 
 /**
  * @route   POST /api/auth/register

@@ -1,13 +1,13 @@
-/**
+﻿/**
  * Rutas de Usuario
  * 
- * Endpoints para gestión de perfil y configuración
+ * Endpoints para gestiÃ³n de perfil y configuraciÃ³n
  */
 
 const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
-const { protect } = require('../middleware/auth');
+const { protect } = require('../config/auth');
 
 /**
  * @route   GET /api/users/profile
@@ -149,7 +149,7 @@ router.put('/goals', protect, async (req, res) => {
 
 /**
  * @route   GET /api/users/stats
- * @desc    Obtener estadísticas del usuario
+ * @desc    Obtener estadÃ­sticas del usuario
  * @access  Private
  */
 router.get('/stats', protect, async (req, res) => {
@@ -159,9 +159,9 @@ router.get('/stats', protect, async (req, res) => {
       .populate('savedNews');
 
     const Recipe = require('../models/Recipe');
-    const userRecipes = await Recipe.find({ user: user._id });
+    const userRecipes = await Recipe.find({ author: user._id });
 
-    // Calcular estadísticas
+    // Calcular estadÃ­sticas
     const stats = {
       totalFavorites: user.favorites.length,
       totalSavedNews: user.savedNews.length,
@@ -191,10 +191,10 @@ router.get('/stats', protect, async (req, res) => {
       data: stats
     });
   } catch (error) {
-    console.error('Error al obtener estadísticas:', error);
+    console.error('Error al obtener estadÃ­sticas:', error);
     res.status(500).json({
       success: false,
-      error: 'Error al obtener estadísticas'
+      error: 'Error al obtener estadÃ­sticas'
     });
   }
 });
@@ -225,7 +225,7 @@ router.delete('/account', protect, async (req, res) => {
 
 /**
  * @route   PUT /api/users/preferences
- * @desc    Actualizar preferencias dietéticas
+ * @desc    Actualizar preferencias dietÃ©ticas
  * @access  Private
  */
 router.put('/preferences', protect, async (req, res) => {

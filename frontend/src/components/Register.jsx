@@ -84,6 +84,22 @@ export function Register() {
               </div>
 
               <div className="space-y-2">
+                <Label htmlFor="password">Contraseña</Label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
+                  <Input id="password" type="password" value={formData.password} onChange={(event) => handleChange('password', event.target.value)} className="pl-10" required />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="confirmPassword">Confirmar contraseña</Label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
+                  <Input id="confirmPassword" type="password" value={formData.confirmPassword} onChange={(event) => handleChange('confirmPassword', event.target.value)} className="pl-10" required />
+                </div>
+              </div>
+
+              <div className="space-y-2">
                 <Label htmlFor="goal">Objetivo principal</Label>
                 <div className="relative">
                   <Target className="absolute left-3 top-3 w-5 h-5 text-gray-400 z-10" />
@@ -99,22 +115,6 @@ export function Register() {
                       <SelectItem value="performance">Rendimiento deportivo</SelectItem>
                     </SelectContent>
                   </Select>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="password">Contraseña</Label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
-                  <Input id="password" type="password" value={formData.password} onChange={(event) => handleChange('password', event.target.value)} className="pl-10" required />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="confirmPassword">Confirmar contraseña</Label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
-                  <Input id="confirmPassword" type="password" value={formData.confirmPassword} onChange={(event) => handleChange('confirmPassword', event.target.value)} className="pl-10" required />
                 </div>
               </div>
 

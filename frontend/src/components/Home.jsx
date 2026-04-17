@@ -16,8 +16,8 @@ import {
 
 export function Home() {
   return (
-    <div className="min-h-screen bg-white">`r`n
-      <section className="pt-20 pb-0">
+    <div className="min-h-screen bg-white">
+      <section className="pt-[76px] pb-0">
         <div className="w-full">
           <div className="relative bg-pink-accent border-t border-white/40 overflow-hidden">
             <div className="lg:hidden">
@@ -66,7 +66,7 @@ export function Home() {
                   style={{ clipPath: "polygon(0 0, 68% 0, 100% 100%, 0 100%)" }}
                 />
 
-                <div className="relative z-10 px-8 py-8 xl:px-10 xl:py-10 text-white max-w-[500px]">
+                <div className="relative z-10 px-8 pt-5 pb-8 xl:px-10 xl:pt-6 xl:pb-10 text-white max-w-[500px]">
                   <h1 className="text-4xl xl:text-5xl leading-[0.95]">
                     ¡Bienvenido
                     <br />
@@ -326,5 +326,3 @@ export function Home() {
     </div>
   );
 }
-
-

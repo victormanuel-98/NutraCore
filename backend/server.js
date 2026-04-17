@@ -1,13 +1,7 @@
-﻿/**
- * NutraCore - Servidor Backend
- *
- * Servidor Express con MongoDB para la aplicación NutraCore
- */
-
-const express = require('express');
-const mongoose = require('mongoose');
+﻿const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
+const { connectDB, closeDB, mongoose } = require('./config/db');
 
 dotenv.config();
 
@@ -29,18 +23,6 @@ if (process.env.NODE_ENV === 'development') {
     next();
   });
 }
-
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/nutracore';
-
-mongoose
-  .connect(MONGODB_URI)
-  .then(() => {
-    console.log('MongoDB conectado exitosamente');
-  })
-  .catch((err) => {
-    console.error('Error conectando a MongoDB:', err.message);
-    process.exit(1);
-  });
 
 app.use('/api/auth', authRoutes);
 app.use('/api/dishes', dishRoutes);
@@ -89,14 +71,24 @@ app.use((err, req, res, next) => {
 
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
-  console.log(`Servidor corriendo en puerto ${PORT}`);
-  console.log(`http://localhost:${PORT}`);
-});
+const startServer = async () => {
+  try {
+    await connectDB();
+    app.listen(PORT, () => {
+      console.log(`Servidor corriendo en puerto ${PORT}`);
+      console.log(`http://localhost:${PORT}`);
+    });
+  } catch (error) {
+    console.error('Error conectando a MongoDB:', error.message);
+    process.exit(1);
+  }
+};
+
+startServer();
 
 process.on('SIGINT', async () => {
   console.log('\nCerrando servidor...');
-  await mongoose.connection.close();
+  await closeDB();
   console.log('MongoDB desconectado');
   process.exit(0);
 });

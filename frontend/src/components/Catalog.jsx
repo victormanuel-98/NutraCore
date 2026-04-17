@@ -164,6 +164,12 @@ export function Catalog() {
     });
   }, [allRecipes, searchTerm, selectedCategory, selectedDifficulty]);
 
+  const clearFilters = () => {
+    setSearchTerm('');
+    setSelectedCategory('all');
+    setSelectedDifficulty('all');
+  };
+
   const handleToggleFavorite = async (recipe) => {
     if (recipe.source !== 'api') {
       setFavorites((prev) => {
@@ -216,7 +222,7 @@ export function Catalog() {
           </div>
 
           <div className="mb-8 space-y-4">
-            <div className="flex flex-col lg:flex-row gap-4">
+            <div className="flex flex-col lg:flex-row gap-3 lg:items-center">
               <div className="flex-1 relative">
                 <Search className="absolute left-3 top-3.5 w-5 h-5 text-gray-400" />
                 <Input
@@ -224,50 +230,46 @@ export function Catalog() {
                   placeholder="Buscar por nombre o etiqueta..."
                   value={searchTerm}
                   onChange={(event) => setSearchTerm(event.target.value)}
-                  className="pl-10 h-12"
+                  className="pl-10 h-11"
                 />
               </div>
 
-              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                <SelectTrigger className="w-full lg:w-52 h-12">
-                  <Filter className="w-4 h-4 mr-2" />
-                  <SelectValue placeholder="Categoría" />
-                </SelectTrigger>
-                <SelectContent>
-                  {categories.map((category) => (
-                    <SelectItem key={category} value={category}>
-                      {category === 'all' ? 'Todas las categorías' : categoryLabels[category] || category}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="flex flex-wrap gap-2">
+                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                  <SelectTrigger className="w-44 h-10 text-sm">
+                    <Filter className="w-4 h-4 mr-2" />
+                    <SelectValue placeholder="Categoría" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {categories.map((category) => (
+                      <SelectItem key={category} value={category}>
+                        {category === 'all' ? 'All' : categoryLabels[category] || category}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
 
-              <Select value={selectedDifficulty} onValueChange={setSelectedDifficulty}>
-                <SelectTrigger className="w-full lg:w-52 h-12">
-                  <SlidersHorizontal className="w-4 h-4 mr-2" />
-                  <SelectValue placeholder="Dificultad" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todas las dificultades</SelectItem>
-                  <SelectItem value="fácil">Fácil</SelectItem>
-                  <SelectItem value="media">Media</SelectItem>
-                  <SelectItem value="difícil">Difícil</SelectItem>
-                </SelectContent>
-              </Select>
+                <Select value={selectedDifficulty} onValueChange={setSelectedDifficulty}>
+                  <SelectTrigger className="w-40 h-10 text-sm">
+                    <SlidersHorizontal className="w-4 h-4 mr-2" />
+                    <SelectValue placeholder="Dificultad" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All</SelectItem>
+                    <SelectItem value="fácil">Fácil</SelectItem>
+                    <SelectItem value="media">Media</SelectItem>
+                    <SelectItem value="difícil">Difícil</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                <Button variant="outline" className="h-10 px-3 text-sm" onClick={clearFilters}>
+                  Limpiar filtros
+                </Button>
+              </div>
             </div>
 
             <div className="flex items-center justify-between">
               <p className="text-gray-600">Mostrando {filteredRecipes.length} recetas</p>
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setSearchTerm('');
-                  setSelectedCategory('all');
-                  setSelectedDifficulty('all');
-                }}
-              >
-                Limpiar filtros
-              </Button>
             </div>
 
             {loading && <p className="text-gray-500">Cargando recetas publicadas...</p>}
@@ -279,7 +281,7 @@ export function Catalog() {
               const isFavorite = favorites.has(recipe.id);
 
               return (
-                <Card key={recipe.id} className="overflow-hidden hover:shadow-lg transition-shadow group">
+                <Card key={recipe.id} className="overflow-hidden hover:shadow-lg transition-shadow group h-full flex flex-col">
                   <div className="relative h-48 overflow-hidden bg-gray-100">
                     <img src={recipe.image} alt={recipe.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                     <button
@@ -289,14 +291,14 @@ export function Catalog() {
                     >
                       <Heart className={`w-5 h-5 ${isFavorite ? 'fill-pink-accent text-pink-accent' : 'text-gray-600'}`} />
                     </button>
-                    <Badge className="absolute top-4 left-4 bg-white/90 text-gray-900 hover:bg-white">
+                    <Badge className="absolute top-4 left-4 bg-white text-pink-accent border border-pink-accent/30 hover:bg-white">
                       {categoryLabels[recipe.category] || recipe.category}
                     </Badge>
                   </div>
 
-                  <div className="p-6 space-y-4">
+                  <div className="p-6 space-y-4 flex-1 flex flex-col">
                     <div>
-                      <h3 className="text-xl font-bold text-gray-900 mb-2">{recipe.title}</h3>
+                      <h3 className="text-xl font-bold text-gray-900 mb-2 min-h-[3.5rem]">{recipe.title}</h3>
 
                       <div className="flex items-center gap-4 text-sm text-gray-600">
                         <div className="flex items-center gap-1">
@@ -331,15 +333,13 @@ export function Catalog() {
 
                     <div className="flex flex-wrap gap-2">
                       {recipe.tags.slice(0, 3).map((tag, index) => (
-                        <Badge key={`${recipe.id}-tag-${index}`} variant="secondary" className="text-xs">
+                        <Badge key={`${recipe.id}-tag-${index}`} className="text-xs bg-pink-50 text-pink-accent border border-pink-accent/25 hover:bg-pink-50">
                           {tag}
                         </Badge>
                       ))}
                     </div>
 
-                    <Button className="w-full bg-pink-accent hover:bg-pink-accent/90 text-white">
-                      Ver Receta
-                    </Button>
+                    <Button className="w-full bg-pink-accent hover:bg-pink-accent/90 text-white mt-auto">Ver Receta</Button>
                   </div>
                 </Card>
               );

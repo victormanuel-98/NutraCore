@@ -1,14 +1,14 @@
-/**
+﻿/**
  * Rutas de Platos
  * 
- * Endpoints para el catálogo de platos
+ * Endpoints para el catÃ¡logo de platos
  */
 
 const express = require('express');
 const router = express.Router();
 const Dish = require('../models/Dish');
 const User = require('../models/User');
-const { protect } = require('../middleware/auth');
+const { protect } = require('../config/auth');
 
 /**
  * @route   GET /api/dishes
@@ -59,7 +59,7 @@ router.get('/', async (req, res) => {
       filter.featured = featured === 'true';
     }
 
-    // Calcular paginación
+    // Calcular paginaciÃ³n
     const skip = (Number(page) - 1) * Number(limit);
 
     // Ejecutar query
@@ -68,7 +68,7 @@ router.get('/', async (req, res) => {
       .skip(skip)
       .limit(Number(limit));
 
-    // Contar total para paginación
+    // Contar total para paginaciÃ³n
     const total = await Dish.countDocuments(filter);
 
     res.json({
@@ -174,7 +174,7 @@ router.post('/:id/favorite', protect, async (req, res) => {
 
     const user = await User.findById(req.user._id);
 
-    // Verificar si ya está en favoritos
+    // Verificar si ya estÃ¡ en favoritos
     const isFavorite = user.favorites.includes(dish._id);
 
     if (isFavorite) {
@@ -232,7 +232,7 @@ router.get('/user/favorites', protect, async (req, res) => {
 
 /**
  * @route   GET /api/dishes/categories/list
- * @desc    Obtener lista de categorías con conteo
+ * @desc    Obtener lista de categorÃ­as con conteo
  * @access  Public
  */
 router.get('/categories/list', async (req, res) => {
@@ -248,10 +248,10 @@ router.get('/categories/list', async (req, res) => {
       data: categories
     });
   } catch (error) {
-    console.error('Error al obtener categorías:', error);
+    console.error('Error al obtener categorÃ­as:', error);
     res.status(500).json({
       success: false,
-      error: 'Error al obtener categorías'
+      error: 'Error al obtener categorÃ­as'
     });
   }
 });

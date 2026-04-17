@@ -1,0 +1,24 @@
+{
+  "name": "nutracore",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Orquestador raíz para frontend y backend de NutraCore",
+  "scripts": {
+    "install:all": "npm --prefix backend install && npm --prefix frontend install",
+    "dev:backend": "npm --prefix backend run dev",
+    "dev:frontend": "npm --prefix frontend run dev",
+    "dev": "concurrently -n backend,frontend -c green,magenta \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "build:backend": "echo Backend no requiere build",
+    "build:frontend": "npm --prefix frontend run build",
+    "build": "npm run build:frontend",
+    "start:backend": "npm --prefix backend run start",
+    "start:frontend": "npm --prefix frontend run preview -- --host 0.0.0.0 --port 4173",
+    "start": "npm run start:backend",
+    "start:all": "concurrently -n backend,frontend -c green,magenta \"npm run start:backend\" \"npm run start:frontend\"",
+    "create-admin": "npm --prefix backend run create-admin"
+  },
+  "devDependencies": {
+    "concurrently": "^9.0.1"
+  }
+}
+
