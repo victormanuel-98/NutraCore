@@ -65,7 +65,7 @@ export function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-20">
           <Link to="/" className="flex items-center leading-none">
-            <span className="font-logo text-3xl md:text-4xl tracking-tight">NutraCore!</span>
+            <span className="font-logo text-3xl md:text-[2.7rem] tracking-tight">NutraCore!</span>
           </Link>
 
           <div className="hidden md:flex items-center space-x-8">

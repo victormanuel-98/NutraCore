@@ -1,5 +1,5 @@
 ﻿import { createContext, useContext, useEffect, useMemo, useState } from 'react';
-import { getCurrentUser, loginUser, registerUser } from '../services/authService';
+import { getCurrentUser, loginUser, registerUser, resendVerificationEmail } from '../services/authService';
 
 const AUTH_STORAGE_KEY = 'nutracore_auth';
 
@@ -67,15 +67,21 @@ export function AuthProvider({ children }) {
     setIsLoading(true);
     try {
       const response = await registerUser(payload);
-      const nextState = {
-        token: response.data.token,
-        user: response.data.user
-      };
-      setAuthState(nextState);
+      if (response?.data?.token) {
+        const nextState = {
+          token: response.data.token,
+          user: response.data.user
+        };
+        setAuthState(nextState);
+      }
       return response;
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const resendVerification = async (email) => {
+    return resendVerificationEmail(email);
   };
 
   const logout = () => {
@@ -90,6 +96,7 @@ export function AuthProvider({ children }) {
       isLoading,
       login,
       register,
+      resendVerification,
       logout
     }),
     [authState, isLoading]

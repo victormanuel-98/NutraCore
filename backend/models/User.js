@@ -111,6 +111,18 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: null
     },
+    isEmailVerified: {
+      type: Boolean,
+      default: false
+    },
+    emailVerificationToken: {
+      type: String,
+      default: null
+    },
+    emailVerificationExpires: {
+      type: Date,
+      default: null
+    },
     isActive: {
       type: Boolean,
       default: true
@@ -142,6 +154,8 @@ userSchema.methods.comparePassword = async function comparePassword(candidatePas
 userSchema.methods.toPublicProfile = function toPublicProfile() {
   const obj = this.toObject();
   delete obj.password;
+  delete obj.emailVerificationToken;
+  delete obj.emailVerificationExpires;
   return obj;
 };
 

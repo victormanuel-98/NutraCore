@@ -9,10 +9,10 @@ export function NotFound() {
         <div className="mb-8">
           <h1 className="font-logo text-8xl text-pink-accent mb-4">404</h1>
           <h2 className="text-3xl font-bold text-gray-900 mb-2">
-            Pgina no encontrada
+            Página no encontrada
           </h2>
           <p className="text-gray-600 text-lg">
-            Lo sentimos, la pgina qué buscas no existe o ha sido movida.
+            Lo sentimos, la página que buscas no existe o ha sido movida.
           </p>
         </div>
 
@@ -48,9 +48,9 @@ export function NotFound() {
         </div>
 
         <p className="text-sm text-gray-500 mt-6">
-          Si crees qué está es un error, por favor{" "}
+          Si crees que esto es un error, por favor{" "}
           <a href="#" className="text-pink-accent hover:underline">
-            contctanos
+            contáctanos
           </a>
         </p>
       </div>

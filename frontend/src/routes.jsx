@@ -9,6 +9,7 @@ import { Catalog } from './components/Catalog';
 import { News } from './components/News';
 import { Profile } from './components/Profile';
 import { NotFound } from './components/NotFound';
+import { VerifyEmail } from './components/VerifyEmail';
 import { CreateRecipePage } from './pages/CreateRecipePage';
 
 function RouteError() {
@@ -29,6 +30,7 @@ export const router = createBrowserRouter([
       { index: true, element: <Home /> },
       { path: 'login', element: <Login /> },
       { path: 'register', element: <Register /> },
+      { path: 'verify-email', element: <VerifyEmail /> },
       { path: 'dashboard', element: <Dashboard /> },
       { path: 'catalog', element: <Catalog /> },
       { path: 'lab', element: <CreateRecipePage /> },
