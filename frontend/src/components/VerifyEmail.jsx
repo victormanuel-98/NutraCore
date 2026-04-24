@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { verifyEmail } from '../services/authService';
 import { Card } from './ui/card';
@@ -9,6 +9,8 @@ export function VerifyEmail() {
   const [status, setStatus] = useState('loading');
   const [message, setMessage] = useState('Verificando correo...');
 
+  const hasRun = useRef(false);
+
   useEffect(() => {
     const token = searchParams.get('token');
     const email = searchParams.get('email');
@@ -18,6 +20,10 @@ export function VerifyEmail() {
       setMessage('Faltan datos para verificar el correo.');
       return;
     }
+
+    // Evitar que se ejecute dos veces (común en React 18 desarrollo)
+    if (hasRun.current) return;
+    hasRun.current = true;
 
     const runVerification = async () => {
       try {

@@ -152,8 +152,8 @@ export function Home() {
             <div className="lg:hidden">
               <div className="p-8 text-white space-y-6">
                 <h1 className="text-5xl leading-none">
-                  <span className="block">¡Bienvenido</span>
-                  <span className="block">a NutraCore!</span>
+                  <span className="block">¡Bienvenido a</span>
+                  <span className="block">NutraCore!</span>
                 </h1>
                 <p className="font-slogan text-base leading-relaxed text-white/90">
                   Redefinimos la forma en la que entiendes la nutrición. Con un enfoque basado en datos,
@@ -199,9 +199,9 @@ export function Home() {
                   style={{ paddingLeft: "max(2rem, calc((100vw - 80rem) / 2 + 2rem))" }}
                 >
                   <h1 className="text-[clamp(2.8rem,3.4vw,4.2rem)] leading-[0.9]">
-                    ¡Bienvenido
+                    ¡Bienvenido a
                     <br />
-                    a NutraCore!
+                    NutraCore!
                   </h1>
 
                   <p className="mt-4 font-slogan text-[clamp(1rem,1.05vw,1.3rem)] leading-relaxed text-white/92 max-w-[33ch]">

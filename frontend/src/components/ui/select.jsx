@@ -43,7 +43,7 @@ export function SelectTrigger({ className = "", children, ...props }) {
     <button
       type="button"
       className={cn(
-        "flex h-10 w-full items-center justify-between rounded-md border border-gray-300 bg-white px-3 text-sm transition-colors hover:border-[#C41D63] focus-visible:border-[#C41D63]",
+        "flex h-10 w-full items-center justify-between rounded-md border border-gray-300 bg-white px-3 text-sm transition-colors hover:border-[#ff0a60] focus-visible:border-[#ff0a60]",
         className
       )}
       onClick={() => ctx.setOpen(!ctx.open)}
@@ -77,7 +77,7 @@ export function SelectItem({ value, children, className = "" }) {
     <button
       type="button"
       className={cn(
-        "block w-full rounded px-2 py-2 text-left text-sm transition-colors hover:bg-[#C41D63] hover:text-white",
+        "block w-full rounded px-2 py-2 text-left text-sm transition-colors hover:bg-[#ff0a60] hover:text-white",
         className
       )}
       onClick={() => {

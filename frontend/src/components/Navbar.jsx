@@ -73,7 +73,8 @@ export function Navbar() {
               <Link
                 key={link.href}
                 to={link.href}
-                className={`font-navbar transition-colors ${location.pathname === link.href ? linkActiveClasses : linkIdleClasses}`}
+                data-text={link.name}
+                className={`nav-glitch font-logo text-base transition-colors ${location.pathname === link.href ? linkActiveClasses : linkIdleClasses}`}
               >
                 {link.name}
               </Link>
@@ -112,7 +113,8 @@ export function Navbar() {
               <Link
                 key={link.href}
                 to={link.href}
-                className={`block py-2 font-navbar ${
+                data-text={link.name}
+                className={`block py-2 nav-glitch font-logo text-base ${
                   location.pathname === link.href
                     ? hasScrolled
                       ? 'text-pink-accent font-semibold'

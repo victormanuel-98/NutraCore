@@ -1,4 +1,4 @@
-﻿import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -14,6 +14,14 @@ const goalMap = {
   maintain: 'maintain',
   health: 'improve-health',
   performance: 'gain-muscle'
+};
+
+const goalLabels = {
+  'weight-loss': 'Perder peso',
+  'muscle-gain': 'Ganar músculo',
+  maintain: 'Mantener peso',
+  health: 'Mejorar salud general',
+  performance: 'Rendimiento deportivo'
 };
 
 const genderMap = {
@@ -45,6 +53,12 @@ export function Register() {
 
     if (formData.password !== formData.confirmPassword) {
       setError('Las contraseñas no coinciden');
+      return;
+    }
+
+    const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{7,}$/;
+    if (!strongPasswordRegex.test(formData.password)) {
+      setError('La contraseña debe tener mayúsculas, minúsculas, números, caracteres especiales y más de 6 caracteres');
       return;
     }
 
@@ -114,6 +128,7 @@ export function Register() {
                     value={formData.password}
                     onChange={(event) => handleChange('password', event.target.value)}
                     className="pl-10 pr-12"
+                    minLength={7}
                     required
                   />
                   <button
@@ -141,6 +156,7 @@ export function Register() {
                     value={formData.confirmPassword}
                     onChange={(event) => handleChange('confirmPassword', event.target.value)}
                     className="pl-10 pr-12"
+                    minLength={7}
                     required
                   />
                   <button
@@ -181,7 +197,9 @@ export function Register() {
                   <Target className="absolute left-3 top-3 w-5 h-5 text-gray-400 z-10" />
                   <Select value={formData.goal} onValueChange={(value) => handleChange('goal', value)}>
                     <SelectTrigger className="pl-10">
-                      <SelectValue placeholder="Selecciona tu objetivo" />
+                      <span className="ml-1">
+                        {formData.goal ? goalLabels[formData.goal] : 'Selecciona tu objetivo'}
+                      </span>
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="weight-loss">Perder peso</SelectItem>

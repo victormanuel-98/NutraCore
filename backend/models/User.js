@@ -7,6 +7,8 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 
+const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{7,}$/;
+
 const userSchema = new mongoose.Schema(
   {
     email: {
@@ -20,7 +22,12 @@ const userSchema = new mongoose.Schema(
     password: {
       type: String,
       required: [true, 'La contraseña es obligatoria'],
-      minlength: [6, 'La contraseña debe tener al menos 6 caracteres']
+      minlength: [7, 'La contraseña debe tener más de 6 caracteres'],
+      validate: {
+        validator: (value) => strongPasswordRegex.test(value),
+        message:
+          'La contraseña debe incluir mayúsculas, minúsculas, números y caracteres especiales'
+      }
     },
 
     name: {

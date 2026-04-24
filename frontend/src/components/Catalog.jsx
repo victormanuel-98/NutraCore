@@ -261,7 +261,7 @@ export function Catalog() {
 
               <div className="flex flex-wrap gap-2">
                 <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                  <SelectTrigger className="w-44 h-10 text-sm hover:border-[#C41D63]">
+                  <SelectTrigger className="w-44 h-10 text-sm hover:border-[#ff0a60]">
                     <Filter className="w-4 h-4 mr-2 pixel-icon" />
                     <span className="ml-1">{selectedCategory === "all" ? "Todos" : categoryLabels[selectedCategory] || selectedCategory}</span>
                   </SelectTrigger>
@@ -275,7 +275,7 @@ export function Catalog() {
                 </Select>
 
                 <Select value={selectedDifficulty} onValueChange={setSelectedDifficulty}>
-                  <SelectTrigger className="w-40 h-10 text-sm hover:border-[#C41D63]">
+                  <SelectTrigger className="w-40 h-10 text-sm hover:border-[#ff0a60]">
                     <SlidersHorizontal className="w-4 h-4 mr-2 pixel-icon" />
                     <span className="ml-1">{selectedDifficulty === "all" ? "Todos" : difficultyLabels[selectedDifficulty] || selectedDifficulty}</span>
                   </SelectTrigger>
@@ -287,7 +287,7 @@ export function Catalog() {
                   </SelectContent>
                 </Select>
 
-                <Button variant="outline" className="h-10 px-3 text-sm hover:bg-[#C41D63] hover:text-white hover:border-[#C41D63]" onClick={clearFilters}>
+                <Button variant="outline" className="h-10 px-3 text-sm hover:bg-[#ff0a60] hover:text-white hover:border-[#ff0a60]" onClick={clearFilters}>
                   Limpiar filtros
                 </Button>
               </div>

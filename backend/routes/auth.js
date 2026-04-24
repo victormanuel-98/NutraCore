@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Rutas de Autenticación
  *
  * Endpoints para registro, login y gestión de autenticación
@@ -18,9 +18,14 @@ const getClientUrl = () => process.env.CLIENT_URL || 'http://localhost:5173';
 
 const sendVerificationEmailForUser = async (user) => {
   const rawToken = buildVerificationToken();
-  user.emailVerificationToken = hashToken(rawToken);
-  user.emailVerificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
-  await user.save();
+  const hashedToken = hashToken(rawToken);
+  const expires = new Date(Date.now() + 24 * 60 * 60 * 1000);
+
+  // Usamos findByIdAndUpdate para asegurar que se guarde sin interferencias de otros middlewares
+  await User.findByIdAndUpdate(user._id, {
+    emailVerificationToken: hashedToken,
+    emailVerificationExpires: expires
+  });
 
   const verifyUrl = `${getClientUrl()}/verify-email?token=${rawToken}&email=${encodeURIComponent(user.email)}`;
   await sendVerificationEmail({
@@ -55,6 +60,13 @@ router.post('/register', async (req, res) => {
       });
     }
 
+    // DEBUG: Verificar si el modelo tiene los campos
+    console.log('Campos detectados en el modelo User:', Object.keys(User.schema.paths));
+
+    const rawToken = buildVerificationToken();
+    const hashedToken = hashToken(rawToken);
+    const expires = new Date(Date.now() + 24 * 60 * 60 * 1000);
+
     const user = await User.create({
       email: normalizedEmail,
       password,
@@ -63,11 +75,26 @@ router.post('/register', async (req, res) => {
       gender,
       height,
       weight,
-      goals
+      goals,
+      emailVerificationToken: hashedToken,
+      emailVerificationExpires: expires
+    });
+
+    // REFUERZO: Forzar el guardado por si User.create falló en persistir esos campos específicos
+    await User.updateOne({ _id: user._id }, {
+      $set: {
+        emailVerificationToken: hashedToken,
+        emailVerificationExpires: expires
+      }
     });
 
     try {
-      await sendVerificationEmailForUser(user);
+      const verifyUrl = `${getClientUrl()}/verify-email?token=${rawToken}&email=${encodeURIComponent(user.email)}`;
+      await sendVerificationEmail({
+        toEmail: user.email,
+        userName: user.name,
+        verifyUrl
+      });
     } catch (emailError) {
       await User.deleteOne({ _id: user._id });
       return res.status(500).json({
@@ -139,7 +166,7 @@ router.post('/login', async (req, res) => {
       });
     }
 
-    if (!user.isEmailVerified) {
+    if (!user.isEmailVerified && user.role !== 'admin') {
       return res.status(401).json({
         success: false,
         error: 'Debes verificar tu correo antes de iniciar sesión'
@@ -180,15 +207,34 @@ router.get('/verify-email', async (req, res) => {
       });
     }
 
-    const tokenHash = hashToken(token);
+    const rawToken = String(token || '').trim();
+    const tokenHash = hashToken(rawToken);
+    const normalizedEmail = String(email || '').toLowerCase().trim();
+
+    console.log('--- Intentando verificar email ---');
+    console.log('Email recibido:', normalizedEmail);
+    console.log('Token (raw):', `"${rawToken}"`);
+    console.log('Token (hash):', tokenHash);
 
     const user = await User.findOne({
-      email: String(email).toLowerCase(),
+      email: normalizedEmail,
       emailVerificationToken: tokenHash,
       emailVerificationExpires: { $gt: new Date() }
     });
 
     if (!user) {
+      // Intento buscar solo por email para ver qué tiene el usuario en la DB
+      const debugUser = await User.findOne({ email: normalizedEmail });
+      if (debugUser) {
+        console.log('Usuario encontrado, pero token o fecha no coinciden:');
+        console.log('Token en DB:', debugUser.emailVerificationToken);
+        console.log('Expira en DB:', debugUser.emailVerificationExpires);
+        console.log('¿Token coincide?', debugUser.emailVerificationToken === tokenHash);
+        console.log('¿Fecha válida?', debugUser.emailVerificationExpires > new Date());
+      } else {
+        console.log('Usuario NO encontrado en la DB con ese email.');
+      }
+
       return res.status(400).json({
         success: false,
         error: 'El enlace de verificación es inválido o ha caducado'
@@ -318,6 +364,14 @@ router.put('/change-password', protect, async (req, res) => {
       message: 'Contraseña actualizada exitosamente'
     });
   } catch (error) {
+    if (error.name === 'ValidationError') {
+      const messages = Object.values(error.errors).map((err) => err.message);
+      return res.status(400).json({
+        success: false,
+        error: messages.join(', ')
+      });
+    }
+
     res.status(500).json({
       success: false,
       error: 'Error al cambiar contraseña'

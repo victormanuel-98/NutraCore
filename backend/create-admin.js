@@ -26,6 +26,9 @@ const run = async () => {
   if (existing) {
     existing.role = 'admin';
     existing.isActive = true;
+    existing.isEmailVerified = true;
+    existing.emailVerificationToken = null;
+    existing.emailVerificationExpires = null;
     existing.name = ADMIN_NAME;
     await existing.save();
     console.log(`✅ Usuario existente actualizado a admin: ${existing.email}`);
@@ -35,7 +38,8 @@ const run = async () => {
       email: ADMIN_EMAIL,
       password: ADMIN_PASSWORD,
       role: 'admin',
-      isActive: true
+      isActive: true,
+      isEmailVerified: true
     });
     console.log(`✅ Usuario admin creado: ${admin.email}`);
   }

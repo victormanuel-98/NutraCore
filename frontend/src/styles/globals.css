@@ -1,7 +1,7 @@
 ﻿@import url('https://fonts.googleapis.com/css2?family=Bitcount+Single&family=Fugaz+One&family=Gajraj+One&display=swap');
 
 :root {
-  --pink-accent: #C41D63;
+  --pink-accent: #ff0a60;
   --text-color: #111827;
   --bg-color: #ffffff;
 }
@@ -41,6 +41,88 @@ h1 {
 
 .font-navbar {
   font-family: 'Fugaz One', sans-serif;
+}
+
+.nav-glitch {
+  position: relative;
+  display: inline-block;
+  transform-origin: center;
+  transition: transform 180ms ease, text-shadow 180ms ease;
+}
+
+.nav-glitch::before,
+.nav-glitch::after {
+  content: attr(data-text);
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  mix-blend-mode: screen;
+}
+
+.nav-glitch:hover,
+.nav-glitch:focus-visible {
+  transform: translateY(-1px);
+  text-shadow:
+    0 0 8px rgba(255, 255, 255, 0.55),
+    0 0 16px rgba(255, 10, 96, 0.25);
+  animation: nav-glitch-jitter 420ms steps(2, end) infinite;
+}
+
+.nav-glitch:hover::before,
+.nav-glitch:focus-visible::before {
+  color: #8ff4ff;
+  opacity: 0.65;
+  clip-path: inset(8% 0 46% 0);
+  animation: nav-glitch-top 360ms linear infinite;
+}
+
+.nav-glitch:hover::after,
+.nav-glitch:focus-visible::after {
+  color: #ff9ccd;
+  opacity: 0.65;
+  clip-path: inset(56% 0 6% 0);
+  animation: nav-glitch-bottom 420ms linear infinite;
+}
+
+@keyframes nav-glitch-jitter {
+  0%,
+  100% {
+    transform: translate(0);
+  }
+  25% {
+    transform: translate(-0.7px, 0.4px);
+  }
+  50% {
+    transform: translate(0.8px, -0.4px);
+  }
+  75% {
+    transform: translate(-0.4px, -0.2px);
+  }
+}
+
+@keyframes nav-glitch-top {
+  0%,
+  100% {
+    transform: translateX(0);
+    clip-path: inset(8% 0 46% 0);
+  }
+  50% {
+    transform: translateX(2px);
+    clip-path: inset(12% 0 42% 0);
+  }
+}
+
+@keyframes nav-glitch-bottom {
+  0%,
+  100% {
+    transform: translateX(0);
+    clip-path: inset(56% 0 6% 0);
+  }
+  50% {
+    transform: translateX(-2px);
+    clip-path: inset(50% 0 12% 0);
+  }
 }
 
 .text-pink-accent {
@@ -224,10 +306,10 @@ h1 {
 }
 
 .index-card-hover:hover {
-  background: #c41d63;
-  border-color: #c41d63;
+  background: #ff0a60;
+  border-color: #ff0a60;
   transform: translateY(-6px);
-  box-shadow: 0 14px 30px rgba(196, 29, 99, 0.28);
+  box-shadow: 0 14px 30px rgba(255, 10, 96, 0.28);
 }
 
 .index-card-hover:hover h3,
@@ -245,7 +327,7 @@ h1 {
 
 .hex-step {
   clip-path: polygon(25% 6%, 75% 6%, 100% 50%, 75% 94%, 25% 94%, 0 50%);
-  box-shadow: 0 8px 18px rgba(196, 29, 99, 0.35);
+  box-shadow: 0 8px 18px rgba(255, 10, 96, 0.35);
 }
 
 svg.lucide,
@@ -268,8 +350,12 @@ svg.lucide,
 
   .hack-counter,
   .hack-counter::before,
-  .hack-counter::after {
+  .hack-counter::after,
+  .nav-glitch,
+  .nav-glitch::before,
+  .nav-glitch::after {
     animation: none;
+    text-shadow: none;
   }
 
   .index-card-hover,
