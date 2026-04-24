@@ -1,4 +1,4 @@
-﻿import { useState } from "react";
+import { useState } from "react";
 import { Card } from "./ui/card";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
@@ -17,8 +17,10 @@ import {
   Bell,
   Shield,
   Save,
-  TrendingUp
+  TrendingUp,
+  Camera
 } from "lucide-react";
+import { CloudinaryUploadWidget } from "./ui/CloudinaryUploadWidget";
 
 export function Profile() {
   const [profileData, setProfileData] = useState({
@@ -29,6 +31,7 @@ export function Profile() {
     height: 175,
     goal: "muscle-gain",
     activityLevel: "moderate",
+    avatar: null,
   });
 
   const [notifications, setNotifications] = useState({
@@ -84,8 +87,27 @@ export function Profile() {
               {/* Profile Card */}
               <Card className="p-6">
                 <div className="text-center">
-                  <div className="w-24 h-24 bg-gradient-to-br from-pink-400 to-pink-600 rounded-full mx-auto mb-4 flex items-center justify-center">
-                    <User className="w-12 h-12 text-white" />
+                  <div className="relative inline-block">
+                    <div className="w-24 h-24 bg-gradient-to-br from-pink-400 to-pink-600 rounded-full mx-auto mb-4 flex items-center justify-center overflow-hidden border-2 border-white shadow-md">
+                      {profileData.avatar ? (
+                        <img 
+                          src={profileData.avatar.replace('/upload/', '/upload/w_150,h_150,c_thumb,g_face,f_auto,q_auto/')} 
+                          alt="Avatar" 
+                          className="w-full h-full object-cover" 
+                        />
+                      ) : (
+                        <User className="w-12 h-12 text-white" />
+                      )}
+                    </div>
+                    <CloudinaryUploadWidget 
+                      onUploadSuccess={(url) => handleProfileChange("avatar", url)}
+                      multiple={false}
+                      folder="nutracore/avatars"
+                    >
+                      <button className="absolute bottom-4 right-0 bg-white p-1.5 rounded-full shadow-lg border border-gray-100 hover:bg-gray-50 transition-colors">
+                        <Camera className="w-4 h-4 text-pink-accent" />
+                      </button>
+                    </CloudinaryUploadWidget>
                   </div>
                   <h2 className="text-xl font-bold text-gray-900 mb-1">
                     {profileData.name}

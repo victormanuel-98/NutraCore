@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Search, Filter, Heart, Clock, Flame, ChefHat, SlidersHorizontal, ImageOff } from "lucide-react";
 import { Card } from "./ui/card";
 import { Input } from "./ui/input";
@@ -7,79 +7,6 @@ import { Badge } from "./ui/badge";
 import { getRecipes, toggleFavorite } from "../services/recipeService";
 import { useAuth } from "../context/AuthContext";
 import { Select, SelectContent, SelectItem, SelectTrigger } from "./ui/select";
-
-const staticRecipes = [
-  {
-    id: "static-1",
-    title: "Salmón a la plancha con vegetales",
-    image: "/images/catalog/salmonPlancha.jpg",
-    calories: 420,
-    protein: 38,
-    carbs: 12,
-    fats: 24,
-    prepTime: 25,
-    difficulty: "media",
-    category: "almuerzo/cena",
-    tags: ["alto en proteína", "omega-3", "sin gluten"],
-    source: "static"
-  },
-  {
-    id: "static-2",
-    title: "Bowl de quinoa y vegetales",
-    image: "/images/catalog/bowlQuinoa.jpg",
-    calories: 340,
-    protein: 12,
-    carbs: 48,
-    fats: 10,
-    prepTime: 30,
-    difficulty: "fácil",
-    category: "almuerzo/cena",
-    tags: ["vegetariano", "alto en fibra", "sin gluten"],
-    source: "static"
-  },
-  {
-    id: "static-3",
-    title: "Tostada de aguacate",
-    image: "/images/catalog/tostadaAguacate.jpg",
-    calories: 320,
-    protein: 12,
-    carbs: 32,
-    fats: 18,
-    prepTime: 10,
-    difficulty: "fácil",
-    category: "desayuno",
-    tags: ["vegetariano", "grasas saludables", "rápido"],
-    source: "static"
-  },
-  {
-    id: "static-4",
-    title: "Bowl power post-entreno",
-    image: "/images/catalog/bowlQuinoa.jpg",
-    calories: 470,
-    protein: 32,
-    carbs: 55,
-    fats: 13,
-    prepTime: 22,
-    difficulty: "media",
-    category: "post-entreno",
-    tags: ["recuperación", "alto en proteína", "energía"],
-    source: "static"
-  },
-  {
-    id: "static-5",
-    title: "Avena nocturna con frutos rojos",
-    image: "/images/catalog/bolAvena.jpg",
-    calories: 310,
-    protein: 11,
-    carbs: 46,
-    fats: 9,
-    prepTime: 8,
-    difficulty: "fácil",
-    category: "merienda",
-    tags: ["rápido", "fibra", "antioxidantes"],
-    source: "static"
-  }
-];
 
 const categoryLabels = {
   desayuno: "Desayuno",
@@ -117,6 +44,15 @@ function CatalogImage({ src, alt }) {
   const [imageError, setImageError] = useState(false);
   const hasImage = Boolean(src);
 
+  const optimizedSrc = useMemo(() => {
+    if (!src || typeof src !== 'string') return src;
+    if (src.includes('cloudinary.com')) {
+      // Aplicar transformaciones automáticas y redimensión para el catálogo
+      return src.replace('/upload/', '/upload/f_auto,q_auto,w_800,c_scale/');
+    }
+    return src;
+  }, [src]);
+
   if (!hasImage || imageError) {
     return (
       <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-slate-100 via-slate-50 to-white text-slate-500">
@@ -130,7 +66,7 @@ function CatalogImage({ src, alt }) {
 
   return (
     <img
-      src={src}
+      src={optimizedSrc}
       alt={alt}
       loading="lazy"
       decoding="async"
@@ -169,7 +105,7 @@ export function Catalog() {
     fetchRecipes();
   }, [token]);
 
-  const allRecipes = useMemo(() => [...apiRecipes, ...staticRecipes], [apiRecipes]);
+  const allRecipes = useMemo(() => apiRecipes, [apiRecipes]);
 
   const categories = useMemo(() => {
     const generated = new Set(allRecipes.map((recipe) => recipe.category));
@@ -196,16 +132,6 @@ export function Catalog() {
   };
 
   const handleToggleFavorite = async (recipe) => {
-    if (recipe.source !== "api") {
-      setFavorites((prev) => {
-        const next = new Set(prev);
-        if (next.has(recipe.id)) next.delete(recipe.id);
-        else next.add(recipe.id);
-        return next;
-      });
-      return;
-    }
-
     if (!isAuthenticated || !token) {
       alert("Debes iniciar sesión para guardar favoritos de recetas publicadas.");
       return;

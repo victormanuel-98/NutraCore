@@ -1,6 +1,6 @@
-﻿const express = require('express');
+const express = require('express');
 const mongoose = require('mongoose');
-const { Recipe, RECIPE_CATEGORIES, RECIPE_DIFFICULTIES, DATA_URL_REGEX } = require('../models/Recipe');
+const { Recipe, RECIPE_CATEGORIES, RECIPE_DIFFICULTIES } = require('../models/Recipe');
 const { protect, optionalProtect } = require('../config/auth');
 const { searchIngredients, getIngredientNutritionProfile } = require('../services/openFoodFactsService');
 
@@ -188,9 +188,6 @@ const validateRecipePayload = (payload, { partial = false } = {}) => {
       errors.push('Las imágenes deben enviarse como un array');
     } else {
       if (payload.images.length > 5) errors.push('Puedes subir un máximo de 5 imágenes');
-      if (payload.images.some((image) => !DATA_URL_REGEX.test(image))) {
-        errors.push('Las imágenes deben estar en formato Data URL base64 válido');
-      }
     }
   }
 
@@ -473,6 +470,3 @@ router.post('/:id/favorite', protect, async (req, res) => {
 });
 
 module.exports = router;
-
-
-

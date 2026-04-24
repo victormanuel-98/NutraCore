@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "./ui/button";
 import { Card } from "./ui/card";
@@ -249,7 +249,7 @@ export function Home() {
                 <img
                   src="/images/logos/PanelLateral.png"
                   alt="Panel lateral"
-                  className="w-[72%] h-auto max-h-[92%] object-contain"
+                  className="w-[73.5%] h-auto max-h-[92%] object-contain"
                 />
               </aside>
             </div>

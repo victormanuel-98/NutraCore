@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import { createBrowserRouter } from 'react-router-dom';
 import { Root } from './components/Root';
 import { Home } from './components/Home';
@@ -11,6 +11,7 @@ import { Profile } from './components/Profile';
 import { NotFound } from './components/NotFound';
 import { VerifyEmail } from './components/VerifyEmail';
 import { CreateRecipePage } from './pages/CreateRecipePage';
+import { ProtectedRoute } from './components/ProtectedRoute';
 
 function RouteError() {
   return (
@@ -31,11 +32,32 @@ export const router = createBrowserRouter([
       { path: 'login', element: <Login /> },
       { path: 'register', element: <Register /> },
       { path: 'verify-email', element: <VerifyEmail /> },
-      { path: 'dashboard', element: <Dashboard /> },
+      { 
+        path: 'dashboard', 
+        element: (
+          <ProtectedRoute>
+            <Dashboard />
+          </ProtectedRoute>
+        ) 
+      },
       { path: 'catalog', element: <Catalog /> },
-      { path: 'lab', element: <CreateRecipePage /> },
+      { 
+        path: 'lab', 
+        element: (
+          <ProtectedRoute>
+            <CreateRecipePage />
+          </ProtectedRoute>
+        ) 
+      },
       { path: 'news', element: <News /> },
-      { path: 'profile', element: <Profile /> },
+      { 
+        path: 'profile', 
+        element: (
+          <ProtectedRoute>
+            <Profile />
+          </ProtectedRoute>
+        ) 
+      },
       { path: '*', element: <NotFound /> }
     ]
   }

@@ -1,4 +1,4 @@
-﻿const mongoose = require('mongoose');
+const mongoose = require('mongoose');
 
 const RECIPE_CATEGORIES = [
   'desayuno',
@@ -72,8 +72,8 @@ const recipeSchema = new mongoose.Schema(
           message: 'Puedes subir un máximo de 5 imágenes por receta'
         },
         {
-          validator: (value) => value.every((image) => typeof image === 'string' && dataUrlRegex.test(image)),
-          message: 'Las imágenes deben estar en formato Data URL base64 válido'
+          validator: (value) => value.every((image) => typeof image === 'string' && image.length > 0),
+          message: 'Las imágenes deben ser URLs válidas'
         }
       ]
     },

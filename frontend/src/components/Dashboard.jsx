@@ -1,4 +1,4 @@
-﻿import { Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Card } from "./ui/card";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
@@ -28,26 +28,8 @@ export function Dashboard() {
     fat: { current: 52, target: 73 },
   };
 
-  const recentMeals = [
-    { id: 1, name: "Tostada de aguacate", time: "08:30", calories: 320, type: "Desayuno" },
-    { id: 2, name: "Bowl de quinoa", time: "13:15", calories: 450, type: "Almuerzo" },
-    { id: 3, name: "Smoothie de berries", time: "16:00", calories: 180, type: "Snack" },
-  ];
-
-  const favoriteRecipes = [
-    { 
-      id: 1, 
-      name: "Salmón a la plancha", 
-      image: "/images/dashboard/favorite-1.jpg",
-      calories: 420 
-    },
-    { 
-      id: 2, 
-      name: "Bowl de quinoa", 
-      image: "/images/dashboard/favorite-2.jpg",
-      calories: 340 
-    },
-  ];
+  const recentMeals = [];
+  const favoriteRecipes = [];
 
   const weeklyProgress = [
     { day: "L", percentage: 95 },

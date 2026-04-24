@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Heart, Trash2 } from 'lucide-react';
 import { Card } from '../ui/card';
 import { Button } from '../ui/button';
@@ -84,25 +84,37 @@ export function MyRecipesList({ token, refreshKey = 0 }) {
         <div className="space-y-4">
           {recipes.map((recipe) => (
             <div key={recipe._id} className="border border-gray-200 rounded-lg p-4">
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <div>
-                  <h3 className="text-xl font-semibold text-gray-900">{recipe.title}</h3>
-                  <p className="text-sm text-gray-600 mt-1">{formatCategory(recipe.category)} · {recipe.difficulty} · {recipe.prepTime} min</p>
-                </div>
+              <div className="flex flex-col md:flex-row gap-4">
+                {recipe.images?.[0] && (
+                  <div className="w-full md:w-24 h-24 flex-shrink-0">
+                    <img 
+                      src={recipe.images[0].includes('cloudinary.com') ? recipe.images[0].replace('/upload/', '/upload/w_150,h_150,c_fill,f_auto,q_auto/') : recipe.images[0]} 
+                      alt={recipe.title} 
+                      className="w-full h-full object-cover rounded-md border border-gray-100" 
+                    />
+                  </div>
+                )}
+                <div className="flex-1">
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                      <h3 className="text-xl font-semibold text-gray-900">{recipe.title}</h3>
+                      <p className="text-sm text-gray-600 mt-1">{formatCategory(recipe.category)} · {recipe.difficulty} · {recipe.prepTime} min</p>
+                    </div>
 
-                <div className="flex items-center gap-2">
-                  <Button type="button" variant="outline" onClick={() => handleToggleFavorite(recipe._id)}>
-                    <Heart className="w-4 h-4 mr-2" />
-                    {recipe.favoritesCount || 0}
-                  </Button>
-                  <Button type="button" variant="outline" onClick={() => handleDelete(recipe._id)}>
-                    <Trash2 className="w-4 h-4 mr-2" />
-                    Eliminar
-                  </Button>
+                    <div className="flex items-center gap-2">
+                      <Button type="button" variant="outline" onClick={() => handleToggleFavorite(recipe._id)}>
+                        <Heart className="w-4 h-4 mr-2" />
+                        {recipe.favoritesCount || 0}
+                      </Button>
+                      <Button type="button" variant="outline" onClick={() => handleDelete(recipe._id)}>
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        Eliminar
+                      </Button>
+                    </div>
+                  </div>
+                  <p className="text-sm text-gray-700 mt-3 line-clamp-2">{recipe.description}</p>
                 </div>
               </div>
-
-              <p className="text-sm text-gray-700 mt-3">{recipe.description}</p>
             </div>
           ))}
         </div>

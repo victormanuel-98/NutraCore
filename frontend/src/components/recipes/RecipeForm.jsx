@@ -1,10 +1,10 @@
-﻿import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Plus, Trash2, Upload } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
-import { filesToBase64 } from '../../utils/imageToBase64';
+import { CloudinaryUploadWidget } from '../ui/CloudinaryUploadWidget';
 import { getIngredientNutritionProfile, searchIngredients } from '../../services/ingredientService';
 
 const categories = ['desayuno', 'almuerzo/cena', 'merienda', 'snack', 'post-entreno', 'cena ligera'];
@@ -337,22 +337,18 @@ export function RecipeForm({ onSubmit, isSubmitting = false }) {
     }
   };
 
-  const handleImageUpload = async (event) => {
-    const files = event.target.files;
-    if (!files?.length) return;
+  const handleImageUploadSuccess = (url) => {
+    setForm((prev) => {
+      const nextImages = [...prev.images, url].slice(0, 5);
+      return { ...prev, images: nextImages };
+    });
+  };
 
-    setFormError('');
-    setUploadingImages(true);
-
-    try {
-      const base64Images = await filesToBase64(files, 5);
-      setForm((prev) => ({ ...prev, images: base64Images }));
-    } catch (error) {
-      setFormError(error.message || 'No se pudieron procesar las imágenes');
-    } finally {
-      setUploadingImages(false);
-      event.target.value = '';
-    }
+  const removeImage = (index) => {
+    setForm((prev) => ({
+      ...prev,
+      images: prev.images.filter((_, i) => i !== index)
+    }));
   };
 
   const handleSubmit = async (event) => {
@@ -625,17 +621,35 @@ export function RecipeForm({ onSubmit, isSubmitting = false }) {
         </div>
 
         <div className="space-y-3">
-          <Label htmlFor="images">Imágenes (máximo 5)</Label>
-          <label htmlFor="images" className="flex items-center justify-center gap-2 border border-dashed border-pink-accent/40 rounded-md p-4 cursor-pointer hover:bg-pink-50/40 transition-colors">
-            <Upload className="w-4 h-4 text-pink-accent" />
-            <span className="text-sm text-gray-700">{uploadingImages ? 'Procesando imágenes...' : 'Seleccionar imágenes'}</span>
-          </label>
-          <input id="images" type="file" accept="image/*" multiple className="sr-only" onChange={handleImageUpload} disabled={uploadingImages} />
+          <Label>Imágenes de la receta (máximo 5)</Label>
+          <CloudinaryUploadWidget 
+            onUploadSuccess={handleImageUploadSuccess}
+            multiple={true}
+            folder="nutracore/recipes"
+          >
+            <div className="flex items-center justify-center gap-2 border border-dashed border-pink-accent/40 rounded-md p-4 cursor-pointer hover:bg-pink-50/40 transition-colors">
+              <Upload className="w-4 h-4 text-pink-accent" />
+              <span className="text-sm text-gray-700">Subir imágenes a Cloudinary</span>
+            </div>
+          </CloudinaryUploadWidget>
 
-          {imagePreviews.length > 0 && (
+          {form.images.length > 0 && (
             <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-              {imagePreviews.map((image, index) => (
-                <img key={`preview-${index}`} src={image} alt={`preview-${index}`} className="h-24 w-full rounded-md object-cover border border-gray-200" />
+              {form.images.map((image, index) => (
+                <div key={`preview-${index}`} className="relative group">
+                  <img 
+                    src={image} 
+                    alt={`preview-${index}`} 
+                    className="h-24 w-full rounded-md object-cover border border-gray-200" 
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removeImage(index)}
+                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity shadow-sm"
+                  >
+                    <Trash2 className="w-3 h-3" />
+                  </button>
+                </div>
               ))}
             </div>
           )}

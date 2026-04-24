@@ -1,4 +1,4 @@
-﻿{
+{
     "name": "nutracore-server",
     "version": "1.0.0",
     "description": "Backend API para NutraCore - Dashboard de NutriciÃ³n",
@@ -19,18 +19,19 @@
     "author": "TFG NutraCore",
     "license": "MIT",
     "dependencies": {
-        "express": "^4.18.2",
-        "mongoose": "^8.0.0",
+        "bcryptjs": "^2.4.3",
+        "cloudinary": "^2.9.0",
         "cors": "^2.8.5",
         "dotenv": "^16.3.1",
-        "bcryptjs": "^2.4.3",
+        "express": "^4.18.2",
         "jsonwebtoken": "^9.0.2",
+        "mongoose": "^8.0.0",
         "nodemailer": "^6.10.1"
     },
     "devDependencies": {
         "nodemon": "^3.0.1"
     },
     "engines": {
-        "node": "\u003e=16.0.0"
+        "node": ">=16.0.0"
     }
 }
