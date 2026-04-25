@@ -1,9 +1,21 @@
-﻿@import url('https://fonts.googleapis.com/css2?family=Bitcount+Single&family=Fugaz+One&family=Gajraj+One&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Bitcount+Single&family=Fugaz+One&family=Gajraj+One&display=swap');
 
 :root {
   --pink-accent: #ff0a60;
   --text-color: #111827;
   --bg-color: #ffffff;
+  
+  /* Responsive Standard Constants */
+  --container-max-width: 80rem; /* 1280px (Tailwind max-w-7xl) */
+  --container-px: 1rem;
+}
+
+@media (min-width: 640px) {
+  :root { --container-px: 1.5rem; }
+}
+
+@media (min-width: 1024px) {
+  :root { --container-px: 2rem; }
 }
 
 * {
@@ -140,6 +152,15 @@ h1 {
 :focus-visible {
   outline: 2px solid var(--pink-accent);
   outline-offset: 2px;
+}
+
+/* Layout Standards */
+.container-standard {
+  max-width: var(--container-max-width);
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: var(--container-px);
+  padding-right: var(--container-px);
 }
 
 .route-transition {

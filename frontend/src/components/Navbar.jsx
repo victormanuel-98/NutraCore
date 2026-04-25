@@ -1,13 +1,15 @@
-﻿import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Button } from './ui/button';
 import { useAuth } from '../context/AuthContext';
+import { LogoutModal } from './LogoutModal';
 
 export function Navbar() {
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [hasScrolled, setHasScrolled] = useState(false);
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const { isAuthenticated, logout } = useAuth();
 
   useEffect(() => {
@@ -62,47 +64,56 @@ export function Navbar() {
 
   return (
     <nav className={navClasses}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-20">
-          <Link to="/" className="flex items-center leading-none">
-            <span className="font-logo text-3xl md:text-[2.7rem] tracking-tight">NutraCore!</span>
-          </Link>
-
-          <div className="hidden md:flex items-center space-x-8">
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                to={link.href}
-                data-text={link.name}
-                className={`nav-glitch font-logo text-base transition-colors ${location.pathname === link.href ? linkActiveClasses : linkIdleClasses}`}
-              >
-                {link.name}
-              </Link>
-            ))}
+      <div className="w-full px-4 sm:px-8 lg:px-12">
+        <div className="grid grid-cols-[1fr_auto_1fr] items-center h-20 gap-4">
+          {/* Lado Izquierdo: Logo */}
+          <div className="flex justify-start">
+            <Link to="/" className="flex items-center leading-none">
+              <span className="font-logo text-3xl md:text-[2.7rem] tracking-tight whitespace-nowrap">NutraCore!</span>
+            </Link>
           </div>
 
-          <div className="hidden md:flex items-center space-x-4">
-            {!isAuthenticated ? (
-              <>
-                <Link to="/login">
-                  <Button variant="ghost" className={loginButtonClasses}>
-                    Iniciar Sesión
-                  </Button>
+          {/* Centro: Navegación */}
+          <div className="hidden md:flex justify-center items-center">
+            <div className="flex items-center space-x-8 lg:space-x-12">
+              {navLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  to={link.href}
+                  data-text={link.name}
+                  className={`nav-glitch font-logo text-lg whitespace-nowrap transition-colors ${location.pathname === link.href ? linkActiveClasses : linkIdleClasses}`}
+                >
+                  {link.name}
                 </Link>
-                <Link to="/register">
-                  <Button className={registerButtonClasses}>Registrarse</Button>
-                </Link>
-              </>
-            ) : (
-              <Button variant="ghost" className={loginButtonClasses} onClick={logout}>
-                Cerrar sesión
-              </Button>
-            )}
+              ))}
+            </div>
           </div>
 
-          <button className="md:hidden p-2" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
-            {mobileMenuOpen ? <X className={`w-6 h-6 ${mobileIconColor}`} /> : <Menu className={`w-6 h-6 ${mobileIconColor}`} />}
-          </button>
+          {/* Lado Derecho: Botones y Menu Móvil */}
+          <div className="flex justify-end items-center">
+            <div className="hidden md:flex items-center space-x-6 whitespace-nowrap">
+              {!isAuthenticated ? (
+                <>
+                  <Link to="/login">
+                    <Button variant="ghost" className={`${loginButtonClasses} text-lg px-4`}>
+                      Iniciar Sesión
+                    </Button>
+                  </Link>
+                  <Link to="/register">
+                    <Button className={`${registerButtonClasses} px-8 h-12 text-lg`}>Registrarse</Button>
+                  </Link>
+                </>
+              ) : (
+                <Button variant="ghost" className={`${loginButtonClasses} text-lg px-4`} onClick={() => setIsLogoutModalOpen(true)}>
+                  Cerrar sesión
+                </Button>
+              )}
+            </div>
+
+            <button className="md:hidden p-2 ml-4" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+              {mobileMenuOpen ? <X className={`w-6 h-6 ${mobileIconColor}`} /> : <Menu className={`w-6 h-6 ${mobileIconColor}`} />}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -145,7 +156,7 @@ export function Navbar() {
                   variant="ghost"
                   className={`w-full ${loginButtonClasses}`}
                   onClick={() => {
-                    logout();
+                    setIsLogoutModalOpen(true);
                     setMobileMenuOpen(false);
                   }}
                 >
@@ -156,6 +167,15 @@ export function Navbar() {
           </div>
         </div>
       )}
+
+      <LogoutModal 
+        isOpen={isLogoutModalOpen} 
+        onClose={() => setIsLogoutModalOpen(false)} 
+        onConfirm={() => {
+          logout();
+          setIsLogoutModalOpen(false);
+        }}
+      />
     </nav>
   );
 }

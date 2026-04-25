@@ -181,75 +181,79 @@ export function Home() {
               </div>
             </div>
 
-            <div className="hidden lg:grid lg:grid-cols-[minmax(0,1fr)_clamp(220px,14vw,320px)] lg:min-h-[calc(100svh-80px)]">
-              <div className="relative h-full">
-                <img
-                  src="/images/home/Batido-de-frutos-rojos.jpg"
-                  alt="Batido de frutos rojos"
-                  className="absolute top-0 right-0 h-full w-[63%] xl:w-[64%] 2xl:w-[66%] object-cover object-right-bottom"
+            <div className="hidden lg:grid lg:grid-cols-[1fr_clamp(220px,14vw,320px)] lg:min-h-[calc(100svh-80px)]">
+              <div className="relative h-full overflow-hidden flex items-center">
+                {/* Imagen de fondo a la derecha */}
+                <div className="absolute inset-0 flex justify-end">
+                  <img
+                    src="/images/home/Batido-de-frutos-rojos.jpg"
+                    alt="Batido de frutos rojos"
+                    className="h-full w-[75%] xl:w-[70%] object-cover object-center"
+                  />
+                </div>
+
+                {/* Diagonal de color rosa */}
+                <div
+                  className="absolute inset-y-0 left-0 w-full bg-pink-accent shadow-[20px_0_40px_rgba(0,0,0,0.1)]"
+                  style={{ clipPath: "polygon(0 0, 42% 0, 65% 100%, 0 100%)" }}
                 />
 
-                <div
-                  className="absolute inset-y-0 left-0 w-[79%] xl:w-[78%] bg-pink-accent"
-                  style={{ clipPath: "polygon(0 0, 68% 0, 100% 100%, 0 100%)" }}
-                />
+                {/* Contenido alineado con el logo del Navbar */}
+                <div className="relative z-10 w-full px-4 sm:px-8 lg:px-12">
+                  <div className="max-w-[650px] text-white py-12">
+                    <h1 className="text-[clamp(3rem,4.5vw,5.5rem)] font-logo leading-[0.8] mb-8 drop-shadow-lg">
+                      ¡Bienvenido a
+                      <br />
+                      <span className="text-white">NutraCore!</span>
+                    </h1>
 
-                <div
-                  className="relative z-10 h-full flex flex-col justify-start pt-8 pb-6 pr-10 text-white max-w-[clamp(430px,32vw,650px)]"
-                  style={{ paddingLeft: "max(2rem, calc((100vw - 80rem) / 2 + 2rem))" }}
-                >
-                  <h1 className="text-[clamp(2.8rem,3.4vw,4.2rem)] leading-[0.9]">
-                    ¡Bienvenido a
-                    <br />
-                    NutraCore!
-                  </h1>
+                    <p className="font-slogan text-[clamp(1.2rem,1.3vw,1.6rem)] leading-relaxed text-white/95 mb-10 max-w-[42ch] drop-shadow-md">
+                      Redefinimos la forma en la que entiendes la nutrición. Con un enfoque basado en datos,
+                      rendimiento y eficiencia, convertimos tu alimentación en un sistema optimizado.
+                    </p>
 
-                  <p className="mt-4 font-slogan text-[clamp(1rem,1.05vw,1.3rem)] leading-relaxed text-white/92 max-w-[33ch]">
-                    Redefinimos la forma en la que entiendes la nutrición. Con un enfoque basado en datos,
-                    rendimiento y eficiencia, convertimos tu alimentación en un sistema optimizado para tu día a día.
-                  </p>
-
-                  <div className="mt-5 flex gap-3">
-                    <Link to="/register">
-                      <Button className="bg-white hover:bg-white/90 text-pink-accent w-[170px] px-4 py-4 text-sm justify-center text-center">
-                        ¡ÚNETE!
-                      </Button>
-                    </Link>
-                    <Link to="/catalog">
-                      <Button variant="ghost" className="border border-white/70 text-white hover:bg-white/10 w-[170px] px-4 py-4 text-sm justify-center text-center">
-                        PLATOS
-                      </Button>
-                    </Link>
-                  </div>
-
-                  <div className="mt-5 grid grid-cols-3 gap-5 max-w-[400px]">
-                    <div className="metric-tile">
-                      <p className="text-[clamp(1.55rem,1.7vw,2rem)] font-bold leading-none">
-                        <AnimatedHackCounter target={500} formatValue={(value) => `${value}+`} />
-                      </p>
-                      <p className="text-sm text-white/80">Recetas</p>
+                    <div className="flex flex-wrap gap-5 mb-14">
+                      <Link to="/register">
+                        <Button className="bg-white hover:bg-white/90 text-pink-accent h-16 w-[200px] text-xl font-logo shadow-[6px_6px_0px_0px_rgba(0,0,0,0.2)] transition-all hover:translate-y-[-2px]">
+                          ¡ÚNETE!
+                        </Button>
+                      </Link>
+                      <Link to="/catalog">
+                        <Button variant="ghost" className="border-2 border-white text-white hover:bg-white/10 h-16 w-[200px] text-xl font-logo transition-all hover:translate-y-[-2px]">
+                          PLATOS
+                        </Button>
+                      </Link>
                     </div>
-                    <div className="metric-tile">
-                      <p className="text-[clamp(1.55rem,1.7vw,2rem)] font-bold leading-none">
-                        <AnimatedHackCounter target={10} duration={1900} formatValue={(value) => `${value}K+`} />
-                      </p>
-                      <p className="text-sm text-white/80">Usuarios</p>
-                    </div>
-                    <div className="metric-tile">
-                      <p className="text-[clamp(1.55rem,1.7vw,2rem)] font-bold leading-none">
-                        <AnimatedHackCounter target={98} duration={1800} formatValue={(value) => `${value}%`} />
-                      </p>
-                      <p className="text-sm text-white/80">Satisfacción</p>
+
+                    <div className="grid grid-cols-3 gap-10 pt-10 border-t border-white/30">
+                      <div className="metric-tile">
+                        <p className="text-[clamp(1.8rem,2.2vw,2.8rem)] font-bold leading-none mb-2 drop-shadow-sm">
+                          <AnimatedHackCounter target={500} formatValue={(value) => `${value}+`} />
+                        </p>
+                        <p className="text-[0.7rem] uppercase tracking-[0.2em] text-white/80 font-logo">Recetas</p>
+                      </div>
+                      <div className="metric-tile">
+                        <p className="text-[clamp(1.8rem,2.2vw,2.8rem)] font-bold leading-none mb-2 drop-shadow-sm">
+                          <AnimatedHackCounter target={10} duration={1900} formatValue={(value) => `${value}K+`} />
+                        </p>
+                        <p className="text-[0.7rem] uppercase tracking-[0.2em] text-white/80 font-logo">Usuarios</p>
+                      </div>
+                      <div className="metric-tile">
+                        <p className="text-[clamp(1.8rem,2.2vw,2.8rem)] font-bold leading-none mb-2 drop-shadow-sm">
+                          <AnimatedHackCounter target={98} duration={1800} formatValue={(value) => `${value}%`} />
+                        </p>
+                        <p className="text-[0.7rem] uppercase tracking-[0.2em] text-white/80 font-logo">Satisfacción</p>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
 
-              <aside className="bg-pink-accent border-l border-white/20 h-full flex items-center justify-center">
+              <aside className="bg-pink-accent border-l border-white/20 h-full flex items-center justify-center p-6">
                 <img
                   src="/images/logos/PanelLateral.png"
                   alt="Panel lateral"
-                  className="w-[73.5%] h-auto max-h-[92%] object-contain"
+                  className="w-full h-auto max-h-[90%] object-contain select-none"
                 />
               </aside>
             </div>
