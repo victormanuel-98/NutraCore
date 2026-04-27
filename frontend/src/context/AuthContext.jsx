@@ -84,6 +84,11 @@ export function AuthProvider({ children }) {
     return resendVerificationEmail(email);
   };
 
+  const setSession = ({ token, user }) => {
+    if (!token || !user) return;
+    setAuthState({ token, user });
+  };
+
   const logout = () => {
     setAuthState({ token: null, user: null });
   };
@@ -97,6 +102,7 @@ export function AuthProvider({ children }) {
       login,
       register,
       resendVerification,
+      setSession,
       logout
     }),
     [authState, isLoading]

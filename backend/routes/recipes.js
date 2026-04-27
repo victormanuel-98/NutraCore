@@ -46,6 +46,8 @@ const roundTo = (value, decimals = 1) => {
   return Math.round(value * factor) / factor;
 };
 
+const escapeRegex = (value = '') => String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
 const parseIngredientLine = (line) => {
   const raw = String(line || '').trim();
   if (!raw) return null;
@@ -247,7 +249,7 @@ router.get('/', optionalProtect, async (req, res) => {
     }
 
     if (search) {
-      const safeSearch = String(search).trim();
+      const safeSearch = escapeRegex(String(search).trim().slice(0, 80));
       filter.$or = [
         { title: { $regex: safeSearch, $options: 'i' } },
         { description: { $regex: safeSearch, $options: 'i' } },

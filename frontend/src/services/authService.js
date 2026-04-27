@@ -1,4 +1,4 @@
-﻿import { apiRequest } from './apiClient';
+import { apiRequest } from './apiClient';
 
 export async function loginUser(credentials) {
   return apiRequest('/auth/login', {
@@ -33,5 +33,13 @@ export async function resendVerificationEmail(email) {
 export async function getCurrentUser(token) {
   return apiRequest('/auth/me', {
     token
+  });
+}
+
+export async function changePassword(payload, token) {
+  return apiRequest('/auth/change-password', {
+    method: 'PUT',
+    token,
+    body: payload
   });
 }

@@ -59,6 +59,16 @@ function AnimatedHackCounter({ target, duration = 1700, formatValue }) {
 export function Home() {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
+  const heroVideos = [
+    "/images/home/batidora.mp4",
+    "/images/home/zumoFresa.mp4",
+    "/images/home/zumos.mp4"
+  ];
+  const [heroVideoIndex, setHeroVideoIndex] = useState(0);
+
+  const handleHeroVideoEnded = () => {
+    setHeroVideoIndex((prev) => (prev + 1) % heroVideos.length);
+  };
 
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return undefined;
@@ -161,7 +171,10 @@ export function Home() {
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4">
                   <Link to="/register">
-                    <Button className="bg-white hover:bg-white/90 text-pink-accent w-full sm:w-[190px] justify-center text-center">
+                    <Button
+                      className="!bg-white hover:!bg-white/90 text-pink-accent w-full sm:w-[190px] justify-center text-center"
+                      style={{ color: 'var(--pink-accent)' }}
+                    >
                       ¡ÚNETE!
                     </Button>
                   </Link>
@@ -173,11 +186,17 @@ export function Home() {
                 </div>
               </div>
               <div className="h-[300px]">
-                <img
-                  src="/images/home/Batido-de-frutos-rojos.jpg"
-                  alt="Batido de frutos rojos"
+                <video
+                  key={`mobile-${heroVideos[heroVideoIndex]}`}
                   className="w-full h-full object-cover"
-                />
+                  autoPlay
+                  muted
+                  playsInline
+                  onEnded={handleHeroVideoEnded}
+                >
+                  <source src={heroVideos[heroVideoIndex]} type="video/mp4" />
+                  Tu navegador no soporta video HTML5.
+                </video>
               </div>
             </div>
 
@@ -185,11 +204,17 @@ export function Home() {
               <div className="relative h-full overflow-hidden flex items-center">
                 {/* Imagen de fondo a la derecha */}
                 <div className="absolute inset-0 flex justify-end">
-                  <img
-                    src="/images/home/Batido-de-frutos-rojos.jpg"
-                    alt="Batido de frutos rojos"
+                  <video
+                    key={`desktop-${heroVideos[heroVideoIndex]}`}
                     className="h-full w-[75%] xl:w-[70%] object-cover object-center"
-                  />
+                    autoPlay
+                    muted
+                    playsInline
+                    onEnded={handleHeroVideoEnded}
+                  >
+                    <source src={heroVideos[heroVideoIndex]} type="video/mp4" />
+                    Tu navegador no soporta video HTML5.
+                  </video>
                 </div>
 
                 {/* Diagonal de color rosa */}
@@ -214,7 +239,10 @@ export function Home() {
 
                     <div className="flex flex-wrap gap-5 mb-14">
                       <Link to="/register">
-                        <Button className="bg-white hover:bg-white/90 text-pink-accent h-16 w-[200px] text-xl font-logo shadow-[6px_6px_0px_0px_rgba(0,0,0,0.2)] transition-all hover:translate-y-[-2px]">
+                        <Button
+                          className="!bg-white hover:!bg-white/90 text-pink-accent h-16 w-[200px] text-xl font-logo shadow-[6px_6px_0px_0px_rgba(0,0,0,0.2)] transition-all hover:translate-y-[-2px]"
+                          style={{ color: 'var(--pink-accent)' }}
+                        >
                           ¡ÚNETE!
                         </Button>
                       </Link>

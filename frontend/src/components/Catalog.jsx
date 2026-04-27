@@ -7,6 +7,9 @@ import { Badge } from "./ui/badge";
 import { getRecipes, toggleFavorite } from "../services/recipeService";
 import { useAuth } from "../context/AuthContext";
 import { Select, SelectContent, SelectItem, SelectTrigger } from "./ui/select";
+import { StarRating } from "./ui/StarRating";
+import { RecipeDetail } from "./recipes/RecipeDetail";
+import { useNotification } from "../context/NotificationContext";
 
 const categoryLabels = {
   desayuno: "Desayuno",
@@ -37,7 +40,11 @@ const mapApiRecipe = (recipe) => ({
   tags: recipe.tags || [],
   source: "api",
   favoritesCount: recipe.favoritesCount || 0,
-  favoritedBy: recipe.favoritedBy || []
+  favoritedBy: recipe.favoritedBy || [],
+  averageRating: recipe.averageRating || 0,
+  reviewsCount: recipe.reviewsCount || 0,
+  ingredients: recipe.ingredients || [],
+  steps: recipe.steps || []
 });
 
 function CatalogImage({ src, alt }) {
@@ -77,14 +84,15 @@ function CatalogImage({ src, alt }) {
 }
 
 export function Catalog() {
-  const { token, isAuthenticated } = useAuth();
+  const { token, isAuthenticated, user } = useAuth();
+  const { showNotification } = useNotification();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedDifficulty, setSelectedDifficulty] = useState("all");
   const [apiRecipes, setApiRecipes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [favorites, setFavorites] = useState(new Set());
+  const [selectedRecipe, setSelectedRecipe] = useState(null);
 
   useEffect(() => {
     const fetchRecipes = async () => {
@@ -133,7 +141,7 @@ export function Catalog() {
 
   const handleToggleFavorite = async (recipe) => {
     if (!isAuthenticated || !token) {
-      alert("Debes iniciar sesión para guardar favoritos de recetas publicadas.");
+      showNotification("Debes iniciar sesión para guardar favoritos.", "info");
       return;
     }
 
@@ -141,25 +149,27 @@ export function Catalog() {
       const response = await toggleFavorite(recipe.id, token);
       const isFavorite = response.data?.isFavorite;
 
-      setFavorites((prev) => {
-        const next = new Set(prev);
-        if (isFavorite) next.add(recipe.id);
-        else next.delete(recipe.id);
-        return next;
-      });
-
       setApiRecipes((prev) =>
         prev.map((item) =>
           item.id === recipe.id
             ? {
                 ...item,
-                favoritesCount: response.data?.favoritesCount ?? item.favoritesCount
+                favoritesCount: response.data?.favoritesCount ?? item.favoritesCount,
+                favoritedBy: isFavorite
+                  ? Array.from(
+                      new Set([...(item.favoritedBy || []).map((entry) => String(entry)), String(user?._id)])
+                    ).filter(Boolean)
+                  : (item.favoritedBy || []).filter((entry) => String(entry) !== String(user?._id))
               }
             : item
         )
       );
+      showNotification(
+        isFavorite ? "Receta añadida a favoritos" : "Receta eliminada de favoritos", 
+        "success"
+      );
     } catch (err) {
-      alert(err.message || "No se pudo actualizar favorito");
+      showNotification(err.message || "Error al actualizar favorito", "error");
     }
   };
 
@@ -229,7 +239,9 @@ export function Catalog() {
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredRecipes.map((recipe) => {
-              const isFavorite = favorites.has(recipe.id);
+              const isFavorite = (recipe.favoritedBy || []).some(
+                (entry) => String(entry) === String(user?._id)
+              );
 
               return (
                 <Card key={recipe.id} className="overflow-hidden hover:shadow-lg transition-shadow group h-full flex flex-col">
@@ -250,6 +262,13 @@ export function Catalog() {
                   <div className="p-6 space-y-4 flex-1 flex flex-col">
                     <div className="min-h-[5.5rem]">
                       <h3 className="text-xl font-bold text-gray-900 mb-2 min-h-[3.5rem]">{recipe.title}</h3>
+
+                      <div className="flex items-center gap-2 mb-3">
+                        <StarRating rating={recipe.averageRating} size={16} />
+                        <span className="text-xs text-gray-400 font-medium">
+                          ({recipe.reviewsCount})
+                        </span>
+                      </div>
 
                       <div className="flex items-center gap-4 text-sm text-gray-600 min-h-[1.5rem]">
                         <div className="flex items-center gap-1">
@@ -290,12 +309,24 @@ export function Catalog() {
                       ))}
                     </div>
 
-                    <Button className="w-full bg-pink-accent hover:bg-pink-accent/90 text-white mt-auto">Ver Receta</Button>
+                    <Button 
+                      className="w-full bg-pink-accent hover:bg-pink-accent/90 text-white mt-auto"
+                      onClick={() => setSelectedRecipe(recipe)}
+                    >
+                      Ver Receta
+                    </Button>
                   </div>
                 </Card>
               );
             })}
           </div>
+
+          {selectedRecipe && (
+            <RecipeDetail 
+              recipe={selectedRecipe} 
+              onClose={() => setSelectedRecipe(null)} 
+            />
+          ) /* Modal de Detalle */}
 
           {filteredRecipes.length === 0 && !loading && (
             <div className="text-center py-16 reveal-item">

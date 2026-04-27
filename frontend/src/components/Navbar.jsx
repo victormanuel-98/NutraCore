@@ -1,16 +1,19 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, Sun, Moon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Button } from './ui/button';
 import { useAuth } from '../context/AuthContext';
 import { LogoutModal } from './LogoutModal';
+import { useNotification } from '../context/NotificationContext';
 
 export function Navbar() {
+  const { showNotification } = useNotification();
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [hasScrolled, setHasScrolled] = useState(false);
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const { isAuthenticated, logout } = useAuth();
+  const [isDark, setIsDark] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => setHasScrolled(window.scrollY > 8);
@@ -80,8 +83,7 @@ export function Navbar() {
                 <Link
                   key={link.href}
                   to={link.href}
-                  data-text={link.name}
-                  className={`nav-glitch font-logo text-lg whitespace-nowrap transition-colors ${location.pathname === link.href ? linkActiveClasses : linkIdleClasses}`}
+                  className={`font-navbar text-lg whitespace-nowrap transition-colors ${location.pathname === link.href ? linkActiveClasses : linkIdleClasses}`}
                 >
                   {link.name}
                 </Link>
@@ -89,7 +91,7 @@ export function Navbar() {
             </div>
           </div>
 
-          {/* Lado Derecho: Botones y Menu Móvil */}
+          {/* Lado Derecho: Botones y Menú Móvil */}
           <div className="flex justify-end items-center">
             <div className="hidden md:flex items-center space-x-6 whitespace-nowrap">
               {!isAuthenticated ? (
@@ -110,22 +112,42 @@ export function Navbar() {
               )}
             </div>
 
-            <button className="md:hidden p-2 ml-4" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
-              {mobileMenuOpen ? <X className={`w-6 h-6 ${mobileIconColor}`} /> : <Menu className={`w-6 h-6 ${mobileIconColor}`} />}
-            </button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsDark(!isDark)}
+              className={`${loginButtonClasses} ml-4 hidden md:flex`}
+              aria-label="Cambiar tema"
+            >
+              {isDark ? <Sun className="w-6 h-6" /> : <Moon className="w-6 h-6" />}
+            </Button>
+
+            <div className="md:hidden flex items-center">
+              <button className="p-2 mr-1" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+                {mobileMenuOpen ? <X className={`w-6 h-6 ${mobileIconColor}`} /> : <Menu className={`w-6 h-6 ${mobileIconColor}`} />}
+              </button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setIsDark(!isDark)}
+                className={loginButtonClasses}
+                aria-label="Cambiar tema"
+              >
+                {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+              </Button>
+            </div>
           </div>
         </div>
       </div>
 
       {mobileMenuOpen && (
-        <div className={mobileMenuClasses}>
+        <div className={`${mobileMenuClasses} mobile-menu-animate`}>
           <div className="px-4 py-4 space-y-3">
             {navLinks.map((link) => (
               <Link
                 key={link.href}
                 to={link.href}
-                data-text={link.name}
-                className={`block py-2 nav-glitch font-logo text-base ${
+                className={`block py-2 font-navbar text-base ${
                   location.pathname === link.href
                     ? hasScrolled
                       ? 'text-pink-accent font-semibold'
@@ -168,12 +190,13 @@ export function Navbar() {
         </div>
       )}
 
-      <LogoutModal 
-        isOpen={isLogoutModalOpen} 
-        onClose={() => setIsLogoutModalOpen(false)} 
+      <LogoutModal
+        isOpen={isLogoutModalOpen}
+        onClose={() => setIsLogoutModalOpen(false)}
         onConfirm={() => {
           logout();
           setIsLogoutModalOpen(false);
+          showNotification('Sesión cerrada correctamente', 'info');
         }}
       />
     </nav>

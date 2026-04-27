@@ -47,7 +47,6 @@ router.get('/profile', protect, async (req, res) => {
 router.put('/profile', protect, async (req, res) => {
   try {
     const {
-      name,
       age,
       gender,
       height,
@@ -59,12 +58,11 @@ router.put('/profile', protect, async (req, res) => {
     const user = await User.findById(req.user._id);
 
     // Actualizar campos si se proporcionan
-    if (name) user.name = name;
-    if (age) user.age = age;
-    if (gender) user.gender = gender;
-    if (height) user.height = height;
-    if (weight) user.weight = weight;
-    if (avatar) user.avatar = avatar;
+    if (age !== undefined) user.age = age;
+    if (gender !== undefined) user.gender = gender;
+    if (height !== undefined) user.height = height;
+    if (weight !== undefined) user.weight = weight;
+    if (avatar !== undefined) user.avatar = avatar;
     if (preferences) user.preferences = { ...user.preferences, ...preferences };
 
     await user.save();
@@ -112,13 +110,13 @@ router.put('/goals', protect, async (req, res) => {
     const user = await User.findById(req.user._id);
 
     // Actualizar objetivos
-    if (targetWeight) user.goals.targetWeight = targetWeight;
-    if (dailyCalories) user.goals.dailyCalories = dailyCalories;
-    if (protein) user.goals.protein = protein;
-    if (carbs) user.goals.carbs = carbs;
-    if (fats) user.goals.fats = fats;
-    if (activityLevel) user.goals.activityLevel = activityLevel;
-    if (goal) user.goals.goal = goal;
+    if (targetWeight !== undefined) user.goals.targetWeight = targetWeight;
+    if (dailyCalories !== undefined) user.goals.dailyCalories = dailyCalories;
+    if (protein !== undefined) user.goals.protein = protein;
+    if (carbs !== undefined) user.goals.carbs = carbs;
+    if (fats !== undefined) user.goals.fats = fats;
+    if (activityLevel !== undefined) user.goals.activityLevel = activityLevel;
+    if (goal !== undefined) user.goals.goal = goal;
 
     await user.save();
 
@@ -175,8 +173,11 @@ router.get('/stats', protect, async (req, res) => {
       const current = user.weight;
       const target = user.goals.targetWeight;
       const difference = Math.abs(current - target);
-      const progress = difference === 0 ? 100 : 
-        Math.max(0, 100 - (difference / Math.abs(current - target) * 100));
+      // Progress is based on current distance to target relative to current weight.
+      const baseline = Math.max(1, Math.abs(current));
+      const progress = difference === 0
+        ? 100
+        : Math.max(0, Math.min(100, 100 - (difference / baseline) * 100));
       
       stats.goalProgress = {
         current,

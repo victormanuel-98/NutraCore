@@ -69,13 +69,13 @@ const userSchema = new mongoose.Schema(
       },
       dailyCalories: {
         type: Number,
-        default: 2000,
-        min: [800, 'Calorías diarias demasiado bajas'],
+        default: 0,
+        min: [0, 'Calorías diarias inválidas'],
         max: [10000, 'Calorías diarias demasiado altas']
       },
-      protein: { type: Number, default: 150 },
-      carbs: { type: Number, default: 250 },
-      fats: { type: Number, default: 65 },
+      protein: { type: Number, default: 0, min: [0, 'Proteína inválida'] },
+      carbs: { type: Number, default: 0, min: [0, 'Carbohidratos inválidos'] },
+      fats: { type: Number, default: 0, min: [0, 'Grasas inválidas'] },
       activityLevel: {
         type: String,
         enum: ['sedentary', 'light', 'moderate', 'active', 'very-active'],

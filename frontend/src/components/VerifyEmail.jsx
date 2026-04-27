@@ -1,10 +1,13 @@
 import { useEffect, useState, useRef } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { verifyEmail } from '../services/authService';
 import { Card } from './ui/card';
 import { Button } from './ui/button';
+import { useAuth } from '../context/AuthContext';
 
 export function VerifyEmail() {
+  const navigate = useNavigate();
+  const { setSession } = useAuth();
   const [searchParams] = useSearchParams();
   const [status, setStatus] = useState('loading');
   const [message, setMessage] = useState('Verificando correo...');
@@ -28,6 +31,16 @@ export function VerifyEmail() {
     const runVerification = async () => {
       try {
         const response = await verifyEmail({ token, email });
+
+        if (response?.data?.token && response?.data?.user) {
+          setSession({
+            token: response.data.token,
+            user: response.data.user
+          });
+          navigate('/dashboard', { replace: true });
+          return;
+        }
+
         setStatus('success');
         setMessage(response.message || 'Correo verificado correctamente.');
       } catch (error) {
@@ -37,7 +50,7 @@ export function VerifyEmail() {
     };
 
     runVerification();
-  }, [searchParams]);
+  }, [navigate, searchParams, setSession]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 to-white flex items-center justify-center px-4">

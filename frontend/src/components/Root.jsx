@@ -1,7 +1,8 @@
-﻿import { useEffect } from "react";
+import { useEffect } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import { Navbar } from "./Navbar";
 import { Footer } from "./Footer";
+import { CookieConsentBanner } from "./CookieConsentBanner";
 
 export function Root() {
   const location = useLocation();
@@ -38,17 +39,18 @@ export function Root() {
     targets.forEach((element) => observer.observe(element));
 
     return () => observer.disconnect();
-  }, [location.pathname, location.search]);
+  }, [location.pathname]);
 
   return (
     <div className="min-h-screen bg-white">
       <Navbar />
 
-      <main key={`${location.pathname}${location.search}`} className="route-transition">
+      <main key={location.pathname} className="route-transition min-h-[60vh]">
         <Outlet />
       </main>
 
       <Footer />
+      <CookieConsentBanner />
     </div>
   );
 }

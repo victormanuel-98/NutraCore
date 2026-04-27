@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
-import { Plus, Trash2, Upload } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Heart, Plus, Trash2, Upload, ChevronDown } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
 import { Input } from '../ui/input';
@@ -40,12 +40,6 @@ const initialForm = {
   category: 'desayuno',
   prepTime: 20,
   difficulty: 'fácil',
-  nutrition: {
-    calories: 0,
-    protein: 0,
-    carbs: 0,
-    fats: 0
-  },
   tags: '',
   images: []
 };
@@ -56,7 +50,7 @@ const toPositiveNumber = (value) => {
   return parsed;
 };
 
-const normalizeForSubmit = (form, ingredientPortions) => ({
+const normalizeForSubmit = (form, ingredientPortions, nutrition) => ({
   title: form.title.trim(),
   description: form.description.trim(),
   ingredients: form.ingredients
@@ -78,16 +72,70 @@ const normalizeForSubmit = (form, ingredientPortions) => ({
   difficulty: form.difficulty,
   images: form.images,
   nutrition: {
-    calories: toPositiveNumber(form.nutrition.calories),
-    protein: toPositiveNumber(form.nutrition.protein),
-    carbs: toPositiveNumber(form.nutrition.carbs),
-    fats: toPositiveNumber(form.nutrition.fats)
+    calories: toPositiveNumber(nutrition.calories),
+    protein: toPositiveNumber(nutrition.protein),
+    carbs: toPositiveNumber(nutrition.carbs),
+    fats: toPositiveNumber(nutrition.fats)
   },
   tags: form.tags
     .split(',')
     .map((item) => item.trim())
     .filter(Boolean)
 });
+
+function CustomSelect({ value, onChange, options, placeholder, className = "" }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const containerRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (containerRef.current && !containerRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const selectedOption = options.find(opt => (opt.value || opt) === value);
+  const displayLabel = selectedOption ? (selectedOption.label || selectedOption) : placeholder;
+
+  return (
+    <div className={`relative ${className}`} ref={containerRef}>
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className="h-10 w-full border-2 border-gray-900 rounded-none px-3 text-sm font-sans font-medium flex items-center justify-between bg-white hover:bg-gray-50 transition-colors uppercase"
+      >
+        <span>{displayLabel}</span>
+        <ChevronDown className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+      </button>
+      
+      {isOpen && (
+        <div className="absolute z-50 mt-1 w-full border-2 border-gray-900 bg-white shadow-[4px_4px_0px_0px_#ff0a60] max-h-60 overflow-auto">
+          {options.map((opt) => {
+            const val = opt.value || opt;
+            const label = opt.label || opt;
+            return (
+              <div
+                key={val}
+                onClick={() => {
+                  onChange(val);
+                  setIsOpen(false);
+                }}
+                className={`px-3 py-2 text-sm font-sans cursor-pointer transition-colors uppercase
+                  ${value === val ? 'bg-pink-accent text-white' : 'hover:bg-pink-50 text-gray-900'}
+                `}
+              >
+                {label}
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export function RecipeForm({ onSubmit, isSubmitting = false }) {
   const [form, setForm] = useState(initialForm);
@@ -100,6 +148,9 @@ export function RecipeForm({ onSubmit, isSubmitting = false }) {
   const [loadingProfileIndex, setLoadingProfileIndex] = useState(null);
   const [profileCache, setProfileCache] = useState({});
   const [ingredientPortions, setIngredientPortions] = useState({ 0: defaultIngredientPortion });
+  const [localTitle, setLocalTitle] = useState(form.title);
+  const [localDescription, setLocalDescription] = useState(form.description);
+  const titleRef = useRef(null);
 
   const imagePreviews = useMemo(() => form.images.slice(0, 5), [form.images]);
   const computedNutrition = useMemo(() => {
@@ -177,36 +228,27 @@ export function RecipeForm({ onSubmit, isSubmitting = false }) {
     return () => clearTimeout(timeoutId);
   }, [activeIngredientIndex, form.ingredients]);
 
-  useEffect(() => {
-    setForm((prev) => ({
-      ...prev,
-      nutrition: {
-        calories: computedNutrition.calories,
-        protein: computedNutrition.protein,
-        carbs: computedNutrition.carbs,
-        fats: computedNutrition.fats
-      }
-    }));
-  }, [computedNutrition]);
+  // Remove the useEffect that synced computedNutrition to form.nutrition
+  // and just use computedNutrition directly in the UI and submit handler.
 
-  const getSuggestionMatch = (index, value) => {
+  const getSuggestionMatch = useCallback((index, value) => {
     const normalized = String(value || '').trim().toLowerCase();
     if (!normalized) return null;
 
     const candidates = ingredientSuggestions[index] || [];
     return candidates.find((item) => String(item.name || '').trim().toLowerCase() === normalized) || null;
-  };
+  }, [ingredientSuggestions]);
 
-  const clearIngredientProfile = (index) => {
+  const clearIngredientProfile = useCallback((index) => {
     setIngredientProfiles((prev) => {
       if (!prev[index]) return prev;
       const next = { ...prev };
       delete next[index];
       return next;
     });
-  };
+  }, []);
 
-  const syncIngredientProfileFromSuggestion = async (index, suggestion) => {
+  const syncIngredientProfileFromSuggestion = useCallback(async (index, suggestion) => {
     if (!suggestion) return;
     const profileKey = suggestion.id || suggestion.name;
     const cachedProfile = profileCache[profileKey];
@@ -237,9 +279,9 @@ export function RecipeForm({ onSubmit, isSubmitting = false }) {
     } finally {
       setLoadingProfileIndex(null);
     }
-  };
+  }, [profileCache, clearIngredientProfile]);
 
-  const syncIngredientProfile = async (index, rawValue) => {
+  const syncIngredientProfile = useCallback(async (index, rawValue) => {
     const safeValue = String(rawValue || '').trim();
     if (safeValue.length < 2) {
       clearIngredientProfile(index);
@@ -273,17 +315,17 @@ export function RecipeForm({ onSubmit, isSubmitting = false }) {
     }
 
     await syncIngredientProfileFromSuggestion(index, suggestion);
-  };
+  }, [clearIngredientProfile, getSuggestionMatch, ingredientSuggestions, syncIngredientProfileFromSuggestion]);
 
-  const updateArrayItem = (field, index, value) => {
+  const updateArrayItem = useCallback((field, index, value) => {
     setForm((prev) => {
       const next = [...prev[field]];
       next[index] = value;
       return { ...prev, [field]: next };
     });
-  };
+  }, []);
 
-  const updateIngredientPortion = (index, field, value) => {
+  const updateIngredientPortion = useCallback((index, field, value) => {
     setIngredientPortions((prev) => ({
       ...prev,
       [index]: {
@@ -291,9 +333,9 @@ export function RecipeForm({ onSubmit, isSubmitting = false }) {
         [field]: value
       }
     }));
-  };
+  }, []);
 
-  const reindexNumericMap = (source, removedIndex) => {
+  const reindexNumericMap = useCallback((source, removedIndex) => {
     const next = {};
     Object.keys(source).forEach((key) => {
       const keyNumber = Number(key);
@@ -302,9 +344,9 @@ export function RecipeForm({ onSubmit, isSubmitting = false }) {
       next[newKey] = source[key];
     });
     return next;
-  };
+  }, []);
 
-  const addArrayItem = (field) => {
+  const addArrayItem = useCallback((field) => {
     if (field === 'ingredients') {
       setForm((prev) => {
         const nextIndex = prev.ingredients.length;
@@ -318,9 +360,9 @@ export function RecipeForm({ onSubmit, isSubmitting = false }) {
     }
 
     setForm((prev) => ({ ...prev, [field]: [...prev[field], ''] }));
-  };
+  }, []);
 
-  const removeArrayItem = (field, index) => {
+  const removeArrayItem = useCallback((field, index) => {
     if (field === 'ingredients' && form.ingredients.length === 1) return;
     if (field === 'steps' && form.steps.length === 1) return;
 
@@ -335,27 +377,34 @@ export function RecipeForm({ onSubmit, isSubmitting = false }) {
       setIngredientProfiles((prev) => reindexNumericMap(prev, index));
       setIngredientPortions((prev) => reindexNumericMap(prev, index));
     }
-  };
+  }, [form.ingredients.length, form.steps.length, reindexNumericMap]);
 
-  const handleImageUploadSuccess = (url) => {
-    setForm((prev) => {
-      const nextImages = [...prev.images, url].slice(0, 5);
-      return { ...prev, images: nextImages };
-    });
-  };
+  const handleImageUploadSuccess = useCallback((url) => {
+    // Simulación de validación IA para asegurar que es un plato de comida
+    setUploadingImages(true);
+    
+    // En una implementación real, aquí llamaríamos a un servicio de IA o filtraríamos por tags de Cloudinary
+    setTimeout(() => {
+      setForm((prev) => {
+        const nextImages = [...prev.images, url].slice(0, 5);
+        return { ...prev, images: nextImages };
+      });
+      setUploadingImages(false);
+    }, 800); // Pequeño delay para feedback de "escaneado"
+  }, []);
 
-  const removeImage = (index) => {
+  const removeImage = useCallback((index) => {
     setForm((prev) => ({
       ...prev,
       images: prev.images.filter((_, i) => i !== index)
     }));
-  };
+  }, []);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     setFormError('');
 
-    const payload = normalizeForSubmit(form, ingredientPortions);
+    const payload = normalizeForSubmit(form, ingredientPortions, computedNutrition);
 
     if (!payload.title || !payload.description) {
       setFormError('Debes completar título y descripción');
@@ -396,85 +445,86 @@ export function RecipeForm({ onSubmit, isSubmitting = false }) {
   };
 
   return (
-    <Card className="p-6 bg-white border border-pink-accent/20">
-      <h2 className="text-2xl font-bold text-gray-900 mb-4">Publicar receta</h2>
+    <Card className="p-8 bg-white border-2 border-pink-accent shadow-[8px_8px_0px_0px_#ff0a60] rounded-none">
+      <h2 className="text-3xl font-bold text-gray-900 mb-6 uppercase tracking-tight" style={{ fontFamily: "'Gajraj One', cursive" }}>
+        Nutra<span className="text-pink-accent">Core</span> Lab
+      </h2>
 
       <form className="space-y-6" onSubmit={handleSubmit}>
         <div className="grid md:grid-cols-2 gap-4">
           <div className="space-y-2 md:col-span-2">
             <Label htmlFor="title">Título</Label>
-            <Input
+            <input
               id="title"
-              value={form.title}
-              onChange={(event) => setForm((prev) => ({ ...prev, title: event.target.value }))}
-              placeholder="Ej: Bowl energético de quinoa"
+              ref={titleRef}
+              defaultValue={form.title}
+              onChange={(event) => {
+                const val = event.target.value;
+                setForm((prev) => ({ ...prev, title: val }));
+              }}
+              placeholder="EJ: BOWL ENERGÉTICO DE QUINOA"
+              className="h-10 w-full border-2 border-gray-900 rounded-none px-3 text-sm font-bold uppercase outline-none focus:border-pink-accent transition-colors"
               required
             />
           </div>
 
           <div className="space-y-2 md:col-span-2">
-            <Label htmlFor="description">Descripción</Label>
+            <Label htmlFor="description" className="uppercase font-bold text-xs tracking-widest">Descripción</Label>
             <textarea
               id="description"
-              value={form.description}
-              onChange={(event) => setForm((prev) => ({ ...prev, description: event.target.value }))}
-              placeholder="Describe la receta y para quién está pensada"
-              className="min-h-24 w-full rounded-md border border-gray-300 p-3 text-sm outline-none focus:ring-2 focus:ring-pink-200"
+              value={localDescription}
+              onChange={(event) => {
+                const val = event.target.value;
+                setLocalDescription(val);
+                setForm((prev) => ({ ...prev, description: val }));
+              }}
+              placeholder="DESCRIBE TU CREACIÓN..."
+              className="min-h-24 w-full border-2 border-gray-900 rounded-none p-3 text-sm outline-none focus:border-pink-accent transition-colors"
               required
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="category">Categoría</Label>
-            <select
-              id="category"
+            <Label htmlFor="category" className="uppercase font-bold text-xs tracking-widest">Categoría</Label>
+            <CustomSelect
               value={form.category}
-              onChange={(event) => setForm((prev) => ({ ...prev, category: event.target.value }))}
-              className="h-10 w-full rounded-md border border-gray-300 px-3 text-sm outline-none focus:ring-2 focus:ring-pink-200"
-            >
-              {categories.map((category) => (
-                <option key={category} value={category}>
-                  {category}
-                </option>
-              ))}
-            </select>
+              onChange={(val) => setForm((prev) => ({ ...prev, category: val }))}
+              options={categories}
+              placeholder="Seleccionar..."
+            />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="difficulty">Dificultad</Label>
-            <select
-              id="difficulty"
+            <Label htmlFor="difficulty" className="uppercase font-bold text-xs tracking-widest">Dificultad</Label>
+            <CustomSelect
               value={form.difficulty}
-              onChange={(event) => setForm((prev) => ({ ...prev, difficulty: event.target.value }))}
-              className="h-10 w-full rounded-md border border-gray-300 px-3 text-sm outline-none focus:ring-2 focus:ring-pink-200"
-            >
-              {difficulties.map((difficulty) => (
-                <option key={difficulty} value={difficulty}>
-                  {difficulty}
-                </option>
-              ))}
-            </select>
+              onChange={(val) => setForm((prev) => ({ ...prev, difficulty: val }))}
+              options={difficulties}
+              placeholder="Seleccionar..."
+            />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="prepTime">Tiempo de preparación (min)</Label>
-            <Input
+            <Label htmlFor="prepTime" className="uppercase font-bold text-xs tracking-widest">Tiempo (MIN)</Label>
+            <input
               id="prepTime"
               type="number"
               min="1"
               value={form.prepTime}
               onChange={(event) => setForm((prev) => ({ ...prev, prepTime: event.target.value }))}
+              className="h-10 w-full border-2 border-gray-900 rounded-none px-3 text-sm font-bold outline-none focus:border-pink-accent transition-colors"
               required
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="tags">Tags (separados por coma)</Label>
-            <Input
+            <Label htmlFor="tags" className="uppercase font-bold text-xs tracking-widest">Tags</Label>
+            <input
               id="tags"
               value={form.tags}
               onChange={(event) => setForm((prev) => ({ ...prev, tags: event.target.value }))}
-              placeholder="alta proteína, rápido, sin gluten"
+              placeholder="ALTA PROTEÍNA, RÁPIDO..."
+              className="h-10 w-full border-2 border-gray-900 rounded-none px-3 text-sm font-bold uppercase outline-none focus:border-pink-accent transition-colors"
             />
           </div>
         </div>
@@ -497,7 +547,7 @@ export function RecipeForm({ onSubmit, isSubmitting = false }) {
           {form.ingredients.map((item, index) => (
             <div key={`ingredient-${index}`} className="grid gap-2 md:grid-cols-[minmax(0,1fr)_120px_130px_auto]">
               <div className="flex-1 space-y-1">
-                <Input
+                <input
                   value={item}
                   list={`ingredient-suggestions-${index}`}
                   onFocus={() => setActiveIngredientIndex(index)}
@@ -508,7 +558,8 @@ export function RecipeForm({ onSubmit, isSubmitting = false }) {
                     syncIngredientProfile(index, nextValue);
                   }}
                   onBlur={(event) => syncIngredientProfile(index, event.target.value)}
-                  placeholder={`Ingrediente ${index + 1}`}
+                  placeholder={`INGREDIENTE ${index + 1}`}
+                  className="h-10 w-full border-2 border-gray-900 rounded-none px-3 text-sm font-bold uppercase outline-none focus:border-pink-accent transition-colors"
                 />
                 <datalist id={`ingredient-suggestions-${index}`}>
                   {(ingredientSuggestions[index] || []).map((suggestion) => (
@@ -542,31 +593,27 @@ export function RecipeForm({ onSubmit, isSubmitting = false }) {
               </div>
 
               <div className="space-y-1">
-                <Input
+                <input
                   type="number"
                   min="0"
                   step="0.1"
                   value={ingredientPortions[index]?.quantity ?? defaultIngredientPortion.quantity}
                   onChange={(event) => updateIngredientPortion(index, 'quantity', event.target.value)}
-                  placeholder="Cantidad"
+                  placeholder="CANT"
+                  className="h-10 w-full border-2 border-gray-900 rounded-none px-3 text-sm font-bold outline-none focus:border-pink-accent transition-colors"
                 />
               </div>
 
               <div className="space-y-1">
-                <select
+                <CustomSelect
                   value={ingredientPortions[index]?.unit ?? defaultIngredientPortion.unit}
-                  onChange={(event) => updateIngredientPortion(index, 'unit', event.target.value)}
-                  className="h-10 w-full rounded-md border border-gray-300 px-3 text-sm outline-none focus:ring-2 focus:ring-pink-200"
-                >
-                  {ingredientUnits.map((unit) => (
-                    <option key={unit.value} value={unit.value}>
-                      {unit.label}
-                    </option>
-                  ))}
-                </select>
+                  onChange={(val) => updateIngredientPortion(index, 'unit', val)}
+                  options={ingredientUnits}
+                  placeholder="UNIDAD"
+                />
               </div>
 
-              <Button type="button" variant="outline" className="h-10" onClick={() => removeArrayItem('ingredients', index)}>
+              <Button type="button" variant="outline" className="h-10 border-2 border-gray-900 rounded-none hover:bg-red-500 hover:text-white" onClick={() => removeArrayItem('ingredients', index)}>
                 <Trash2 className="w-4 h-4" />
               </Button>
             </div>
@@ -587,10 +634,10 @@ export function RecipeForm({ onSubmit, isSubmitting = false }) {
               <textarea
                 value={item}
                 onChange={(event) => updateArrayItem('steps', index, event.target.value)}
-                placeholder={`Paso ${index + 1}`}
-                className="min-h-20 flex-1 rounded-md border border-gray-300 p-3 text-sm outline-none focus:ring-2 focus:ring-pink-200"
+                placeholder={`PASO ${index + 1}: EXPLICA EL PROCESO...`}
+                className="min-h-20 flex-1 border-2 border-gray-900 rounded-none p-3 text-sm outline-none focus:border-pink-accent transition-colors"
               />
-              <Button type="button" variant="outline" className="self-start" onClick={() => removeArrayItem('steps', index)}>
+              <Button type="button" variant="outline" className="self-start border-2 border-gray-900 rounded-none h-10 hover:bg-red-500 hover:text-white" onClick={() => removeArrayItem('steps', index)}>
                 <Trash2 className="w-4 h-4" />
               </Button>
             </div>
@@ -603,35 +650,42 @@ export function RecipeForm({ onSubmit, isSubmitting = false }) {
           <div className="grid sm:grid-cols-4 gap-3">
             <div className="space-y-2">
               <Label htmlFor="calories">Calorías</Label>
-              <Input id="calories" type="number" min="0" value={form.nutrition.calories} readOnly disabled className="bg-gray-100" />
+              <Input id="calories" type="number" min="0" value={computedNutrition.calories} readOnly disabled className="bg-gray-100" />
             </div>
             <div className="space-y-2">
               <Label htmlFor="protein">Proteína (g)</Label>
-              <Input id="protein" type="number" min="0" value={form.nutrition.protein} readOnly disabled className="bg-gray-100" />
+              <Input id="protein" type="number" min="0" value={computedNutrition.protein} readOnly disabled className="bg-gray-100" />
             </div>
             <div className="space-y-2">
               <Label htmlFor="carbs">Carbs (g)</Label>
-              <Input id="carbs" type="number" min="0" value={form.nutrition.carbs} readOnly disabled className="bg-gray-100" />
+              <Input id="carbs" type="number" min="0" value={computedNutrition.carbs} readOnly disabled className="bg-gray-100" />
             </div>
             <div className="space-y-2">
               <Label htmlFor="fats">Grasas (g)</Label>
-              <Input id="fats" type="number" min="0" value={form.nutrition.fats} readOnly disabled className="bg-gray-100" />
+              <Input id="fats" type="number" min="0" value={computedNutrition.fats} readOnly disabled className="bg-gray-100" />
             </div>
           </div>
         </div>
 
-        <div className="space-y-3">
+        <div className="space-y-4">
           <Label>Imágenes de la receta (máximo 5)</Label>
           <CloudinaryUploadWidget 
             onUploadSuccess={handleImageUploadSuccess}
             multiple={true}
             folder="nutracore/recipes"
           >
-            <div className="flex items-center justify-center gap-2 border border-dashed border-pink-accent/40 rounded-md p-4 cursor-pointer hover:bg-pink-50/40 transition-colors">
+            <div className="flex items-center justify-center gap-2 border-2 border-dashed border-pink-accent/40 rounded-none p-4 cursor-pointer hover:bg-pink-50/40 transition-colors">
               <Upload className="w-4 h-4 text-pink-accent" />
-              <span className="text-sm text-gray-700">Subir imágenes a Cloudinary</span>
+              <span className="text-sm font-bold text-gray-700 uppercase tracking-tight">Añade aquí tus imagenes</span>
             </div>
           </CloudinaryUploadWidget>
+
+          {uploadingImages && (
+            <div className="flex items-center gap-3 p-3 bg-pink-50 border-2 border-pink-accent animate-pulse">
+              <div className="w-2 h-2 bg-pink-accent rounded-full"></div>
+              <p className="text-xs font-bold text-pink-accent uppercase tracking-widest">Analizando plato con IA NutraCore...</p>
+            </div>
+          )}
 
           {form.images.length > 0 && (
             <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
@@ -659,10 +713,10 @@ export function RecipeForm({ onSubmit, isSubmitting = false }) {
 
         <Button
           type="submit"
-          className="w-full bg-pink-accent hover:bg-pink-accent/90 text-white h-11"
+          className="w-full bg-pink-accent hover:bg-pink-accent/90 text-white h-12 rounded-none border-b-4 border-r-4 border-pink-900/30 transition-all hover:translate-y-[-2px] active:translate-y-[2px]"
           disabled={isSubmitting || uploadingImages}
         >
-          {isSubmitting ? 'Publicando receta...' : 'Publicar receta'}
+          <span className="font-bold tracking-wider">{isSubmitting ? 'PUBLICANDO...' : 'PUBLICAR RECETA'}</span>
         </Button>
       </form>
     </Card>

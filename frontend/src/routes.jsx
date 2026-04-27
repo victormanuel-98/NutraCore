@@ -12,6 +12,10 @@ import { NotFound } from './components/NotFound';
 import { VerifyEmail } from './components/VerifyEmail';
 import { CreateRecipePage } from './pages/CreateRecipePage';
 import { ProtectedRoute } from './components/ProtectedRoute';
+import { PrivacyPolicy } from './components/PrivacyPolicy';
+import { TermsPage } from './components/TermsPage';
+import { CookiesPolicyPage } from './components/CookiesPolicyPage';
+import { LegalNoticePage } from './components/LegalNoticePage';
 
 function RouteError() {
   return (
@@ -32,31 +36,35 @@ export const router = createBrowserRouter([
       { path: 'login', element: <Login /> },
       { path: 'register', element: <Register /> },
       { path: 'verify-email', element: <VerifyEmail /> },
-      { 
-        path: 'dashboard', 
+      { path: 'privacy', element: <PrivacyPolicy /> },
+      { path: 'terms', element: <TermsPage /> },
+      { path: 'cookies', element: <CookiesPolicyPage /> },
+      { path: 'legal-notice', element: <LegalNoticePage /> },
+      {
+        path: 'dashboard',
         element: (
           <ProtectedRoute>
             <Dashboard />
           </ProtectedRoute>
-        ) 
+        )
       },
       { path: 'catalog', element: <Catalog /> },
-      { 
-        path: 'lab', 
+      {
+        path: 'lab',
         element: (
           <ProtectedRoute>
             <CreateRecipePage />
           </ProtectedRoute>
-        ) 
+        )
       },
       { path: 'news', element: <News /> },
-      { 
-        path: 'profile', 
+      {
+        path: 'profile',
         element: (
           <ProtectedRoute>
             <Profile />
           </ProtectedRoute>
-        ) 
+        )
       },
       { path: '*', element: <NotFound /> }
     ]

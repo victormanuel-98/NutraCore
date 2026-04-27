@@ -1,4 +1,4 @@
-﻿const express = require('express');
+const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const { connectDB, closeDB, mongoose } = require('./config/db');
@@ -11,6 +11,7 @@ const newsRoutes = require('./routes/news');
 const userRoutes = require('./routes/users');
 const recipeRoutes = require('./routes/recipes');
 const ingredientRoutes = require('./routes/ingredients');
+const reviewRoutes = require('./routes/reviews');
 
 const app = express();
 
@@ -31,6 +32,7 @@ app.use('/api/news', newsRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/recipes', recipeRoutes);
 app.use('/api/ingredients', ingredientRoutes);
+app.use('/api/reviews', reviewRoutes);
 
 app.get('/', (req, res) => {
   res.json({
@@ -42,7 +44,8 @@ app.get('/', (req, res) => {
       news: '/api/news',
       users: '/api/users',
       recipes: '/api/recipes',
-      ingredients: '/api/ingredients'
+      ingredients: '/api/ingredients',
+      reviews: '/api/reviews'
     }
   });
 });

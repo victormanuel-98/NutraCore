@@ -34,7 +34,6 @@ export function Register() {
   const navigate = useNavigate();
   const { register, isLoading } = useAuth();
   const [formData, setFormData] = useState({
-    name: '',
     email: '',
     password: '',
     confirmPassword: '',
@@ -69,7 +68,6 @@ export function Register() {
 
     try {
       const response = await register({
-        name: formData.name,
         email: formData.email,
         password: formData.password,
         gender: genderMap[formData.gender] || 'other',
@@ -77,9 +75,12 @@ export function Register() {
           goal: goalMap[formData.goal] || 'maintain'
         }
       });
+      const alias = response?.data?.user?.name;
       navigate('/login', {
         state: {
-          message: response.message || 'Cuenta creada. Revisa tu correo para verificarla.'
+          message: alias
+            ? `Cuenta creada como ${alias}. Revisa tu correo para verificarla.`
+            : response.message || 'Cuenta creada. Revisa tu correo para verificarla.'
         }
       });
     } catch (err) {
@@ -98,18 +99,11 @@ export function Register() {
           <div className="text-center mb-8">
             <h1 className="text-4xl text-gray-900 mb-2">Únete a NutraCore!</h1>
             <p className="text-gray-600">Crea tu cuenta y comienza tu transformación nutricional.</p>
+            <p className="text-sm text-gray-500 mt-2">Tu alias se asignará automáticamente como NutraUser####.</p>
           </div>
 
           <Card className="p-8">
             <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="name">Nombre completo</Label>
-                <div className="relative">
-                  <User className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
-                  <Input id="name" type="text" value={formData.name} onChange={(event) => handleChange('name', event.target.value)} className="pl-10" required />
-                </div>
-              </div>
-
               <div className="space-y-2">
                 <Label htmlFor="email">Correo electrónico</Label>
                 <div className="relative">
@@ -197,9 +191,7 @@ export function Register() {
                   <Target className="absolute left-3 top-3 w-5 h-5 text-gray-400 z-10" />
                   <Select value={formData.goal} onValueChange={(value) => handleChange('goal', value)}>
                     <SelectTrigger className="pl-10">
-                      <span className="ml-1">
-                        {formData.goal ? goalLabels[formData.goal] : 'Selecciona tu objetivo'}
-                      </span>
+                      <span className="ml-1">{formData.goal ? goalLabels[formData.goal] : 'Selecciona tu objetivo'}</span>
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="weight-loss">Perder peso</SelectItem>

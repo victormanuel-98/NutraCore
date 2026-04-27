@@ -13,6 +13,16 @@ const { sendVerificationEmail } = require('../services/emailService');
 
 const buildVerificationToken = () => crypto.randomBytes(32).toString('hex');
 const hashToken = (token) => crypto.createHash('sha256').update(token).digest('hex');
+const buildAliasCandidate = () => `NutraUser${Math.floor(1000 + Math.random() * 9000)}`;
+const buildUniqueAlias = async () => {
+  const maxAttempts = 30;
+  for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
+    const candidate = buildAliasCandidate();
+    const exists = await User.exists({ name: candidate });
+    if (!exists) return candidate;
+  }
+  return `NutraUser${String(Date.now()).slice(-4)}`;
+};
 
 const getClientUrl = () => process.env.CLIENT_URL || 'http://localhost:5173';
 
@@ -42,13 +52,13 @@ const sendVerificationEmailForUser = async (user) => {
  */
 router.post('/register', async (req, res) => {
   try {
-    const { email, password, name, age, gender, height, weight, goals } = req.body;
+    const { email, password, age, gender, height, weight, goals } = req.body;
     const normalizedEmail = String(email || '').toLowerCase().trim();
 
-    if (!normalizedEmail || !password || !name) {
+    if (!normalizedEmail || !password) {
       return res.status(400).json({
         success: false,
-        error: 'Por favor proporciona email, contraseña y nombre'
+        error: 'Por favor proporciona email y contraseña'
       });
     }
 
@@ -60,17 +70,15 @@ router.post('/register', async (req, res) => {
       });
     }
 
-    // DEBUG: Verificar si el modelo tiene los campos
-    console.log('Campos detectados en el modelo User:', Object.keys(User.schema.paths));
-
     const rawToken = buildVerificationToken();
     const hashedToken = hashToken(rawToken);
     const expires = new Date(Date.now() + 24 * 60 * 60 * 1000);
+    const alias = await buildUniqueAlias();
 
     const user = await User.create({
       email: normalizedEmail,
       password,
-      name,
+      name: alias,
       age,
       gender,
       height,
@@ -211,11 +219,6 @@ router.get('/verify-email', async (req, res) => {
     const tokenHash = hashToken(rawToken);
     const normalizedEmail = String(email || '').toLowerCase().trim();
 
-    console.log('--- Intentando verificar email ---');
-    console.log('Email recibido:', normalizedEmail);
-    console.log('Token (raw):', `"${rawToken}"`);
-    console.log('Token (hash):', tokenHash);
-
     const user = await User.findOne({
       email: normalizedEmail,
       emailVerificationToken: tokenHash,
@@ -223,21 +226,16 @@ router.get('/verify-email', async (req, res) => {
     });
 
     if (!user) {
-      // Intento buscar solo por email para ver qué tiene el usuario en la DB
-      const debugUser = await User.findOne({ email: normalizedEmail });
-      if (debugUser) {
-        console.log('Usuario encontrado, pero token o fecha no coinciden:');
-        console.log('Token en DB:', debugUser.emailVerificationToken);
-        console.log('Expira en DB:', debugUser.emailVerificationExpires);
-        console.log('¿Token coincide?', debugUser.emailVerificationToken === tokenHash);
-        console.log('¿Fecha válida?', debugUser.emailVerificationExpires > new Date());
-      } else {
-        console.log('Usuario NO encontrado en la DB con ese email.');
-      }
-
       return res.status(400).json({
         success: false,
         error: 'El enlace de verificación es inválido o ha caducado'
+      });
+    }
+
+    if (!user.isActive) {
+      return res.status(401).json({
+        success: false,
+        error: 'Tu cuenta ha sido desactivada'
       });
     }
 
@@ -248,7 +246,11 @@ router.get('/verify-email', async (req, res) => {
 
     return res.json({
       success: true,
-      message: 'Correo verificado correctamente. Ya puedes iniciar sesión.'
+      data: {
+        user: user.toPublicProfile(),
+        token: generateToken(user._id)
+      },
+      message: 'Correo verificado correctamente. Accediendo a tu cuenta...'
     });
   } catch (error) {
     return res.status(500).json({
