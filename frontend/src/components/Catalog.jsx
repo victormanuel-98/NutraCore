@@ -20,10 +20,12 @@ const categoryLabels = {
   "cena ligera": "Cena ligera"
 };
 
-const difficultyLabels = {
-  "fácil": "Fácil",
-  media: "Media",
-  "difícil": "Difícil"
+const getDifficultyLabel = (difficulty) => {
+  const normalized = String(difficulty || "").toLowerCase();
+  if (normalized === "media") return "Media";
+  if (["facil", "f\u00e1cil", "fÃ¡cil"].includes(normalized)) return "Facil";
+  if (["dificil", "dif\u00edcil", "difÃ­cil"].includes(normalized)) return "Dificil";
+  return difficulty || "Sin nivel";
 };
 
 const mapApiRecipe = (recipe) => ({
@@ -54,7 +56,7 @@ function CatalogImage({ src, alt }) {
   const optimizedSrc = useMemo(() => {
     if (!src || typeof src !== 'string') return src;
     if (src.includes('cloudinary.com')) {
-      // Aplicar transformaciones automáticas y redimensión para el catálogo
+      // Aplicar transformaciones automaticas y redimension para el catalogo
       return src.replace('/upload/', '/upload/f_auto,q_auto,w_800,c_scale/');
     }
     return src;
@@ -104,7 +106,7 @@ export function Catalog() {
         const mapped = (response.data || []).map(mapApiRecipe);
         setApiRecipes(mapped);
       } catch (err) {
-        setError(err.message || "No se pudo cargar el catálogo desde la API");
+        setError(err.message || "No se pudo cargar el catalogo desde la API");
       } finally {
         setLoading(false);
       }
@@ -117,6 +119,11 @@ export function Catalog() {
 
   const categories = useMemo(() => {
     const generated = new Set(allRecipes.map((recipe) => recipe.category));
+    return ["all", ...generated];
+  }, [allRecipes]);
+
+  const difficulties = useMemo(() => {
+    const generated = new Set(allRecipes.map((recipe) => recipe.difficulty).filter(Boolean));
     return ["all", ...generated];
   }, [allRecipes]);
 
@@ -141,7 +148,7 @@ export function Catalog() {
 
   const handleToggleFavorite = async (recipe) => {
     if (!isAuthenticated || !token) {
-      showNotification("Debes iniciar sesión para guardar favoritos.", "info");
+      showNotification("Debes iniciar sesion para guardar favoritos.", "info");
       return;
     }
 
@@ -165,7 +172,7 @@ export function Catalog() {
         )
       );
       showNotification(
-        isFavorite ? "Receta añadida a favoritos" : "Receta eliminada de favoritos", 
+        isFavorite ? "Receta anadida a favoritos" : "Receta eliminada de favoritos", 
         "success"
       );
     } catch (err) {
@@ -174,15 +181,15 @@ export function Catalog() {
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-gray-50">
       <div className="pt-24 pb-16 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="mb-12 reveal-item">
-            <h1 className="text-4xl text-gray-900 mb-4">Catálogo de Recetas</h1>
-            <p className="text-lg text-gray-600">Explora recetas del catálogo y publicaciones de la comunidad.</p>
-          </div>
+        <div className="max-w-7xl mx-auto space-y-6">
+          <Card className="p-6 md:p-8 bg-white border-2 border-pink-accent shadow-[8px_8px_0px_0px_#ff0a60] rounded-none">
+            <h1 className="text-4xl text-gray-900 mb-3">Catalogo de Recetas</h1>
+            <p className="text-gray-600">Explora recetas del catalogo y publicaciones de la comunidad.</p>
+          </Card>
 
-          <div className="mb-8 space-y-4 reveal-item">
+          <Card className="p-5 bg-white border-2 border-pink-accent shadow-[6px_6px_0px_0px_#ff0a60] rounded-none space-y-4">
             <div className="flex flex-col lg:flex-row gap-3 lg:items-center">
               <div className="flex-1 relative">
                 <Search className="absolute left-3 top-3.5 w-5 h-5 text-gray-400 pixel-icon" />
@@ -191,13 +198,13 @@ export function Catalog() {
                   placeholder="Buscar por nombre o etiqueta..."
                   value={searchTerm}
                   onChange={(event) => setSearchTerm(event.target.value)}
-                  className="pl-10 h-11"
+                  className="pl-10 h-11 border-2 border-gray-300 rounded-none focus-visible:border-pink-accent bg-white"
                 />
               </div>
 
               <div className="flex flex-wrap gap-2">
                 <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                  <SelectTrigger className="w-44 h-10 text-sm hover:border-[#ff0a60]">
+                  <SelectTrigger className="w-44 h-10 text-sm border-2 border-gray-900 rounded-none hover:border-pink-accent">
                     <Filter className="w-4 h-4 mr-2 pixel-icon" />
                     <span className="ml-1">{selectedCategory === "all" ? "Todos" : categoryLabels[selectedCategory] || selectedCategory}</span>
                   </SelectTrigger>
@@ -211,31 +218,36 @@ export function Catalog() {
                 </Select>
 
                 <Select value={selectedDifficulty} onValueChange={setSelectedDifficulty}>
-                  <SelectTrigger className="w-40 h-10 text-sm hover:border-[#ff0a60]">
+                  <SelectTrigger className="w-40 h-10 text-sm border-2 border-gray-900 rounded-none hover:border-pink-accent">
                     <SlidersHorizontal className="w-4 h-4 mr-2 pixel-icon" />
-                    <span className="ml-1">{selectedDifficulty === "all" ? "Todos" : difficultyLabels[selectedDifficulty] || selectedDifficulty}</span>
+                    <span className="ml-1">{selectedDifficulty === "all" ? "Todos" : getDifficultyLabel(selectedDifficulty)}</span>
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Todos</SelectItem>
-                    <SelectItem value="fácil">Fácil</SelectItem>
-                    <SelectItem value="media">Media</SelectItem>
-                    <SelectItem value="difícil">Difícil</SelectItem>
+                    {difficulties.map((difficulty) => (
+                      <SelectItem key={difficulty} value={difficulty}>
+                        {difficulty === "all" ? "Todos" : getDifficultyLabel(difficulty)}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
 
-                <Button variant="outline" className="h-10 px-3 text-sm hover:bg-[#ff0a60] hover:text-white hover:border-[#ff0a60]" onClick={clearFilters}>
+                <Button
+                  variant="outline"
+                  className="h-10 px-3 text-sm border-2 border-gray-900 rounded-none hover:bg-pink-accent hover:text-white hover:border-pink-accent"
+                  onClick={clearFilters}
+                >
                   Limpiar filtros
                 </Button>
               </div>
             </div>
 
             <div className="flex items-center justify-between">
-              <p className="text-gray-600">Mostrando {filteredRecipes.length} recetas</p>
+              <p className="text-gray-700">Mostrando {filteredRecipes.length} recetas</p>
             </div>
 
             {loading && <p className="text-gray-500">Cargando recetas publicadas...</p>}
             {error && <p className="text-red-600">{error}</p>}
-          </div>
+          </Card>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredRecipes.map((recipe) => {
@@ -244,13 +256,16 @@ export function Catalog() {
               );
 
               return (
-                <Card key={recipe.id} className="overflow-hidden hover:shadow-lg transition-shadow group h-full flex flex-col">
+                <Card
+                  key={recipe.id}
+                  className="overflow-hidden group h-full flex flex-col bg-white border-2 border-gray-200 rounded-none shadow-[4px_4px_0px_0px_#d1d5db] hover:shadow-[8px_8px_0px_0px_#ff0a60] hover:border-pink-accent transition-all"
+                >
                   <div className="relative h-48 overflow-hidden bg-gray-100">
                     <CatalogImage src={recipe.image} alt={recipe.title} />
                     <button
                       onClick={() => handleToggleFavorite(recipe)}
-                      className="absolute top-4 right-4 bg-white p-2 rounded-full shadow-lg hover:bg-pink-50 transition-colors"
-                      aria-label="Añadir o quitar favorito"
+                      className="absolute top-4 right-4 bg-white p-2 rounded-full shadow-lg hover:bg-pink-50 transition-colors border border-gray-200"
+                      aria-label="Anadir o quitar favorito"
                     >
                       <Heart className={`w-5 h-5 pixel-icon ${isFavorite ? "fill-pink-accent text-pink-accent" : "text-gray-600"}`} />
                     </button>
@@ -281,14 +296,14 @@ export function Catalog() {
                         </div>
                         <div className="flex items-center gap-1">
                           <ChefHat className="w-4 h-4 pixel-icon" />
-                          <span>{difficultyLabels[recipe.difficulty] || recipe.difficulty}</span>
+                          <span>{getDifficultyLabel(recipe.difficulty)}</span>
                         </div>
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-3 gap-2 text-center py-3 bg-gray-50 rounded-lg min-h-[84px]">
+                    <div className="grid grid-cols-3 gap-2 text-center py-3 bg-gray-50 min-h-[84px] border border-gray-200">
                       <div>
-                        <p className="text-sm text-gray-600">Proteína</p>
+                        <p className="text-sm text-gray-600">Proteina</p>
                         <p className="font-bold text-gray-900">{recipe.protein}g</p>
                       </div>
                       <div>
@@ -310,7 +325,7 @@ export function Catalog() {
                     </div>
 
                     <Button 
-                      className="w-full bg-pink-accent hover:bg-pink-accent/90 text-white mt-auto"
+                      className="w-full bg-pink-accent hover:bg-pink-accent/90 text-white mt-auto rounded-none"
                       onClick={() => setSelectedRecipe(recipe)}
                     >
                       Ver Receta
@@ -329,16 +344,17 @@ export function Catalog() {
           ) /* Modal de Detalle */}
 
           {filteredRecipes.length === 0 && !loading && (
-            <div className="text-center py-16 reveal-item">
-              <div className="bg-gray-100 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Card className="text-center py-16 bg-white border-2 border-pink-accent shadow-[6px_6px_0px_0px_#ff0a60] rounded-none">
+              <div className="bg-gray-100 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-4 border border-gray-300">
                 <Search className="w-12 h-12 text-gray-400 pixel-icon" />
               </div>
               <h3 className="text-xl font-bold text-gray-900 mb-2">No se encontraron recetas</h3>
-              <p className="text-gray-600 mb-6">Intenta con otros términos de búsqueda o ajusta los filtros.</p>
-            </div>
+              <p className="text-gray-600 mb-6">Intenta con otros terminos de busqueda o ajusta los filtros.</p>
+            </Card>
           )}
         </div>
       </div>
     </div>
   );
 }
+

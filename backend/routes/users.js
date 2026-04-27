@@ -7,6 +7,7 @@
 const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
+const Recipe = require('../models/Recipe');
 const { protect } = require('../config/auth');
 
 /**
@@ -19,6 +20,7 @@ router.get('/profile', protect, async (req, res) => {
     const user = await User.findById(req.user._id)
       .populate('favorites', 'name image nutrition category')
       .populate('savedNews', 'title summary image category');
+    const recipeFavoritesCount = await Recipe.countDocuments({ favoritedBy: req.user._id });
 
     // Calcular IMC si tiene los datos necesarios
     const bmi = user.calculateBMI();
@@ -27,7 +29,8 @@ router.get('/profile', protect, async (req, res) => {
       success: true,
       data: {
         ...user.toPublicProfile(),
-        bmi
+        bmi,
+        recipeFavoritesCount
       }
     });
   } catch (error) {
@@ -155,15 +158,18 @@ router.get('/stats', protect, async (req, res) => {
     const user = await User.findById(req.user._id)
       .populate('favorites')
       .populate('savedNews');
-
-    const Recipe = require('../models/Recipe');
-    const userRecipes = await Recipe.find({ author: user._id });
+    const [recipeFavoritesCount, totalRecipes] = await Promise.all([
+      Recipe.countDocuments({ favoritedBy: req.user._id }),
+      Recipe.countDocuments({ author: user._id })
+    ]);
 
     // Calcular estadÃ­sticas
     const stats = {
-      totalFavorites: user.favorites.length,
+      totalFavorites: recipeFavoritesCount,
+      totalRecipeFavorites: recipeFavoritesCount,
+      totalDishFavorites: user.favorites.length,
       totalSavedNews: user.savedNews.length,
-      totalRecipes: userRecipes.length,
+      totalRecipes,
       bmi: user.calculateBMI(),
       goalProgress: null
     };

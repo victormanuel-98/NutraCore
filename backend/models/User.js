@@ -95,6 +95,13 @@ const userSchema = new mongoose.Schema(
       }
     ],
 
+    favoriteRecipes: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Recipe'
+      }
+    ],
+
     savedNews: [
       {
         type: mongoose.Schema.Types.ObjectId,

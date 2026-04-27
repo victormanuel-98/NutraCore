@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "./ui/button";
 import { Card } from "./ui/card";
@@ -65,10 +65,38 @@ export function Home() {
     "/images/home/zumos.mp4"
   ];
   const [heroVideoIndex, setHeroVideoIndex] = useState(0);
+  const [isDesktop, setIsDesktop] = useState(() =>
+    typeof window !== "undefined" ? window.innerWidth >= 1024 : false
+  );
+  const mobileVideoRef = useRef(null);
+  const desktopVideoRef = useRef(null);
 
   const handleHeroVideoEnded = () => {
     setHeroVideoIndex((prev) => (prev + 1) % heroVideos.length);
   };
+
+  const handleHeroVideoError = () => {
+    setHeroVideoIndex((prev) => (prev + 1) % heroVideos.length);
+  };
+
+  useEffect(() => {
+    const onResize = () => setIsDesktop(window.innerWidth >= 1024);
+    window.addEventListener("resize", onResize, { passive: true });
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+
+  useEffect(() => {
+    const activeVideo = isDesktop ? desktopVideoRef.current : mobileVideoRef.current;
+    if (!activeVideo) return;
+
+    activeVideo.load();
+    const playPromise = activeVideo.play();
+    if (playPromise && typeof playPromise.catch === "function") {
+      playPromise.catch(() => {
+        // Ignore transient autoplay failures; browser may retry on next frame.
+      });
+    }
+  }, [heroVideoIndex, isDesktop]);
 
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return undefined;
@@ -155,10 +183,10 @@ export function Home() {
   ];
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-gray-50">
       <section data-home-snap="true" className="pt-[80px] pb-0 home-snap-section">
         <div className="w-full">
-          <div className="relative bg-pink-accent border-t border-white/40 overflow-hidden">
+          <div className="relative bg-pink-accent border-2 border-gray-900 shadow-[10px_10px_0px_0px_#ff0a60] overflow-hidden">
             <div className="lg:hidden">
               <div className="p-8 text-white space-y-6">
                 <h1 className="text-5xl leading-none">
@@ -172,31 +200,37 @@ export function Home() {
                 <div className="flex flex-col sm:flex-row gap-4">
                   <Link to="/register">
                     <Button
-                      className="!bg-white hover:!bg-white/90 text-pink-accent w-full sm:w-[190px] justify-center text-center"
+                      className="!bg-white hover:!bg-white/90 text-pink-accent w-full sm:w-[190px] justify-center text-center rounded-none border-2 border-gray-900 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.25)]"
                       style={{ color: 'var(--pink-accent)' }}
                     >
                       ¡ÚNETE!
                     </Button>
                   </Link>
                   <Link to="/catalog">
-                    <Button variant="ghost" className="border border-white/70 text-white hover:bg-white/10 w-full sm:w-[190px] justify-center text-center">
+                    <Button variant="ghost" className="border-2 border-white text-white hover:bg-white/10 w-full sm:w-[190px] justify-center text-center rounded-none">
                       PLATOS
                     </Button>
                   </Link>
                 </div>
               </div>
               <div className="h-[300px]">
-                <video
-                  key={`mobile-${heroVideos[heroVideoIndex]}`}
-                  className="w-full h-full object-cover"
-                  autoPlay
-                  muted
-                  playsInline
-                  onEnded={handleHeroVideoEnded}
-                >
-                  <source src={heroVideos[heroVideoIndex]} type="video/mp4" />
-                  Tu navegador no soporta video HTML5.
-                </video>
+                {!isDesktop ? (
+                  <video
+                    ref={mobileVideoRef}
+                    key={`mobile-${heroVideos[heroVideoIndex]}`}
+                    className="w-full h-full object-cover"
+                    autoPlay
+                    muted
+                    playsInline
+                    preload="auto"
+                    poster="/images/home/Batido-de-frutos-rojos.jpg"
+                    onEnded={handleHeroVideoEnded}
+                    onError={handleHeroVideoError}
+                  >
+                    <source src={heroVideos[heroVideoIndex]} type="video/mp4" />
+                    Tu navegador no soporta video HTML5.
+                  </video>
+                ) : null}
               </div>
             </div>
 
@@ -204,17 +238,23 @@ export function Home() {
               <div className="relative h-full overflow-hidden flex items-center">
                 {/* Imagen de fondo a la derecha */}
                 <div className="absolute inset-0 flex justify-end">
-                  <video
-                    key={`desktop-${heroVideos[heroVideoIndex]}`}
-                    className="h-full w-[75%] xl:w-[70%] object-cover object-center"
-                    autoPlay
-                    muted
-                    playsInline
-                    onEnded={handleHeroVideoEnded}
-                  >
-                    <source src={heroVideos[heroVideoIndex]} type="video/mp4" />
-                    Tu navegador no soporta video HTML5.
-                  </video>
+                  {isDesktop ? (
+                    <video
+                      ref={desktopVideoRef}
+                      key={`desktop-${heroVideos[heroVideoIndex]}`}
+                      className="h-full w-[75%] xl:w-[70%] object-cover object-center"
+                      autoPlay
+                      muted
+                      playsInline
+                      preload="auto"
+                      poster="/images/home/Batido-de-frutos-rojos.jpg"
+                      onEnded={handleHeroVideoEnded}
+                      onError={handleHeroVideoError}
+                    >
+                      <source src={heroVideos[heroVideoIndex]} type="video/mp4" />
+                      Tu navegador no soporta video HTML5.
+                    </video>
+                  ) : null}
                 </div>
 
                 {/* Diagonal de color rosa */}
@@ -240,14 +280,14 @@ export function Home() {
                     <div className="flex flex-wrap gap-5 mb-14">
                       <Link to="/register">
                         <Button
-                          className="!bg-white hover:!bg-white/90 text-pink-accent h-16 w-[200px] text-xl font-logo shadow-[6px_6px_0px_0px_rgba(0,0,0,0.2)] transition-all hover:translate-y-[-2px]"
+                          className="!bg-white hover:!bg-white/90 text-pink-accent h-16 w-[200px] text-xl font-logo border-2 border-gray-900 rounded-none shadow-[6px_6px_0px_0px_rgba(0,0,0,0.25)] transition-all hover:translate-y-[-2px]"
                           style={{ color: 'var(--pink-accent)' }}
                         >
                           ¡ÚNETE!
                         </Button>
                       </Link>
                       <Link to="/catalog">
-                        <Button variant="ghost" className="border-2 border-white text-white hover:bg-white/10 h-16 w-[200px] text-xl font-logo transition-all hover:translate-y-[-2px]">
+                        <Button variant="ghost" className="border-2 border-white text-white hover:bg-white/10 h-16 w-[200px] text-xl font-logo rounded-none transition-all hover:translate-y-[-2px]">
                           PLATOS
                         </Button>
                       </Link>
@@ -277,7 +317,7 @@ export function Home() {
                 </div>
               </div>
 
-              <aside className="bg-pink-accent border-l border-white/20 h-full flex items-center justify-center p-6">
+              <aside className="bg-pink-accent border-l-2 border-white/35 h-full flex items-center justify-center p-6">
                 <img
                   src="/images/logos/PanelLateral.png"
                   alt="Panel lateral"
@@ -291,12 +331,12 @@ export function Home() {
 
       <section id="indice" data-home-snap="true" className="min-h-[calc(100svh-80px)] py-10 px-4 sm:px-6 lg:px-8 bg-gray-50 home-snap-section flex items-center">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-8 reveal-item">
+          <Card className="text-center mb-8 reveal-item p-6 md:p-8 bg-white border-2 border-pink-accent shadow-[8px_8px_0px_0px_#ff0a60] rounded-none">
             <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-3">Todo lo que necesitas para optimizar tu nutrición</h2>
             <p className="text-base lg:text-lg text-gray-600 max-w-3xl mx-auto">
               Herramientas inteligentes diseñadas para hacer tu alimentación más eficiente
             </p>
-          </div>
+          </Card>
 
           <div className="grid md:grid-cols-2 gap-5 lg:gap-6">
             {indexCards.map(({ icon: Icon, title, description, destination }) => (
@@ -306,8 +346,8 @@ export function Home() {
                 onClick={() => handleIndexCardClick(destination)}
                 className="text-left"
               >
-                <Card className="p-6 border-2 border-pink-accent/15 index-card-hover cursor-pointer h-full">
-                  <div className="bg-pink-accent/10 w-12 h-12 rounded-lg flex items-center justify-center mb-4 transition-colors">
+                <Card className="p-6 border-2 border-pink-accent index-card-hover cursor-pointer h-full bg-white shadow-[6px_6px_0px_0px_#ff0a60] rounded-none">
+                  <div className="bg-pink-accent/10 w-12 h-12 border border-pink-accent/40 flex items-center justify-center mb-4 transition-colors">
                     <Icon className="w-6 h-6 text-pink-accent pixel-icon" strokeWidth={2.7} />
                   </div>
                   <h3 className="text-lg font-bold text-gray-900 mb-2 transition-colors">{title}</h3>
@@ -319,12 +359,12 @@ export function Home() {
         </div>
       </section>
 
-      <section id="como-funciona" data-home-snap="true" className="py-20 px-4 sm:px-6 lg:px-8 home-snap-section">
+      <section id="como-funciona" data-home-snap="true" className="py-20 px-4 sm:px-6 lg:px-8 home-snap-section bg-gray-50">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16 reveal-item">
+          <Card className="text-center mb-16 reveal-item p-6 md:p-8 bg-white border-2 border-pink-accent shadow-[8px_8px_0px_0px_#ff0a60] rounded-none">
             <h2 className="text-4xl font-bold text-gray-900 mb-4">Cómo funciona NutraCore</h2>
             <p className="text-xl text-gray-600">Solo tres pasos para transformar tu alimentación</p>
-          </div>
+          </Card>
 
           <div className="grid md:grid-cols-3 gap-12">
             {[{
@@ -340,22 +380,26 @@ export function Home() {
               title: "Alcanza tus Metas",
               text: "Sigue tu progreso, ajusta tu plan y logra tus objetivos con el soporte de nuestra plataforma."
             }].map((item) => (
-              <div key={item.step} className="text-center reveal-item">
+              <Card key={item.step} className="text-center reveal-item p-6 bg-white border-2 border-pink-accent shadow-[6px_6px_0px_0px_#ff0a60] rounded-none">
                 <div className="hex-step bg-pink-accent w-16 h-16 flex items-center justify-center mx-auto mb-6">
                   <span className="text-white text-2xl font-bold">{item.step}</span>
                 </div>
                 <h3 className="text-xl font-bold text-gray-900 mb-3">{item.title}</h3>
                 <p className="text-gray-600 leading-relaxed">{item.text}</p>
-              </div>
+              </Card>
             ))}
           </div>
         </div>
       </section>
 
-      <section data-home-snap="true" className="py-10 px-4 sm:px-6 lg:px-8 bg-gray-900 home-snap-section lg:min-h-[calc(100svh-80px)] lg:flex lg:items-center">
+      <section data-home-snap="true" className="py-10 px-4 sm:px-6 lg:px-8 bg-[#0f172a] home-snap-section lg:min-h-[calc(100svh-80px)] lg:flex lg:items-center">
         <div className="max-w-7xl mx-auto">
-          <div className="grid lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1fr)] gap-7 lg:gap-9 items-start">
-            <div className="rounded-2xl overflow-hidden shadow-2xl reveal-item">
+          <Card
+            className="p-5 lg:p-7 !bg-[#0f172a] border-2 border-pink-accent shadow-[10px_10px_0px_0px_#ff0a60] rounded-none"
+            style={{ backgroundColor: "#0f172a" }}
+          >
+            <div className="grid lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1fr)] gap-7 lg:gap-9 items-start bg-[#0f172a]">
+              <div className="overflow-hidden border-2 border-white/30 reveal-item">
               <img
                 src="/images/home/hombreEnGym.jpg"
                 alt="Entrenamiento en gimnasio"
@@ -367,9 +411,9 @@ export function Home() {
               <h2 className="text-2xl xl:text-[1.9rem] font-bold leading-tight max-w-[18ch]">Potencia tu rendimiento con nutrición optimizada</h2>
 
               <div className="mt-4 space-y-2.5">
-                <div className="bg-white/5 border border-white/10 rounded-xl p-3">
+                <div className="bg-white/5 border-2 border-white/20 rounded-none p-3">
                   <div className="flex gap-3 items-start">
-                    <div className="bg-pink-accent/20 p-2.5 rounded-md h-fit">
+                    <div className="bg-pink-accent/20 border border-pink-accent/40 p-2.5 h-fit">
                       <Zap className="w-5 h-5 text-pink-accent pixel-icon" />
                     </div>
                     <div>
@@ -381,9 +425,9 @@ export function Home() {
                   </div>
                 </div>
 
-                <div className="bg-white/5 border border-white/10 rounded-xl p-3">
+                <div className="bg-white/5 border-2 border-white/20 rounded-none p-3">
                   <div className="flex gap-3 items-start">
-                    <div className="bg-pink-accent/20 p-2.5 rounded-md h-fit">
+                    <div className="bg-pink-accent/20 border border-pink-accent/40 p-2.5 h-fit">
                       <Award className="w-5 h-5 text-pink-accent pixel-icon" />
                     </div>
                     <div>
@@ -395,9 +439,9 @@ export function Home() {
                   </div>
                 </div>
 
-                <div className="bg-white/5 border border-white/10 rounded-xl p-3">
+                <div className="bg-white/5 border-2 border-white/20 rounded-none p-3">
                   <div className="flex gap-3 items-start">
-                    <div className="bg-pink-accent/20 p-2.5 rounded-md h-fit">
+                    <div className="bg-pink-accent/20 border border-pink-accent/40 p-2.5 h-fit">
                       <Users className="w-5 h-5 text-pink-accent pixel-icon" />
                     </div>
                     <div>
@@ -410,19 +454,20 @@ export function Home() {
 
               <div className="mt-5">
                 <Link to="/register">
-                  <Button className="bg-pink-accent hover:bg-pink-accent/90 text-white px-6 py-3.5 text-base">
+                  <Button className="bg-pink-accent hover:bg-pink-accent/90 text-white px-6 py-3.5 text-base rounded-none border-2 border-pink-accent">
                     Únete Ahora Gratis
                     <ArrowRight className="ml-2 w-4 h-4 pixel-icon" />
                   </Button>
                 </Link>
               </div>
             </div>
-          </div>
+            </div>
+          </Card>
         </div>
       </section>
 
-      <section data-home-snap="true" className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-pink-50 to-white home-snap-section">
-        <div className="max-w-4xl mx-auto text-center reveal-item">
+      <section data-home-snap="true" className="py-20 px-4 sm:px-6 lg:px-8 bg-gray-50 home-snap-section">
+        <Card className="max-w-4xl mx-auto text-center reveal-item p-8 md:p-10 bg-white border-2 border-pink-accent shadow-[10px_10px_0px_0px_#ff0a60] rounded-none">
           <h2 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-6">¿Listo para transformar tu alimentación?</h2>
           <p className="text-xl text-gray-600 mb-10 leading-relaxed">
             Únete a NutraCore hoy y comienza tu viaje hacia una nutrición inteligente y un estilo de vida más saludable.
@@ -431,7 +476,7 @@ export function Home() {
             <Link to="/register">
               <Button
                 size="lg"
-                className="bg-pink-accent hover:bg-pink-accent/90 text-white px-10 py-6 text-lg w-full sm:w-auto"
+                className="bg-pink-accent hover:bg-pink-accent/90 text-white px-10 py-6 text-lg w-full sm:w-auto rounded-none border-2 border-pink-accent"
               >
                 Comenzar Gratis
               </Button>
@@ -440,14 +485,16 @@ export function Home() {
               <Button
                 size="lg"
                 variant="outline"
-                className="border-2 border-gray-900 hover:bg-gray-50 px-10 py-6 text-lg w-full sm:w-auto"
+                className="border-2 border-gray-900 hover:bg-pink-50 hover:border-pink-accent px-10 py-6 text-lg w-full sm:w-auto rounded-none"
               >
                 Probar NutraCore Lab
               </Button>
             </Link>
           </div>
-        </div>
+        </Card>
       </section>
     </div>
   );
 }
+
+

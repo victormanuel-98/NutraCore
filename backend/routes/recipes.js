@@ -1,6 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const { Recipe, RECIPE_CATEGORIES, RECIPE_DIFFICULTIES } = require('../models/Recipe');
+const User = require('../models/User');
 const { protect, optionalProtect } = require('../config/auth');
 const { searchIngredients, getIngredientNutritionProfile } = require('../services/openFoodFactsService');
 
@@ -312,6 +313,19 @@ router.get('/user/me', protect, async (req, res) => {
   }
 });
 
+router.get('/user/favorites', protect, async (req, res) => {
+  try {
+    const rawRecipes = await Recipe.find({ favoritedBy: req.user._id, isPublished: true })
+      .populate('author', 'name avatar')
+      .sort({ createdAt: -1 });
+    const recipes = await Promise.all(rawRecipes.map((recipe) => ensureRecipeNutrition(recipe)));
+
+    return res.json({ success: true, data: recipes });
+  } catch {
+    return sendError(res, 500, 'No se pudieron obtener tus recetas favoritas');
+  }
+});
+
 router.get('/featured/popular', async (req, res) => {
   try {
     const limit = Math.min(MAX_LIMIT, Math.max(1, toNumber(req.query.limit, 6)));
@@ -455,7 +469,12 @@ router.post('/:id/favorite', protect, async (req, res) => {
     }
 
     recipe.favoritesCount = recipe.favoritedBy.length;
-    await recipe.save();
+    await Promise.all([
+      recipe.save(),
+      exists
+        ? User.updateOne({ _id: req.user._id }, { $pull: { favoriteRecipes: recipe._id } })
+        : User.updateOne({ _id: req.user._id }, { $addToSet: { favoriteRecipes: recipe._id } })
+    ]);
 
     return res.json({
       success: true,

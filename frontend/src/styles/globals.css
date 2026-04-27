@@ -2,6 +2,7 @@
 
 :root {
   --pink-accent: #ff0a60;
+  --pink-accent-soft: #ff4f93;
   --text-color: #111827;
   --bg-color: #ffffff;
   
@@ -368,6 +369,10 @@ h1 {
     color 220ms ease;
 }
 
+.index-card-hover .bg-pink-accent\/10 {
+  transition: background-color 220ms ease;
+}
+
 .index-card-hover:hover {
   background: #ff0a60;
   border-color: #ff0a60;
@@ -381,7 +386,7 @@ h1 {
 }
 
 .index-card-hover:hover .bg-pink-accent\/10 {
-  background: rgba(255, 255, 255, 0.18);
+  background-color: var(--pink-accent);
 }
 
 .index-card-hover:hover .text-pink-accent {

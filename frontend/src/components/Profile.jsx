@@ -1,13 +1,15 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Card } from './ui/card';
 import { Label } from './ui/label';
 import { Button } from './ui/button';
-import { User, Camera, Save, Lock } from 'lucide-react';
+import { User, Camera, Save, Lock, Eye } from 'lucide-react';
 import { CloudinaryUploadWidget } from './ui/CloudinaryUploadWidget';
+import { Select, SelectContent, SelectItem, SelectTrigger } from './ui/select';
 import { useNotification } from '../context/NotificationContext';
 import { useAuth } from '../context/AuthContext';
 import { getUserProfile, getUserStats, updateUserGoals, updateUserProfile } from '../services/userService';
 import { changePassword } from '../services/authService';
+import { ProfileRecipeCollections } from './ProfileRecipeCollections';
 
 const goalOptions = [
   { value: 'lose-weight', label: 'Perder peso' },
@@ -37,6 +39,26 @@ const toNumberOrNull = (value) => {
   return Number.isFinite(parsed) ? parsed : null;
 };
 
+const sanitizeNumericInput = (rawValue, allowDecimal = false) => {
+  const source = String(rawValue ?? '').replace(',', '.');
+  let sanitized = source.replace(allowDecimal ? /[^0-9.]/g : /[^0-9]/g, '');
+
+  if (allowDecimal) {
+    const firstDot = sanitized.indexOf('.');
+    if (firstDot !== -1) {
+      sanitized = `${sanitized.slice(0, firstDot + 1)}${sanitized.slice(firstDot + 1).replace(/\./g, '')}`;
+    }
+  }
+
+  return sanitized;
+};
+
+const formatNumericValue = (value, allowDecimal = false) => {
+  if (!Number.isFinite(value)) return '0';
+  if (!allowDecimal) return String(Math.max(0, Math.round(value)));
+  return String(Math.max(0, Math.round(value * 10) / 10)).replace(/\.0$/, '');
+};
+
 export function Profile() {
   const { token } = useAuth();
   const { showNotification } = useNotification();
@@ -45,6 +67,20 @@ export function Profile() {
   const [saving, setSaving] = useState(false);
   const [stats, setStats] = useState(null);
   const [passwordState, setPasswordState] = useState({ currentPassword: '', newPassword: '' });
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const profileRequestRef = useRef(0);
+  const isEditingRef = useRef(false);
+  const numericDraftRef = useRef({
+    age: '',
+    height: '',
+    weight: '',
+    targetWeight: '',
+    dailyCalories: '0',
+    protein: '0',
+    carbs: '0',
+    fats: '0'
+  });
   const [profileData, setProfileData] = useState({
     name: '',
     email: '',
@@ -62,36 +98,64 @@ export function Profile() {
     goal: 'maintain'
   });
 
+  const refreshStats = useCallback(async ({ silentErrors = true } = {}) => {
+    if (!token) return;
+
+    try {
+      const statsResponse = await getUserStats(token);
+      setStats(statsResponse?.data || null);
+    } catch (error) {
+      if (!silentErrors) {
+        showNotification(error.message || 'No se pudieron actualizar las estadisticas', 'error');
+      }
+    }
+  }, [token, showNotification]);
+
   useEffect(() => {
     const loadProfile = async () => {
       if (!token) return;
+      profileRequestRef.current += 1;
+      const requestId = profileRequestRef.current;
 
       try {
-        setLoading(true);
         const [profileResponse, statsResponse] = await Promise.all([
           getUserProfile(token),
           getUserStats(token)
         ]);
+        if (requestId !== profileRequestRef.current) return;
 
         const user = profileResponse?.data || {};
         const goals = user.goals || {};
 
-        setProfileData({
-          name: user.name || '',
-          email: user.email || '',
+        numericDraftRef.current = {
           age: user.age ?? '',
-          gender: user.gender || 'prefer-not-to-say',
           height: user.height ?? '',
           weight: user.weight ?? '',
-          avatar: user.avatar || '',
           targetWeight: goals.targetWeight ?? '',
-          dailyCalories: goals.dailyCalories ?? 0,
-          protein: goals.protein ?? 0,
-          carbs: goals.carbs ?? 0,
-          fats: goals.fats ?? 0,
-          activityLevel: goals.activityLevel || 'moderate',
-          goal: goals.goal || 'maintain'
-        });
+          dailyCalories: String(goals.dailyCalories ?? 0),
+          protein: String(goals.protein ?? 0),
+          carbs: String(goals.carbs ?? 0),
+          fats: String(goals.fats ?? 0)
+        };
+
+        if (!isEditingRef.current) {
+          setProfileData({
+            name: user.name || '',
+            email: user.email || '',
+            age: user.age ?? '',
+            gender: user.gender || 'prefer-not-to-say',
+            height: user.height ?? '',
+            weight: user.weight ?? '',
+            avatar: user.avatar || '',
+            targetWeight: goals.targetWeight ?? '',
+            dailyCalories: goals.dailyCalories ?? 0,
+            protein: goals.protein ?? 0,
+            carbs: goals.carbs ?? 0,
+            fats: goals.fats ?? 0,
+            activityLevel: goals.activityLevel || 'moderate',
+            goal: goals.goal || 'maintain'
+          });
+        }
 
         setStats(statsResponse?.data || null);
       } catch (error) {
@@ -102,7 +166,7 @@ export function Profile() {
     };
 
     loadProfile();
-  }, [token, showNotification]);
+  }, [token]);
 
   const bmi = useMemo(() => {
     if (stats?.bmi) return stats.bmi;
@@ -114,7 +178,33 @@ export function Profile() {
   }, [profileData.height, profileData.weight, stats]);
 
   const handleChange = (field, value) => {
+    isEditingRef.current = true;
     setProfileData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleNumericChange = (field, allowDecimal = false) => (event) => {
+    isEditingRef.current = true;
+    const sanitized = sanitizeNumericInput(event.target.value, allowDecimal);
+    event.target.value = sanitized;
+    numericDraftRef.current[field] = sanitized;
+  };
+
+  const handleNumericArrow = (field, { step = 1, allowDecimal = false } = {}) => (event) => {
+    if (event.key !== 'ArrowUp' && event.key !== 'ArrowDown') return;
+    event.preventDefault();
+
+    isEditingRef.current = true;
+    const current = Number(numericDraftRef.current[field] === '' ? 0 : numericDraftRef.current[field]);
+    const base = Number.isFinite(current) ? current : 0;
+    const delta = event.key === 'ArrowUp' ? step : -step;
+    const next = formatNumericValue(Math.max(0, base + delta), allowDecimal);
+    numericDraftRef.current[field] = next;
+    event.currentTarget.value = next;
+  };
+
+  const getOptionLabel = (options, value, fallback = 'Selecciona') => {
+    const option = options.find((item) => item.value === value);
+    return option?.label || fallback;
   };
 
   const handleSave = async () => {
@@ -126,27 +216,28 @@ export function Profile() {
       await Promise.all([
         updateUserProfile(
           {
-            age: toNumberOrNull(profileData.age),
+            age: toNumberOrNull(numericDraftRef.current.age),
             gender: profileData.gender,
-            height: toNumberOrNull(profileData.height),
-            weight: toNumberOrNull(profileData.weight),
+            height: toNumberOrNull(numericDraftRef.current.height),
+            weight: toNumberOrNull(numericDraftRef.current.weight),
             avatar: profileData.avatar || null
           },
           token
         ),
         updateUserGoals(
           {
-            targetWeight: toNumberOrNull(profileData.targetWeight),
-            dailyCalories: Number(profileData.dailyCalories),
-            protein: Number(profileData.protein),
-            carbs: Number(profileData.carbs),
-            fats: Number(profileData.fats),
+            targetWeight: toNumberOrNull(numericDraftRef.current.targetWeight),
+            dailyCalories: Number(numericDraftRef.current.dailyCalories || 0),
+            protein: Number(numericDraftRef.current.protein || 0),
+            carbs: Number(numericDraftRef.current.carbs || 0),
+            fats: Number(numericDraftRef.current.fats || 0),
             activityLevel: profileData.activityLevel,
             goal: profileData.goal
           },
           token
         )
       ]);
+      isEditingRef.current = false;
 
       showNotification('Perfil actualizado correctamente', 'success');
     } catch (error) {
@@ -159,16 +250,16 @@ export function Profile() {
   const handlePasswordChange = async () => {
     if (!token) return;
     if (!passwordState.currentPassword || !passwordState.newPassword) {
-      showNotification('Completa ambas contrasenas', 'info');
+      showNotification('Completa ambas contraseñas', 'info');
       return;
     }
 
     try {
       await changePassword(passwordState, token);
       setPasswordState({ currentPassword: '', newPassword: '' });
-      showNotification('Contrasena actualizada', 'success');
+      showNotification('Contraseña actualizada', 'success');
     } catch (error) {
-      showNotification(error.message || 'No se pudo actualizar la contrasena', 'error');
+      showNotification(error.message || 'No se pudo actualizar la contraseña', 'error');
     }
   };
 
@@ -240,23 +331,56 @@ export function Profile() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="age">Edad</Label>
-                  <input id="age" type="number" value={profileData.age} onChange={(e) => handleChange('age', e.target.value)} className="h-10 w-full border-2 border-gray-900 px-3" />
+                  <input
+                    id="age"
+                    type="text"
+                    inputMode="numeric"
+                    defaultValue={numericDraftRef.current.age}
+                    onChange={handleNumericChange('age')}
+                    onKeyDown={handleNumericArrow('age')}
+                    className="h-10 w-full border-2 border-gray-900 px-3"
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="gender">Genero</Label>
-                  <select id="gender" value={profileData.gender} onChange={(e) => handleChange('gender', e.target.value)} className="h-10 w-full border-2 border-gray-900 px-3 bg-white">
-                    {genderOptions.map((option) => (
-                      <option key={option.value} value={option.value}>{option.label}</option>
-                    ))}
-                  </select>
+                  <Select value={profileData.gender} onValueChange={(value) => handleChange('gender', value)}>
+                    <SelectTrigger className="h-10 w-full border-2 border-gray-900 px-3 bg-white rounded-none text-base">
+                      <span className="text-gray-900">{getOptionLabel(genderOptions, profileData.gender, 'Selecciona genero')}</span>
+                    </SelectTrigger>
+                    <SelectContent className="border-2 border-gray-900 rounded-none p-0">
+                      {genderOptions.map((option) => (
+                        <SelectItem key={option.value} value={option.value} className="rounded-none px-5 py-2.5 text-base hover:bg-pink-accent hover:text-white">
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="height">Altura (cm)</Label>
-                  <input id="height" type="number" value={profileData.height} onChange={(e) => handleChange('height', e.target.value)} className="h-10 w-full border-2 border-gray-900 px-3" />
+                  <input
+                    id="height"
+                    type="text"
+                    inputMode="numeric"
+                    placeholder="Ej: 175"
+                    defaultValue={numericDraftRef.current.height}
+                    onChange={handleNumericChange('height')}
+                    onKeyDown={handleNumericArrow('height')}
+                    className="h-10 w-full border-2 border-gray-900 px-3 placeholder:text-gray-400"
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="weight">Peso (kg)</Label>
-                  <input id="weight" type="number" value={profileData.weight} onChange={(e) => handleChange('weight', e.target.value)} className="h-10 w-full border-2 border-gray-900 px-3" />
+                  <input
+                    id="weight"
+                    type="text"
+                    inputMode="decimal"
+                    placeholder="Ej: 70"
+                    defaultValue={numericDraftRef.current.weight}
+                    onChange={handleNumericChange('weight', true)}
+                    onKeyDown={handleNumericArrow('weight', { step: 0.1, allowDecimal: true })}
+                    className="h-10 w-full border-2 border-gray-900 px-3 placeholder:text-gray-400"
+                  />
                 </div>
               </div>
             </section>
@@ -266,62 +390,141 @@ export function Profile() {
               <div className="grid sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="goal">Objetivo</Label>
-                  <select id="goal" value={profileData.goal} onChange={(e) => handleChange('goal', e.target.value)} className="h-10 w-full border-2 border-gray-900 px-3 bg-white">
-                    {goalOptions.map((option) => (
-                      <option key={option.value} value={option.value}>{option.label}</option>
-                    ))}
-                  </select>
+                  <Select value={profileData.goal} onValueChange={(value) => handleChange('goal', value)}>
+                    <SelectTrigger className="h-10 w-full border-2 border-gray-900 px-3 bg-white rounded-none text-base">
+                      <span className="text-gray-900">{getOptionLabel(goalOptions, profileData.goal, 'Selecciona objetivo')}</span>
+                    </SelectTrigger>
+                    <SelectContent className="border-2 border-gray-900 rounded-none p-0">
+                      {goalOptions.map((option) => (
+                        <SelectItem key={option.value} value={option.value} className="rounded-none px-5 py-2.5 text-base hover:bg-pink-accent hover:text-white">
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="activityLevel">Actividad</Label>
-                  <select id="activityLevel" value={profileData.activityLevel} onChange={(e) => handleChange('activityLevel', e.target.value)} className="h-10 w-full border-2 border-gray-900 px-3 bg-white">
-                    {activityOptions.map((option) => (
-                      <option key={option.value} value={option.value}>{option.label}</option>
-                    ))}
-                  </select>
+                  <Select value={profileData.activityLevel} onValueChange={(value) => handleChange('activityLevel', value)}>
+                    <SelectTrigger className="h-10 w-full border-2 border-gray-900 px-3 bg-white rounded-none text-base">
+                      <span className="text-gray-900">{getOptionLabel(activityOptions, profileData.activityLevel, 'Selecciona actividad')}</span>
+                    </SelectTrigger>
+                    <SelectContent className="border-2 border-gray-900 rounded-none p-0">
+                      {activityOptions.map((option) => (
+                        <SelectItem key={option.value} value={option.value} className="rounded-none px-5 py-2.5 text-base hover:bg-pink-accent hover:text-white">
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="targetWeight">Peso objetivo (kg)</Label>
-                  <input id="targetWeight" type="number" value={profileData.targetWeight} onChange={(e) => handleChange('targetWeight', e.target.value)} className="h-10 w-full border-2 border-gray-900 px-3" />
+                  <input
+                    id="targetWeight"
+                    type="text"
+                    inputMode="decimal"
+                    placeholder="Ej: 68"
+                    defaultValue={numericDraftRef.current.targetWeight}
+                    onChange={handleNumericChange('targetWeight', true)}
+                    onKeyDown={handleNumericArrow('targetWeight', { step: 0.1, allowDecimal: true })}
+                    className="h-10 w-full border-2 border-gray-900 px-3 placeholder:text-gray-400"
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="dailyCalories">Calorias diarias</Label>
-                  <input id="dailyCalories" type="number" value={profileData.dailyCalories} onChange={(e) => handleChange('dailyCalories', e.target.value)} className="h-10 w-full border-2 border-gray-900 px-3" />
+                  <input
+                    id="dailyCalories"
+                    type="text"
+                    inputMode="numeric"
+                    placeholder="Ej: 2200"
+                    defaultValue={numericDraftRef.current.dailyCalories}
+                    onChange={handleNumericChange('dailyCalories')}
+                    onKeyDown={handleNumericArrow('dailyCalories')}
+                    className="h-10 w-full border-2 border-gray-900 px-3 placeholder:text-gray-400"
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="protein">Proteina (g)</Label>
-                  <input id="protein" type="number" value={profileData.protein} onChange={(e) => handleChange('protein', e.target.value)} className="h-10 w-full border-2 border-gray-900 px-3" />
+                  <input
+                    id="protein"
+                    type="text"
+                    inputMode="numeric"
+                    placeholder="Ej: 140"
+                    defaultValue={numericDraftRef.current.protein}
+                    onChange={handleNumericChange('protein')}
+                    onKeyDown={handleNumericArrow('protein')}
+                    className="h-10 w-full border-2 border-gray-900 px-3 placeholder:text-gray-400"
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="carbs">Carbohidratos (g)</Label>
-                  <input id="carbs" type="number" value={profileData.carbs} onChange={(e) => handleChange('carbs', e.target.value)} className="h-10 w-full border-2 border-gray-900 px-3" />
+                  <input
+                    id="carbs"
+                    type="text"
+                    inputMode="numeric"
+                    placeholder="Ej: 220"
+                    defaultValue={numericDraftRef.current.carbs}
+                    onChange={handleNumericChange('carbs')}
+                    onKeyDown={handleNumericArrow('carbs')}
+                    className="h-10 w-full border-2 border-gray-900 px-3 placeholder:text-gray-400"
+                  />
                 </div>
                 <div className="space-y-2 sm:col-span-2">
                   <Label htmlFor="fats">Grasas (g)</Label>
-                  <input id="fats" type="number" value={profileData.fats} onChange={(e) => handleChange('fats', e.target.value)} className="h-10 w-full border-2 border-gray-900 px-3" />
+                  <input
+                    id="fats"
+                    type="text"
+                    inputMode="numeric"
+                    placeholder="Ej: 70"
+                    defaultValue={numericDraftRef.current.fats}
+                    onChange={handleNumericChange('fats')}
+                    onKeyDown={handleNumericArrow('fats')}
+                    className="h-10 w-full border-2 border-gray-900 px-3 placeholder:text-gray-400"
+                  />
                 </div>
               </div>
             </section>
 
             <section className="space-y-4">
-              <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2"><Lock className="w-4 h-4" />Cambiar contrasena</h3>
+              <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2"><Lock className="w-4 h-4" />Cambiar contraseña</h3>
               <div className="grid sm:grid-cols-2 gap-4">
-                <input
-                  type="password"
-                  placeholder="Contrasena actual"
-                  value={passwordState.currentPassword}
-                  onChange={(e) => setPasswordState((prev) => ({ ...prev, currentPassword: e.target.value }))}
-                  className="h-10 w-full border-2 border-gray-900 px-3"
-                />
-                <input
-                  type="password"
-                  placeholder="Nueva contrasena"
-                  value={passwordState.newPassword}
-                  onChange={(e) => setPasswordState((prev) => ({ ...prev, newPassword: e.target.value }))}
-                  className="h-10 w-full border-2 border-gray-900 px-3"
-                />
+                <div className="relative">
+                  <input
+                    type={showCurrentPassword ? 'text' : 'password'}
+                    placeholder="Contraseña actual"
+                    value={passwordState.currentPassword}
+                    onChange={(e) => setPasswordState((prev) => ({ ...prev, currentPassword: e.target.value }))}
+                    className="h-10 w-full border-2 border-gray-900 px-3 pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowCurrentPassword((prev) => !prev)}
+                    className={`absolute right-2 top-2 p-1 ${showCurrentPassword ? 'text-pink-accent' : 'text-gray-600 hover:text-pink-accent'}`}
+                    aria-label={showCurrentPassword ? 'Ocultar contraseña actual' : 'Mostrar contraseña actual'}
+                  >
+                    <Eye className="w-5 h-5" />
+                  </button>
+                </div>
+                <div className="relative">
+                  <input
+                    type={showNewPassword ? 'text' : 'password'}
+                    placeholder="Nueva contraseña"
+                    value={passwordState.newPassword}
+                    onChange={(e) => setPasswordState((prev) => ({ ...prev, newPassword: e.target.value }))}
+                    className="h-10 w-full border-2 border-gray-900 px-3 pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowNewPassword((prev) => !prev)}
+                    className={`absolute right-2 top-2 p-1 ${showNewPassword ? 'text-pink-accent' : 'text-gray-600 hover:text-pink-accent'}`}
+                    aria-label={showNewPassword ? 'Ocultar nueva contraseña' : 'Mostrar nueva contraseña'}
+                  >
+                    <Eye className="w-5 h-5" />
+                  </button>
+                </div>
               </div>
-              <Button type="button" variant="outline" onClick={handlePasswordChange}>Actualizar contrasena</Button>
+              <Button type="button" variant="outline" onClick={handlePasswordChange}>Actualizar contraseña</Button>
             </section>
 
             <div className="flex justify-end">
@@ -332,6 +535,8 @@ export function Profile() {
             </div>
           </Card>
         </div>
+
+        <ProfileRecipeCollections token={token} onDataChanged={refreshStats} />
       </div>
     </div>
   );

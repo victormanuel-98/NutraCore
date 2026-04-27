@@ -151,6 +151,8 @@ export function RecipeForm({ onSubmit, isSubmitting = false }) {
   const [localTitle, setLocalTitle] = useState(form.title);
   const [localDescription, setLocalDescription] = useState(form.description);
   const titleRef = useRef(null);
+  const stepRefs = useRef([]);
+  const pendingStepFocusRef = useRef(null);
 
   const imagePreviews = useMemo(() => form.images.slice(0, 5), [form.images]);
   const computedNutrition = useMemo(() => {
@@ -325,6 +327,14 @@ export function RecipeForm({ onSubmit, isSubmitting = false }) {
     });
   }, []);
 
+  const focusStepInput = useCallback((index) => {
+    const target = stepRefs.current[index];
+    if (!target) return;
+    target.focus();
+    const caretPosition = target.value.length;
+    target.setSelectionRange(caretPosition, caretPosition);
+  }, []);
+
   const updateIngredientPortion = useCallback((index, field, value) => {
     setIngredientPortions((prev) => ({
       ...prev,
@@ -362,6 +372,64 @@ export function RecipeForm({ onSubmit, isSubmitting = false }) {
     setForm((prev) => ({ ...prev, [field]: [...prev[field], ''] }));
   }, []);
 
+  const addStep = useCallback(({ afterIndex = null, shouldFocus = true } = {}) => {
+    setForm((prev) => {
+      const nextSteps = [...prev.steps];
+      const insertAt =
+        Number.isInteger(afterIndex) && afterIndex >= 0 && afterIndex < nextSteps.length
+          ? afterIndex + 1
+          : nextSteps.length;
+
+      nextSteps.splice(insertAt, 0, '');
+
+      if (shouldFocus) pendingStepFocusRef.current = insertAt;
+      return { ...prev, steps: nextSteps };
+    });
+  }, []);
+
+  const handleStepChange = useCallback((index, value) => {
+    if (!value.includes('\n')) {
+      updateArrayItem('steps', index, value);
+      return;
+    }
+
+    const paragraphs = value
+      .split(/\r?\n/)
+      .map((item) => item.trim())
+      .filter(Boolean);
+
+    if (paragraphs.length <= 1) {
+      updateArrayItem('steps', index, value.replace(/\r?\n/g, ' '));
+      return;
+    }
+
+    setForm((prev) => {
+      const nextSteps = [...prev.steps];
+      nextSteps[index] = paragraphs[0];
+      nextSteps.splice(index + 1, 0, ...paragraphs.slice(1));
+      return { ...prev, steps: nextSteps };
+    });
+
+    pendingStepFocusRef.current = index + paragraphs.length - 1;
+  }, [updateArrayItem]);
+
+  const handleStepKeyDown = useCallback((index) => (event) => {
+    if (event.key !== 'Enter' || event.shiftKey) return;
+
+    event.preventDefault();
+
+    const currentStep = String(form.steps[index] || '').trim();
+    if (!currentStep) return;
+
+    const nextIndex = index + 1;
+    if (form.steps[nextIndex] !== undefined) {
+      focusStepInput(nextIndex);
+      return;
+    }
+
+    addStep({ afterIndex: index, shouldFocus: true });
+  }, [addStep, focusStepInput, form.steps]);
+
   const removeArrayItem = useCallback((field, index) => {
     if (field === 'ingredients' && form.ingredients.length === 1) return;
     if (field === 'steps' && form.steps.length === 1) return;
@@ -378,6 +446,18 @@ export function RecipeForm({ onSubmit, isSubmitting = false }) {
       setIngredientPortions((prev) => reindexNumericMap(prev, index));
     }
   }, [form.ingredients.length, form.steps.length, reindexNumericMap]);
+
+  useEffect(() => {
+    if (pendingStepFocusRef.current === null) return;
+    const nextIndex = pendingStepFocusRef.current;
+    pendingStepFocusRef.current = null;
+
+    const rafId = window.requestAnimationFrame(() => {
+      focusStepInput(nextIndex);
+    });
+
+    return () => window.cancelAnimationFrame(rafId);
+  }, [form.steps, focusStepInput]);
 
   const handleImageUploadSuccess = useCallback((url) => {
     // Simulación de validación IA para asegurar que es un plato de comida
@@ -623,7 +703,7 @@ export function RecipeForm({ onSubmit, isSubmitting = false }) {
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold text-gray-900">Pasos</h3>
-            <Button type="button" variant="outline" onClick={() => addArrayItem('steps')}>
+            <Button type="button" variant="outline" onClick={() => addStep()}>
               <Plus className="w-4 h-4 mr-2" />
               Añadir
             </Button>
@@ -632,8 +712,12 @@ export function RecipeForm({ onSubmit, isSubmitting = false }) {
           {form.steps.map((item, index) => (
             <div key={`step-${index}`} className="flex gap-2">
               <textarea
+                ref={(element) => {
+                  stepRefs.current[index] = element;
+                }}
                 value={item}
-                onChange={(event) => updateArrayItem('steps', index, event.target.value)}
+                onChange={(event) => handleStepChange(index, event.target.value)}
+                onKeyDown={handleStepKeyDown(index)}
                 placeholder={`PASO ${index + 1}: EXPLICA EL PROCESO...`}
                 className="min-h-20 flex-1 border-2 border-gray-900 rounded-none p-3 text-sm outline-none focus:border-pink-accent transition-colors"
               />
