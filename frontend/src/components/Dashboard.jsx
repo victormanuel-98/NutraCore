@@ -99,7 +99,7 @@ export function Dashboard() {
   const todayLabel = useMemo(() => formatDate(new Date()), []);
 
   return (
-    <div className="min-h-screen bg-gray-50 pt-24 pb-16 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-50 pt-24 pb-16 px-4 sm:px-6 lg:px-8 dark-pink-fields">
       <div className="max-w-7xl mx-auto space-y-6">
         <Card className="p-6 md:p-8 bg-white border-2 border-pink-accent shadow-[8px_8px_0px_0px_#ff0a60] rounded-none">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">

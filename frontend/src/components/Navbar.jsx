@@ -5,6 +5,7 @@ import { Button } from './ui/button';
 import { useAuth } from '../context/AuthContext';
 import { LogoutModal } from './LogoutModal';
 import { useNotification } from '../context/NotificationContext';
+import { useTheme } from '../context/ThemeContext';
 
 export function Navbar() {
   const { showNotification } = useNotification();
@@ -13,7 +14,7 @@ export function Navbar() {
   const [hasScrolled, setHasScrolled] = useState(false);
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const { isAuthenticated, logout } = useAuth();
-  const [isDark, setIsDark] = useState(false);
+  const { isDark, toggleTheme } = useTheme();
 
   useEffect(() => {
     const handleScroll = () => setHasScrolled(window.scrollY > 8);
@@ -115,7 +116,7 @@ export function Navbar() {
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => setIsDark(!isDark)}
+              onClick={toggleTheme}
               className={`${loginButtonClasses} ml-4 hidden md:flex`}
               aria-label="Cambiar tema"
             >
@@ -129,7 +130,7 @@ export function Navbar() {
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => setIsDark(!isDark)}
+                onClick={toggleTheme}
                 className={loginButtonClasses}
                 aria-label="Cambiar tema"
               >

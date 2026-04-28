@@ -60,8 +60,8 @@ export function Home() {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
   const heroVideos = [
-    "/images/home/batidora.mp4",
     "/images/home/zumoFresa.mp4",
+    "/images/home/zumokiwi.mp4",
     "/images/home/zumos.mp4"
   ];
   const [heroVideoIndex, setHeroVideoIndex] = useState(0);
@@ -78,6 +78,8 @@ export function Home() {
   const handleHeroVideoError = () => {
     setHeroVideoIndex((prev) => (prev + 1) % heroVideos.length);
   };
+
+  const currentHeroVideo = heroVideos[heroVideoIndex];
 
   useEffect(() => {
     const onResize = () => setIsDesktop(window.innerWidth >= 1024);
@@ -217,7 +219,6 @@ export function Home() {
                 {!isDesktop ? (
                   <video
                     ref={mobileVideoRef}
-                    key={`mobile-${heroVideos[heroVideoIndex]}`}
                     className="w-full h-full object-cover"
                     autoPlay
                     muted
@@ -227,7 +228,7 @@ export function Home() {
                     onEnded={handleHeroVideoEnded}
                     onError={handleHeroVideoError}
                   >
-                    <source src={heroVideos[heroVideoIndex]} type="video/mp4" />
+                    <source src={currentHeroVideo} type="video/mp4" />
                     Tu navegador no soporta video HTML5.
                   </video>
                 ) : null}
@@ -241,7 +242,6 @@ export function Home() {
                   {isDesktop ? (
                     <video
                       ref={desktopVideoRef}
-                      key={`desktop-${heroVideos[heroVideoIndex]}`}
                       className="h-full w-[75%] xl:w-[70%] object-cover object-center"
                       autoPlay
                       muted
@@ -251,7 +251,7 @@ export function Home() {
                       onEnded={handleHeroVideoEnded}
                       onError={handleHeroVideoError}
                     >
-                      <source src={heroVideos[heroVideoIndex]} type="video/mp4" />
+                      <source src={currentHeroVideo} type="video/mp4" />
                       Tu navegador no soporta video HTML5.
                     </video>
                   ) : null}

@@ -67,3 +67,7 @@ export async function getFavoriteRecipes(token) {
 export async function getPopularRecipes(limit = 6) {
   return apiRequest(`/recipes/featured/popular?limit=${limit}`);
 }
+
+export async function getAvailableRecipeTags() {
+  return apiRequest('/recipes/tags/available');
+}

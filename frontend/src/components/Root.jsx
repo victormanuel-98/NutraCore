@@ -42,7 +42,7 @@ export function Root() {
   }, [location.pathname]);
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen app-surface">
       <Navbar />
 
       <main key={location.pathname} className="route-transition min-h-[60vh]">

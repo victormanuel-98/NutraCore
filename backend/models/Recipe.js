@@ -10,6 +10,24 @@ const RECIPE_CATEGORIES = [
 ];
 
 const RECIPE_DIFFICULTIES = ['fácil', 'media', 'difícil'];
+const RECIPE_TAG_OPTIONS = [
+  'alta-proteina',
+  'bajo-en-calorias',
+  'bajo-en-carbohidratos',
+  'alto-en-fibra',
+  'rapido',
+  'facil',
+  'sin-lactosa',
+  'sin-gluten',
+  'vegano',
+  'vegetariano',
+  'pre-entreno',
+  'post-entreno',
+  'meal-prep',
+  'economico',
+  'hidratante',
+  'saciante'
+];
 
 const dataUrlRegex = /^data:image\/(png|jpe?g|webp|gif|avif|svg\+xml);base64,[A-Za-z0-9+/=\r\n]+$/i;
 
@@ -97,7 +115,11 @@ const recipeSchema = new mongoose.Schema(
     },
     tags: {
       type: [String],
-      default: []
+      default: [],
+      validate: {
+        validator: (value) => Array.isArray(value) && value.length <= 3,
+        message: 'Puedes asignar un máximo de 3 tags por receta'
+      }
     },
     author: {
       type: mongoose.Schema.Types.ObjectId,
@@ -157,4 +179,6 @@ module.exports = Recipe;
 module.exports.Recipe = Recipe;
 module.exports.RECIPE_CATEGORIES = RECIPE_CATEGORIES;
 module.exports.RECIPE_DIFFICULTIES = RECIPE_DIFFICULTIES;
+module.exports.RECIPE_TAG_OPTIONS = RECIPE_TAG_OPTIONS;
 module.exports.DATA_URL_REGEX = dataUrlRegex;
+

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 
 const STORAGE_KEY = 'nutracore_cookie_preferences_v1';
+const SESSION_BANNER_KEY = 'nutracore_cookie_banner_seen_v1';
 
 const DEFAULT_PREFERENCES = {
   necessary: true,
@@ -21,6 +22,22 @@ function readStoredPreferences() {
   }
 }
 
+function wasBannerSeenThisSession() {
+  try {
+    return window.sessionStorage.getItem(SESSION_BANNER_KEY) === 'true';
+  } catch {
+    return false;
+  }
+}
+
+function markBannerSeenThisSession() {
+  try {
+    window.sessionStorage.setItem(SESSION_BANNER_KEY, 'true');
+  } catch {
+    // Ignore write failures.
+  }
+}
+
 export function CookieConsentBanner() {
   const [visible, setVisible] = useState(false);
   const [showConfig, setShowConfig] = useState(false);
@@ -29,10 +46,10 @@ export function CookieConsentBanner() {
 
   useEffect(() => {
     const saved = readStoredPreferences();
-    if (!saved) {
+    if (!wasBannerSeenThisSession()) {
       setVisible(true);
-      return;
     }
+    if (!saved) return;
     setAnalytics(Boolean(saved.analytics));
     setPersonalization(Boolean(saved.personalization));
   }, []);
@@ -53,6 +70,7 @@ export function CookieConsentBanner() {
     } catch {
       // Ignore write failures (private mode or blocked storage).
     }
+    markBannerSeenThisSession();
     setVisible(false);
     setShowConfig(false);
   };

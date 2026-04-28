@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Heart, Plus, Trash2, Upload, ChevronDown } from 'lucide-react';
+import { Plus, Trash2, Upload, ChevronDown, X } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { CloudinaryUploadWidget } from '../ui/CloudinaryUploadWidget';
 import { getIngredientNutritionProfile, searchIngredients } from '../../services/ingredientService';
+import { getAvailableRecipeTags } from '../../services/recipeService';
 
 const categories = ['desayuno', 'almuerzo/cena', 'merienda', 'snack', 'post-entreno', 'cena ligera'];
 const difficulties = ['fácil', 'media', 'difícil'];
@@ -40,16 +41,35 @@ const initialForm = {
   category: 'desayuno',
   prepTime: 20,
   difficulty: 'fácil',
-  tags: '',
+  tags: [],
   images: []
 };
+
+const MAX_RECIPE_TAGS = 3;
+const FALLBACK_RECIPE_TAGS = [
+  'alta-proteina',
+  'bajo-en-calorias',
+  'bajo-en-carbohidratos',
+  'alto-en-fibra',
+  'rapido',
+  'facil',
+  'sin-lactosa',
+  'sin-gluten',
+  'vegano',
+  'vegetariano',
+  'pre-entreno',
+  'post-entreno',
+  'meal-prep',
+  'economico',
+  'hidratante',
+  'saciante'
+];
 
 const toPositiveNumber = (value) => {
   const parsed = Number(value);
   if (!Number.isFinite(parsed) || parsed < 0) return 0;
   return parsed;
 };
-
 const normalizeForSubmit = (form, ingredientPortions, nutrition) => ({
   title: form.title.trim(),
   description: form.description.trim(),
@@ -77,10 +97,7 @@ const normalizeForSubmit = (form, ingredientPortions, nutrition) => ({
     carbs: toPositiveNumber(nutrition.carbs),
     fats: toPositiveNumber(nutrition.fats)
   },
-  tags: form.tags
-    .split(',')
-    .map((item) => item.trim())
-    .filter(Boolean)
+  tags: Array.isArray(form.tags) ? form.tags.slice(0, MAX_RECIPE_TAGS) : []
 });
 
 function CustomSelect({ value, onChange, options, placeholder, className = "" }) {
@@ -105,14 +122,14 @@ function CustomSelect({ value, onChange, options, placeholder, className = "" })
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="h-10 w-full border-2 border-gray-900 rounded-none px-3 text-sm font-sans font-medium flex items-center justify-between bg-white hover:bg-gray-50 transition-colors uppercase"
+        className="lab-select-trigger h-10 w-full border-2 border-gray-900 rounded-none px-3 text-sm font-sans font-medium flex items-center justify-between bg-white hover:bg-gray-50 transition-colors uppercase"
       >
         <span>{displayLabel}</span>
         <ChevronDown className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
       
       {isOpen && (
-        <div className="absolute z-50 mt-1 w-full border-2 border-gray-900 bg-white shadow-[4px_4px_0px_0px_#ff0a60] max-h-60 overflow-auto">
+        <div className="lab-select-menu absolute z-50 mt-1 w-full border-2 border-gray-900 bg-white shadow-[4px_4px_0px_0px_#ff0a60] max-h-60 overflow-auto">
           {options.map((opt) => {
             const val = opt.value || opt;
             const label = opt.label || opt;
@@ -123,7 +140,7 @@ function CustomSelect({ value, onChange, options, placeholder, className = "" })
                   onChange(val);
                   setIsOpen(false);
                 }}
-                className={`px-3 py-2 text-sm font-sans cursor-pointer transition-colors uppercase
+                className={`lab-select-item px-3 py-2 text-sm font-sans cursor-pointer transition-colors uppercase
                   ${value === val ? 'bg-pink-accent text-white' : 'hover:bg-pink-50 text-gray-900'}
                 `}
               >
@@ -133,6 +150,88 @@ function CustomSelect({ value, onChange, options, placeholder, className = "" })
           })}
         </div>
       )}
+    </div>
+  );
+}
+
+const formatTagLabel = (tag) => String(tag || '').replace(/-/g, ' ').toUpperCase();
+
+function TagSelector({ availableTags, selectedTags, onAddTag, onRemoveTag, loading }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const containerRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (containerRef.current && !containerRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const remainingTags = availableTags.filter((tag) => !selectedTags.includes(tag));
+  const canAddMore = selectedTags.length < MAX_RECIPE_TAGS;
+
+  return (
+    <div ref={containerRef} className="space-y-2">
+      <div className="relative">
+        <button
+          type="button"
+          onClick={() => setIsOpen((prev) => !prev)}
+          disabled={loading || !canAddMore}
+          className="lab-select-trigger h-10 w-full border-2 border-gray-900 rounded-none px-3 text-sm font-sans font-medium flex items-center justify-between bg-white hover:bg-gray-50 transition-colors uppercase disabled:opacity-60 disabled:cursor-not-allowed"
+        >
+          <span>{loading ? 'Cargando tags...' : 'AÑADIR TAG'}</span>
+          <ChevronDown className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        </button>
+
+        {isOpen && canAddMore && !loading && (
+          <div className="lab-select-menu absolute z-50 mt-1 w-full border-2 border-gray-900 bg-white shadow-[4px_4px_0px_0px_#ff0a60] max-h-56 overflow-auto">
+            {remainingTags.length === 0 ? (
+              <p className="px-3 py-2 text-xs text-gray-600">No quedan tags disponibles.</p>
+            ) : (
+              remainingTags.map((tag) => (
+                <button
+                  key={tag}
+                  type="button"
+                  onClick={() => {
+                    onAddTag(tag);
+                    setIsOpen(false);
+                  }}
+                  className="lab-select-item w-full text-left px-3 py-2 text-sm font-sans uppercase text-gray-900 hover:bg-pink-50 transition-colors"
+                >
+                  {formatTagLabel(tag)}
+                </button>
+              ))
+            )}
+          </div>
+        )}
+      </div>
+
+      <div className="lab-tag-field flex flex-wrap gap-2 min-h-[2.5rem] border-2 border-gray-900 rounded-none p-2 bg-white">
+        {selectedTags.length === 0 ? (
+          <span className="text-xs text-gray-500 uppercase">Sin tags seleccionados</span>
+        ) : (
+          selectedTags.map((tag) => (
+            <span key={tag} className="inline-flex items-center gap-1 px-2 py-1 bg-pink-50 border border-pink-accent text-pink-accent text-xs font-bold uppercase">
+              {formatTagLabel(tag)}
+              <button
+                type="button"
+                onClick={() => onRemoveTag(tag)}
+                className="hover:text-pink-700"
+                aria-label={`Quitar tag ${tag}`}
+              >
+                <X className="w-3 h-3" />
+              </button>
+            </span>
+          ))
+        )}
+      </div>
+
+      <p className="text-xs text-gray-500 uppercase">
+        {selectedTags.length}/{MAX_RECIPE_TAGS} tags seleccionados
+      </p>
     </div>
   );
 }
@@ -148,13 +247,13 @@ export function RecipeForm({ onSubmit, isSubmitting = false }) {
   const [loadingProfileIndex, setLoadingProfileIndex] = useState(null);
   const [profileCache, setProfileCache] = useState({});
   const [ingredientPortions, setIngredientPortions] = useState({ 0: defaultIngredientPortion });
-  const [localTitle, setLocalTitle] = useState(form.title);
   const [localDescription, setLocalDescription] = useState(form.description);
+  const [availableTags, setAvailableTags] = useState(FALLBACK_RECIPE_TAGS);
+  const [loadingTags, setLoadingTags] = useState(true);
   const titleRef = useRef(null);
   const stepRefs = useRef([]);
   const pendingStepFocusRef = useRef(null);
 
-  const imagePreviews = useMemo(() => form.images.slice(0, 5), [form.images]);
   const computedNutrition = useMemo(() => {
     const totals = {
       calories: 0,
@@ -188,6 +287,30 @@ export function RecipeForm({ onSubmit, isSubmitting = false }) {
       fats: Math.round(totals.fats * 10) / 10
     };
   }, [ingredientProfiles, ingredientPortions]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadAvailableTags = async () => {
+      try {
+        setLoadingTags(true);
+        const response = await getAvailableRecipeTags();
+        const tagsFromApi = Array.isArray(response?.data) ? response.data : [];
+        if (!isMounted) return;
+
+        setAvailableTags(tagsFromApi.length > 0 ? tagsFromApi : FALLBACK_RECIPE_TAGS);
+      } catch {
+        if (isMounted) setAvailableTags(FALLBACK_RECIPE_TAGS);
+      } finally {
+        if (isMounted) setLoadingTags(false);
+      }
+    };
+
+    loadAvailableTags();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   useEffect(() => {
     if (activeIngredientIndex === null) return undefined;
@@ -325,6 +448,22 @@ export function RecipeForm({ onSubmit, isSubmitting = false }) {
       next[index] = value;
       return { ...prev, [field]: next };
     });
+  }, []);
+
+  const addTag = useCallback((tag) => {
+    if (!tag) return;
+    setForm((prev) => {
+      if (!Array.isArray(prev.tags)) return { ...prev, tags: [tag] };
+      if (prev.tags.includes(tag) || prev.tags.length >= MAX_RECIPE_TAGS) return prev;
+      return { ...prev, tags: [...prev.tags, tag] };
+    });
+  }, []);
+
+  const removeTag = useCallback((tag) => {
+    setForm((prev) => ({
+      ...prev,
+      tags: Array.isArray(prev.tags) ? prev.tags.filter((entry) => entry !== tag) : []
+    }));
   }, []);
 
   const focusStepInput = useCallback((index) => {
@@ -496,6 +635,11 @@ export function RecipeForm({ onSubmit, isSubmitting = false }) {
       return;
     }
 
+    if (payload.tags.length > MAX_RECIPE_TAGS) {
+      setFormError('Solo puedes seleccionar hasta 3 tags.');
+      return;
+    }
+
     const hasInvalidQuantity = form.ingredients.some((ingredient, index) => {
       if (!String(ingredient).trim()) return false;
       const quantity = toPositiveNumber(ingredientPortions[index]?.quantity);
@@ -530,7 +674,7 @@ export function RecipeForm({ onSubmit, isSubmitting = false }) {
         Nutra<span className="text-pink-accent">Core</span> Lab
       </h2>
 
-      <form className="space-y-6" onSubmit={handleSubmit}>
+      <form className="space-y-6 lab-recipe-form" onSubmit={handleSubmit}>
         <div className="grid md:grid-cols-2 gap-4">
           <div className="space-y-2 md:col-span-2">
             <Label htmlFor="title">Título</Label>
@@ -597,14 +741,14 @@ export function RecipeForm({ onSubmit, isSubmitting = false }) {
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="tags" className="uppercase font-bold text-xs tracking-widest">Tags</Label>
-            <input
-              id="tags"
-              value={form.tags}
-              onChange={(event) => setForm((prev) => ({ ...prev, tags: event.target.value }))}
-              placeholder="ALTA PROTEÍNA, RÁPIDO..."
-              className="h-10 w-full border-2 border-gray-900 rounded-none px-3 text-sm font-bold uppercase outline-none focus:border-pink-accent transition-colors"
+          <div className="space-y-2 md:col-span-2">
+            <Label className="uppercase font-bold text-xs tracking-widest">Tags</Label>
+            <TagSelector
+              availableTags={availableTags}
+              selectedTags={Array.isArray(form.tags) ? form.tags : []}
+              onAddTag={addTag}
+              onRemoveTag={removeTag}
+              loading={loadingTags}
             />
           </div>
         </div>

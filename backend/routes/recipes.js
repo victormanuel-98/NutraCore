@@ -1,6 +1,6 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const { Recipe, RECIPE_CATEGORIES, RECIPE_DIFFICULTIES } = require('../models/Recipe');
+const { Recipe, RECIPE_CATEGORIES, RECIPE_DIFFICULTIES, RECIPE_TAG_OPTIONS } = require('../models/Recipe');
 const User = require('../models/User');
 const { protect, optionalProtect } = require('../config/auth');
 const { searchIngredients, getIngredientNutritionProfile } = require('../services/openFoodFactsService');
@@ -34,13 +34,19 @@ const toNumber = (value, fallback = 0) => {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : fallback;
 };
-
 const normalizeStringArray = (value) => {
   if (!Array.isArray(value)) return [];
   return value
     .map((item) => (typeof item === 'string' ? item.trim() : ''))
     .filter(Boolean);
 };
+
+const normalizeTag = (value = '') =>
+  String(value || '')
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, '-')
+    .replace(/[^a-z0-9-]/g, '');
 
 const roundTo = (value, decimals = 1) => {
   const factor = 10 ** decimals;
@@ -127,23 +133,33 @@ const calculateNutritionFromIngredients = async (ingredients = []) => {
   };
 };
 
-const normalizeRecipePayload = (payload = {}) => ({
-  title: typeof payload.title === 'string' ? payload.title.trim() : '',
-  description: typeof payload.description === 'string' ? payload.description.trim() : '',
-  ingredients: normalizeStringArray(payload.ingredients),
-  steps: normalizeStringArray(payload.steps),
-  category: typeof payload.category === 'string' ? payload.category.trim().toLowerCase() : '',
-  images: Array.isArray(payload.images) ? payload.images.filter((img) => typeof img === 'string' && img.trim()) : [],
-  prepTime: toNumber(payload.prepTime),
-  difficulty: typeof payload.difficulty === 'string' ? payload.difficulty.trim().toLowerCase() : '',
-  nutrition: {
-    calories: toNumber(payload.nutrition?.calories),
-    protein: toNumber(payload.nutrition?.protein),
-    carbs: toNumber(payload.nutrition?.carbs),
-    fats: toNumber(payload.nutrition?.fats)
-  },
-  tags: normalizeStringArray(payload.tags)
-});
+const normalizeRecipePayload = (payload = {}) => {
+  const normalizedTags = Array.from(
+    new Set(
+      normalizeStringArray(payload.tags)
+        .map(normalizeTag)
+        .filter(Boolean)
+    )
+  );
+
+  return {
+    title: typeof payload.title === 'string' ? payload.title.trim() : '',
+    description: typeof payload.description === 'string' ? payload.description.trim() : '',
+    ingredients: normalizeStringArray(payload.ingredients),
+    steps: normalizeStringArray(payload.steps),
+    category: typeof payload.category === 'string' ? payload.category.trim().toLowerCase() : '',
+    images: Array.isArray(payload.images) ? payload.images.filter((img) => typeof img === 'string' && img.trim()) : [],
+    prepTime: toNumber(payload.prepTime),
+    difficulty: typeof payload.difficulty === 'string' ? payload.difficulty.trim().toLowerCase() : '',
+    nutrition: {
+      calories: toNumber(payload.nutrition?.calories),
+      protein: toNumber(payload.nutrition?.protein),
+      carbs: toNumber(payload.nutrition?.carbs),
+      fats: toNumber(payload.nutrition?.fats)
+    },
+    tags: normalizedTags
+  };
+};
 
 const validateRecipePayload = (payload, { partial = false } = {}) => {
   const errors = [];
@@ -193,7 +209,17 @@ const validateRecipePayload = (payload, { partial = false } = {}) => {
       if (payload.images.length > 5) errors.push('Puedes subir un máximo de 5 imágenes');
     }
   }
-
+  if (payload.tags !== undefined) {
+    if (!Array.isArray(payload.tags)) {
+      errors.push('Los tags deben enviarse como un array');
+    } else {
+      if (payload.tags.length > 3) errors.push('Puedes asignar un máximo de 3 tags por receta');
+      const hasInvalidTag = payload.tags.some((tag) => !RECIPE_TAG_OPTIONS.includes(tag));
+      if (hasInvalidTag) {
+        errors.push(`Los tags permitidos son: ${RECIPE_TAG_OPTIONS.join(', ')}`);
+      }
+    }
+  }
   return errors;
 };
 
@@ -340,6 +366,13 @@ router.get('/featured/popular', async (req, res) => {
   } catch {
     return sendError(res, 500, 'No se pudieron obtener las recetas destacadas');
   }
+});
+
+router.get('/tags/available', (_req, res) => {
+  return res.json({
+    success: true,
+    data: RECIPE_TAG_OPTIONS
+  });
 });
 
 router.get('/:id', optionalProtect, async (req, res) => {
@@ -491,3 +524,4 @@ router.post('/:id/favorite', protect, async (req, res) => {
 });
 
 module.exports = router;
+
