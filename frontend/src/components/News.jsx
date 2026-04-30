@@ -122,9 +122,9 @@ export function News() {
       <div className="pt-24 pb-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto space-y-6">
           <Card className="p-6 md:p-8 bg-white border-2 border-pink-accent shadow-[8px_8px_0px_0px_#ff0a60] rounded-none">
-            <h1 className="text-4xl text-gray-900 mb-3">Noticias y Articulos</h1>
+            <h1 className="text-4xl text-gray-900 mb-3">Noticias y Artículos</h1>
             <p className="text-gray-600">
-              Las ultimas novedades sobre nutricion, fitness y bienestar respaldadas por evidencia cientifica.
+              Las últimas novedades sobre nutrición, fitness y bienestar respaldadas por evidencia científica.
             </p>
           </Card>
 
@@ -133,7 +133,7 @@ export function News() {
               <Search className="absolute left-3 top-3.5 w-5 h-5 text-gray-400" />
               <Input
                 type="text"
-                placeholder="Buscar articulos..."
+                placeholder="Buscar artículos..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10 h-12 border-2 border-gray-300 rounded-none focus-visible:border-pink-accent bg-white"
@@ -162,7 +162,7 @@ export function News() {
             <div className="mb-12">
               <div className="flex items-center gap-2 mb-6">
                 <TrendingUp className="w-5 h-5 text-pink-accent" />
-                <h2 className="text-2xl font-bold text-gray-900">Articulos Destacados</h2>
+                <h2 className="text-2xl font-bold text-gray-900">Artículos Destacados</h2>
               </div>
 
               <div className="grid md:grid-cols-2 gap-6">
@@ -197,7 +197,7 @@ export function News() {
                         </div>
 
                         <Button variant="ghost" className="text-pink-accent hover:text-pink-accent/80 hover:bg-pink-50 rounded-none">
-                          Leer mas
+                          Leer más
                           <ArrowRight className="w-4 h-4 ml-1" />
                         </Button>
                       </div>
@@ -212,7 +212,7 @@ export function News() {
             <div>
               <div className="flex items-center gap-2 mb-6">
                 <BookOpen className="w-5 h-5 text-pink-accent" />
-                <h2 className="text-2xl font-bold text-gray-900">Todos los Articulos</h2>
+                <h2 className="text-2xl font-bold text-gray-900">Todos los Artículos</h2>
               </div>
 
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -268,8 +268,8 @@ export function News() {
               <div className="bg-gray-100 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-4 border border-gray-300">
                 <Search className="w-12 h-12 text-gray-400" />
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">No se encontraron articulos</h3>
-              <p className="text-gray-600 mb-6">Intenta con otros terminos de busqueda o cambia la categoria.</p>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">No se encontraron artículos</h3>
+              <p className="text-gray-600 mb-6">Intenta con otros términos de búsqueda o cambia la categoría.</p>
               <Button
                 onClick={() => {
                   setSearchTerm("");
@@ -277,16 +277,16 @@ export function News() {
                 }}
                 className="bg-pink-accent hover:bg-pink-accent/90 text-white rounded-none"
               >
-                Ver todos los articulos
+                Ver todos los artículos
               </Button>
             </Card>
           )}
 
           <Card className="mt-16 p-8 bg-white border-2 border-pink-accent shadow-[8px_8px_0px_0px_#ff0a60] rounded-none">
             <div className="max-w-2xl mx-auto text-center">
-              <h3 className="text-2xl font-bold text-gray-900 mb-3">Suscribete a nuestro boletin</h3>
+              <h3 className="text-2xl font-bold text-gray-900 mb-3">Suscríbete a nuestro boletín</h3>
               <p className="text-gray-600 mb-6">
-                Recibe los ultimos articulos, recetas y consejos de nutricion directamente en tu correo.
+                Recibe los últimos artículos, recetas y consejos de nutrición directamente en tu correo.
               </p>
               <div className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
                 <Input

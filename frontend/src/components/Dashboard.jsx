@@ -157,8 +157,8 @@ export function Dashboard() {
             </div>
 
             <div className="grid sm:grid-cols-2 gap-4">
-              <GoalBar label="Calorias" value={`${dailyGoals.calories} kcal`} percent={(dailyGoals.calories / maxGoalValue) * 100} icon={<Flame className="w-4 h-4 text-pink-accent" />} />
-              <GoalBar label="Proteina" value={`${dailyGoals.protein} g`} percent={(dailyGoals.protein / maxGoalValue) * 100} icon={<Activity className="w-4 h-4 text-blue-600" />} />
+              <GoalBar label="Calorías" value={`${dailyGoals.calories} kcal`} percent={(dailyGoals.calories / maxGoalValue) * 100} icon={<Flame className="w-4 h-4 text-pink-accent" />} />
+              <GoalBar label="Proteína" value={`${dailyGoals.protein} g`} percent={(dailyGoals.protein / maxGoalValue) * 100} icon={<Activity className="w-4 h-4 text-blue-600" />} />
               <GoalBar label="Carbohidratos" value={`${dailyGoals.carbs} g`} percent={(dailyGoals.carbs / maxGoalValue) * 100} icon={<Activity className="w-4 h-4 text-green-600" />} />
               <GoalBar label="Grasas" value={`${dailyGoals.fats} g`} percent={(dailyGoals.fats / maxGoalValue) * 100} icon={<Activity className="w-4 h-4 text-yellow-600" />} />
             </div>
@@ -185,7 +185,7 @@ export function Dashboard() {
                     Ver todos
                   </Link>
                 </div>
-                {favoriteRecipes.length === 0 && <p className="text-sm text-gray-500">Aun no tienes recetas favoritas.</p>}
+                {favoriteRecipes.length === 0 && <p className="text-sm text-gray-500">Aún no tienes recetas favoritas.</p>}
                 <div className="max-h-[185px] overflow-y-auto pr-1 space-y-2">
                   {favoriteRecipes.map((recipe) => (
                     <MiniRecipeRow key={`fav-${recipe._id}`} recipe={recipe} />
@@ -200,7 +200,7 @@ export function Dashboard() {
                     Gestionar
                   </Link>
                 </div>
-                {myRecipes.length === 0 && <p className="text-sm text-gray-500">Todavia no publicaste recetas.</p>}
+                {myRecipes.length === 0 && <p className="text-sm text-gray-500">Todavía no publicaste recetas.</p>}
                 <div className="max-h-[185px] overflow-y-auto pr-1 space-y-2">
                   {myRecipes.map((recipe) => (
                     <MiniRecipeRow key={`mine-${recipe._id}`} recipe={recipe} />
@@ -212,7 +212,7 @@ export function Dashboard() {
         </div>
 
         <Card className="p-6 bg-white border-2 border-pink-accent shadow-[8px_8px_0px_0px_#ff0a60] rounded-none">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">Acciones rapidas</h2>
+          <h2 className="text-xl font-bold text-gray-900 mb-4">Acciones rápidas</h2>
           <div className="grid sm:grid-cols-3 gap-3">
             <Link to="/lab">
               <Button variant="outline" className="w-full justify-start border-2 border-gray-900 rounded-none hover:bg-pink-50 hover:border-pink-accent hover:text-pink-accent">
@@ -271,7 +271,7 @@ function MiniRecipeRow({ recipe }) {
     <div className="border border-gray-200 p-2 bg-white">
       <p className="font-semibold text-sm text-gray-900">{recipe.title}</p>
       <p className="text-xs text-gray-500">
-        {categoryLabels[recipe.category] || recipe.category || 'Sin categoria'} | {recipe.prepTime || 0} min
+        {categoryLabels[recipe.category] || recipe.category || 'Sin categoría'} | {recipe.prepTime || 0} min
       </p>
     </div>
   );

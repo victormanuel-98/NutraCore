@@ -432,7 +432,7 @@ export function Profile() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="dailyCalories">Calorias diarias</Label>
+                  <Label htmlFor="dailyCalories">Calorías diarias</Label>
                   <input
                     id="dailyCalories"
                     type="text"
@@ -445,7 +445,7 @@ export function Profile() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="protein">Proteina (g)</Label>
+                  <Label htmlFor="protein">Proteína (g)</Label>
                   <input
                     id="protein"
                     type="text"

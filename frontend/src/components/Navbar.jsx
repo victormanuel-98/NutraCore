@@ -31,7 +31,7 @@ export function Navbar() {
   const navLinks = isAuthenticated
     ? [
         { name: 'Dashboard', href: '/dashboard' },
-        { name: 'Catalogo', href: '/catalog' },
+        { name: 'Catálogo', href: '/catalog' },
         { name: 'NutraCore Lab', href: '/lab' },
         { name: 'Noticias', href: '/news' },
         { name: 'Perfil', href: '/profile' },
@@ -39,7 +39,7 @@ export function Navbar() {
       ]
     : [
         { name: 'Inicio', href: '/' },
-        { name: 'Catalogo', href: '/catalog' },
+        { name: 'Catálogo', href: '/catalog' },
         { name: 'NutraCore Lab', href: '/lab' },
         { name: 'Noticias', href: '/news' }
       ];
@@ -98,7 +98,7 @@ export function Navbar() {
                 <>
                   <Link to="/login">
                     <Button variant="ghost" className={`${loginButtonClasses} text-lg px-4`}>
-                      Iniciar sesion
+                      Iniciar sesión
                     </Button>
                   </Link>
                   <Link to="/register">
@@ -107,7 +107,7 @@ export function Navbar() {
                 </>
               ) : (
                 <Button variant="ghost" className={`${loginButtonClasses} text-lg px-4`} onClick={() => setIsLogoutModalOpen(true)}>
-                  Cerrar sesion
+                  Cerrar sesión
                 </Button>
               )}
             </div>
@@ -166,7 +166,7 @@ export function Navbar() {
                 <>
                   <Link to="/login" onClick={() => setMobileMenuOpen(false)}>
                     <Button variant="ghost" className={`w-full ${loginButtonClasses}`}>
-                      Iniciar sesion
+                      Iniciar sesión
                     </Button>
                   </Link>
                   <Link to="/register" onClick={() => setMobileMenuOpen(false)}>
@@ -182,7 +182,7 @@ export function Navbar() {
                     setMobileMenuOpen(false);
                   }}
                 >
-                  Cerrar sesion
+                  Cerrar sesión
                 </Button>
               )}
             </div>
@@ -196,7 +196,7 @@ export function Navbar() {
         onConfirm={() => {
           logout();
           setIsLogoutModalOpen(false);
-          showNotification('Sesion cerrada correctamente', 'info');
+          showNotification('Sesión cerrada correctamente', 'info');
         }}
       />
     </nav>

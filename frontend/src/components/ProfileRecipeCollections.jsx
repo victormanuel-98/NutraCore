@@ -12,26 +12,10 @@ import {
   updateRecipe
 } from '../services/recipeService';
 import { useNotification } from '../context/NotificationContext';
+import { getRecipeImage } from '../utils/recipeImage';
 
 const categories = ['desayuno', 'almuerzo/cena', 'merienda', 'snack', 'post-entreno', 'cena ligera'];
 const difficulties = ['fácil', 'media', 'difícil'];
-const fallbackRecipeImage = `data:image/svg+xml;utf8,${encodeURIComponent(`
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 120">
-  <rect width="160" height="120" fill="#d1d5db"/>
-  <g shape-rendering="crispEdges">
-    <rect x="28" y="34" width="104" height="8" fill="#f59e0b"/>
-    <rect x="24" y="42" width="112" height="8" fill="#fbbf24"/>
-    <rect x="30" y="50" width="100" height="6" fill="#16a34a"/>
-    <rect x="26" y="56" width="108" height="8" fill="#111827"/>
-    <rect x="24" y="64" width="112" height="8" fill="#f43f5e"/>
-    <rect x="28" y="72" width="104" height="8" fill="#f59e0b"/>
-    <rect x="34" y="80" width="92" height="8" fill="#fbbf24"/>
-    <rect x="58" y="58" width="8" height="8" fill="#111827"/>
-    <rect x="94" y="58" width="8" height="8" fill="#111827"/>
-    <rect x="66" y="72" width="28" height="4" fill="#111827"/>
-  </g>
-</svg>
-`)}`;
 
 const categoryLabels = {
   desayuno: 'Desayuno',
@@ -65,12 +49,6 @@ const parseMultiline = (value) =>
     .map((item) => item.trim())
     .filter(Boolean);
 
-const getRecipeImage = (recipe = {}) => {
-  const firstImage = Array.isArray(recipe.images) && recipe.images.length > 0 ? recipe.images[0] : '';
-  if (typeof firstImage === 'string' && firstImage.trim()) return firstImage;
-  return fallbackRecipeImage;
-};
-
 const mapRecipeToDetailModel = (recipe = {}) => ({
   id: recipe._id,
   title: recipe.title || 'Receta',
@@ -81,7 +59,7 @@ const mapRecipeToDetailModel = (recipe = {}) => ({
   fats: recipe.nutrition?.fats || 0,
   prepTime: recipe.prepTime || 0,
   difficulty: difficultyLabels[recipe.difficulty] || recipe.difficulty || 'N/D',
-  category: categoryLabels[recipe.category] || recipe.category || 'Sin categoria',
+  category: categoryLabels[recipe.category] || recipe.category || 'Sin categoría',
   tags: Array.isArray(recipe.tags) ? recipe.tags : [],
   averageRating: recipe.averageRating || 0,
   reviewsCount: recipe.reviewsCount || 0,
@@ -231,7 +209,7 @@ export function ProfileRecipeCollections({ token, onDataChanged }) {
     const prepTime = Number(draft.prepTime);
 
     if (!title || !description) {
-      showNotification('Titulo y descripcion son obligatorios', 'info');
+      showNotification('Título y descripción son obligatorios', 'info');
       return;
     }
     if (!Number.isFinite(prepTime) || prepTime < 1) {
@@ -291,7 +269,7 @@ export function ProfileRecipeCollections({ token, onDataChanged }) {
 
         {loading && <p className="text-gray-500">Cargando colecciones...</p>}
         {!loading && error && <p className="text-red-600">{error}</p>}
-        {!loading && !error && !hasCollections && <p className="text-gray-500">Aun no tienes recetas en favoritos ni recetas propias.</p>}
+        {!loading && !error && !hasCollections && <p className="text-gray-500">Aún no tienes recetas en favoritos ni recetas propias.</p>}
 
         {!loading && !error && hasCollections && (
           <div className="grid xl:grid-cols-2 gap-6">
@@ -323,7 +301,7 @@ export function ProfileRecipeCollections({ token, onDataChanged }) {
 
             <section className="space-y-3">
               <h4 className="text-lg font-bold text-gray-900">Mis recetas</h4>
-              {myRecipes.length === 0 && <p className="text-sm text-gray-500">Aun no publicaste recetas.</p>}
+              {myRecipes.length === 0 && <p className="text-sm text-gray-500">Aún no publicaste recetas.</p>}
               {myRecipes.map((recipe) => (
                 <RecipeCard
                   key={`mine-${recipe._id}`}
@@ -376,7 +354,7 @@ export function ProfileRecipeCollections({ token, onDataChanged }) {
 
             <form className="space-y-4" onSubmit={handleSaveEdition}>
               <div className="space-y-2">
-                <Label htmlFor="edit-title">Titulo</Label>
+                <Label htmlFor="edit-title">Título</Label>
                 <input
                   id="edit-title"
                   value={draft.title}
@@ -387,7 +365,7 @@ export function ProfileRecipeCollections({ token, onDataChanged }) {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="edit-description">Descripcion</Label>
+                <Label htmlFor="edit-description">Descripción</Label>
                 <textarea
                   id="edit-description"
                   value={draft.description}
@@ -433,7 +411,7 @@ export function ProfileRecipeCollections({ token, onDataChanged }) {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="edit-ingredients">Ingredientes (uno por linea)</Label>
+                <Label htmlFor="edit-ingredients">Ingredientes (uno por línea)</Label>
                 <textarea
                   id="edit-ingredients"
                   value={draft.ingredientsText}
@@ -443,7 +421,7 @@ export function ProfileRecipeCollections({ token, onDataChanged }) {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="edit-steps">Pasos (uno por linea)</Label>
+                <Label htmlFor="edit-steps">Pasos (uno por línea)</Label>
                 <textarea
                   id="edit-steps"
                   value={draft.stepsText}
@@ -499,7 +477,7 @@ export function ProfileRecipeCollections({ token, onDataChanged }) {
 
               <h3 className="font-logo text-3xl text-pink-accent mb-3 tracking-tight">Quitar favorito</h3>
               <p className="font-slogan text-lg text-gray-600 mb-8 leading-relaxed">
-                Esta receta saldra de tus favoritos: <strong>{favoriteToRemove.title}</strong>.
+                Esta receta saldrá de tus favoritos: <strong>{favoriteToRemove.title}</strong>.
               </p>
 
               <div className="flex flex-col gap-3">
@@ -551,7 +529,7 @@ export function ProfileRecipeCollections({ token, onDataChanged }) {
 
               <h3 className="font-logo text-3xl text-pink-accent mb-3 tracking-tight">¿Eliminar receta?</h3>
               <p className="font-slogan text-lg text-gray-600 mb-8 leading-relaxed">
-                Se borrara definitivamente <strong>{recipeToDelete.title}</strong> y no se podra recuperar.
+                Se borrará definitivamente <strong>{recipeToDelete.title}</strong> y no se podrá recuperar.
               </p>
 
               <div className="flex flex-col gap-3">
@@ -612,7 +590,7 @@ function RecipeCard({ recipe, onOpen, actions }) {
             <div>
               <h5 className="text-2xl font-bold text-gray-900 uppercase leading-tight">{recipe.title}</h5>
               <p className="text-xs font-semibold text-gray-500 uppercase">
-                {(categoryLabels[recipe.category] || recipe.category || 'Sin categoria')} · {(difficultyLabels[recipe.difficulty] || recipe.difficulty || 'N/D')} · {recipe.prepTime || 0} min
+                {(categoryLabels[recipe.category] || recipe.category || 'Sin categoría')} · {(difficultyLabels[recipe.difficulty] || recipe.difficulty || 'N/D')} · {recipe.prepTime || 0} min
               </p>
             </div>
             <div className="flex items-center gap-2">{actions}</div>
