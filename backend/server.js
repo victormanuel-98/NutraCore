@@ -2,7 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const { connectDB, closeDB, mongoose } = require('./config/db');
-const { rateLimit } = require('./middleware/rateLimiter');
+const { rateLimit, readEnvLimit } = require('./middleware/rateLimiter');
 
 dotenv.config();
 
@@ -15,11 +15,19 @@ const ingredientRoutes = require('./routes/ingredients');
 const reviewRoutes = require('./routes/reviews');
 
 const app = express();
+app.set('trust proxy', 1);
+
+const globalLimit = readEnvLimit('RATE_LIMIT_GLOBAL_WINDOW_MS', 'RATE_LIMIT_GLOBAL_MAX', 60 * 1000, 240);
+const authLimit = readEnvLimit('RATE_LIMIT_AUTH_WINDOW_MS', 'RATE_LIMIT_AUTH_MAX', 15 * 60 * 1000, 50);
+const usersLimit = readEnvLimit('RATE_LIMIT_USERS_WINDOW_MS', 'RATE_LIMIT_USERS_MAX', 60 * 1000, 120);
+const recipesLimit = readEnvLimit('RATE_LIMIT_RECIPES_WINDOW_MS', 'RATE_LIMIT_RECIPES_MAX', 60 * 1000, 180);
+const ingredientsLimit = readEnvLimit('RATE_LIMIT_INGREDIENTS_WINDOW_MS', 'RATE_LIMIT_INGREDIENTS_MAX', 60 * 1000, 90);
+const reviewsLimit = readEnvLimit('RATE_LIMIT_REVIEWS_WINDOW_MS', 'RATE_LIMIT_REVIEWS_MAX', 60 * 1000, 120);
 
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
-app.use(rateLimit({ keyPrefix: 'global', windowMs: 60 * 1000, max: 240 }));
+app.use(rateLimit({ keyPrefix: 'global', ...globalLimit }));
 
 if (process.env.NODE_ENV === 'development') {
   app.use((req, res, next) => {
@@ -28,13 +36,13 @@ if (process.env.NODE_ENV === 'development') {
   });
 }
 
-app.use('/api/auth', rateLimit({ keyPrefix: 'auth', windowMs: 15 * 60 * 1000, max: 50 }), authRoutes);
+app.use('/api/auth', rateLimit({ keyPrefix: 'auth', ...authLimit }), authRoutes);
 app.use('/api/dishes', dishRoutes);
 app.use('/api/news', newsRoutes);
-app.use('/api/users', rateLimit({ keyPrefix: 'users', windowMs: 60 * 1000, max: 120 }), userRoutes);
-app.use('/api/recipes', recipeRoutes);
-app.use('/api/ingredients', ingredientRoutes);
-app.use('/api/reviews', reviewRoutes);
+app.use('/api/users', rateLimit({ keyPrefix: 'users', ...usersLimit }), userRoutes);
+app.use('/api/recipes', rateLimit({ keyPrefix: 'recipes', ...recipesLimit }), recipeRoutes);
+app.use('/api/ingredients', rateLimit({ keyPrefix: 'ingredients', ...ingredientsLimit }), ingredientRoutes);
+app.use('/api/reviews', rateLimit({ keyPrefix: 'reviews', ...reviewsLimit }), reviewRoutes);
 
 app.get('/', (req, res) => {
   res.json({

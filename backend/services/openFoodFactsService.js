@@ -45,6 +45,85 @@ const slugify = (value) =>
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/(^-|-$)/g, '');
 
+const levenshteinDistance = (a = '', b = '') => {
+  const left = String(a);
+  const right = String(b);
+  const leftLen = left.length;
+  const rightLen = right.length;
+  if (leftLen === 0) return rightLen;
+  if (rightLen === 0) return leftLen;
+
+  const matrix = Array.from({ length: leftLen + 1 }, () => Array(rightLen + 1).fill(0));
+  for (let i = 0; i <= leftLen; i += 1) matrix[i][0] = i;
+  for (let j = 0; j <= rightLen; j += 1) matrix[0][j] = j;
+
+  for (let i = 1; i <= leftLen; i += 1) {
+    for (let j = 1; j <= rightLen; j += 1) {
+      const cost = left[i - 1] === right[j - 1] ? 0 : 1;
+      matrix[i][j] = Math.min(
+        matrix[i - 1][j] + 1,
+        matrix[i][j - 1] + 1,
+        matrix[i - 1][j - 1] + cost
+      );
+    }
+  }
+
+  return matrix[leftLen][rightLen];
+};
+
+const maxTypoDistance = (queryLength) => {
+  if (queryLength <= 4) return 1;
+  if (queryLength <= 8) return 2;
+  return 3;
+};
+
+const scoreIngredientMatch = (item, normalizedQuery, queryTokens = []) => {
+  const fields = [item.normalizedName, item.normalizedEs, item.normalizedEn, item.searchText].filter(Boolean);
+  if (fields.length === 0) return null;
+
+  let bestScore = null;
+
+  fields.forEach((field) => {
+    if (field === normalizedQuery) {
+      bestScore = Math.max(bestScore ?? 0, 2000);
+      return;
+    }
+
+    if (field.startsWith(normalizedQuery)) {
+      bestScore = Math.max(bestScore ?? 0, 1500 - Math.max(0, field.length - normalizedQuery.length));
+      return;
+    }
+
+    if (field.includes(normalizedQuery)) {
+      bestScore = Math.max(bestScore ?? 0, 1200 - Math.max(0, field.length - normalizedQuery.length));
+    }
+
+    const fieldTokens = field.split(/\s+/).filter(Boolean);
+    if (fieldTokens.length > 0 && queryTokens.length > 0) {
+      const tokenStarts = queryTokens.filter((token) => fieldTokens.some((part) => part.startsWith(token))).length;
+      if (tokenStarts > 0) {
+        bestScore = Math.max(bestScore ?? 0, 900 + tokenStarts * 30);
+      }
+    }
+
+    const distance = levenshteinDistance(normalizedQuery, field);
+    const allowed = maxTypoDistance(normalizedQuery.length);
+    if (distance <= allowed) {
+      bestScore = Math.max(bestScore ?? 0, 700 - distance * 100);
+    } else {
+      const tokenDistances = fieldTokens
+        .map((token) => levenshteinDistance(normalizedQuery, token))
+        .filter((dist) => dist <= allowed);
+      if (tokenDistances.length > 0) {
+        const minDistance = Math.min(...tokenDistances);
+        bestScore = Math.max(bestScore ?? 0, 650 - minDistance * 90);
+      }
+    }
+  });
+
+  return bestScore;
+};
+
 const roundTo = (value, decimals = 1) => {
   if (!Number.isFinite(value)) return 0;
   const factor = 10 ** decimals;
@@ -112,6 +191,9 @@ const mapTaxonomyToIngredients = (taxonomy = {}) => {
       name,
       nameEs: nameEs || undefined,
       nameEn: nameEn || undefined,
+      normalizedName: normalizeText(name),
+      normalizedEs: normalizeText(nameEs),
+      normalizedEn: normalizeText(nameEn),
       searchText: normalizeText(searchTerms)
     });
   });
@@ -169,15 +251,26 @@ const searchIngredients = async (query, limit = 10) => {
 
   const ingredients = await ensureIngredientsLoaded();
   const safeLimit = Math.max(1, Math.min(MAX_RESULTS, toNumber(limit, 10)));
+  const queryTokens = normalizedQuery.split(/\s+/).filter(Boolean);
 
-  return ingredients
-    .filter((item) => item.searchText.includes(normalizedQuery))
-    .slice(0, safeLimit)
+  const ranked = ingredients
     .map((item) => ({
-      id: item.id,
-      name: item.name,
-      nameEs: item.nameEs,
-      nameEn: item.nameEn
+      item,
+      score: scoreIngredientMatch(item, normalizedQuery, queryTokens)
+    }))
+    .filter((entry) => Number.isFinite(entry.score))
+    .sort((left, right) => {
+      if (right.score !== left.score) return right.score - left.score;
+      return left.item.name.localeCompare(right.item.name, 'es');
+    })
+    .slice(0, safeLimit);
+
+  return ranked
+    .map((item) => ({
+      id: item.item.id,
+      name: item.item.name,
+      nameEs: item.item.nameEs,
+      nameEn: item.item.nameEn
     }));
 };
 

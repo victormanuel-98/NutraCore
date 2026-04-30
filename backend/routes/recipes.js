@@ -8,8 +8,10 @@ const { logAuditEvent } = require('../services/auditService');
 const { validateObjectIdParam } = require('../middleware/validation');
 
 const router = express.Router();
-const MAX_LIMIT = 50;
+const MAX_LIMIT = 12;
 const MAX_INGREDIENTS_FOR_NUTRITION = 25;
+const RECIPES_CACHE_TTL_MS = Math.max(5_000, Number(process.env.RECIPES_CACHE_TTL_MS) || 60_000);
+const recipesCache = new Map();
 const UNIT_TO_GRAMS = {
   g: 1,
   gr: 1,
@@ -56,6 +58,50 @@ const roundTo = (value, decimals = 1) => {
 };
 
 const escapeRegex = (value = '') => String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+const buildRecipesCacheKey = ({ route = 'list', query = {} }) => {
+  const ordered = Object.keys(query)
+    .sort()
+    .reduce((acc, key) => {
+      acc[key] = query[key];
+      return acc;
+    }, {});
+  return `${route}:${JSON.stringify(ordered)}`;
+};
+
+const getCacheEntry = (key) => {
+  const cached = recipesCache.get(key);
+  if (!cached) return null;
+  if (Date.now() > cached.expiresAt) {
+    recipesCache.delete(key);
+    return null;
+  }
+  return cached.value;
+};
+
+const setCacheEntry = (key, value, ttlMs = RECIPES_CACHE_TTL_MS) => {
+  recipesCache.set(key, {
+    value,
+    expiresAt: Date.now() + ttlMs
+  });
+};
+
+const clearRecipesCache = () => {
+  recipesCache.clear();
+};
+
+const canUseListCache = (req, { sort, page, limit, category, difficulty, search, author, favorites }) => {
+  if (req.user?._id) return false;
+  if (favorites === 'true') return false;
+  if (author || search) return false;
+  if (category) return false;
+  if (difficulty) return false;
+
+  const safeSort = String(sort || 'recent');
+  const safePage = Math.max(1, toNumber(page, 1));
+  const safeLimit = Math.min(MAX_LIMIT, Math.max(1, toNumber(limit, 12)));
+  return (safeSort === 'recent' || safeSort === 'popular') && safePage <= 3 && safeLimit <= 12;
+};
 
 const parseIngredientLine = (line) => {
   const raw = String(line || '').trim();
@@ -267,6 +313,17 @@ const ensureRecipeNutrition = async (recipe) => {
 router.get('/', optionalProtect, async (req, res) => {
   try {
     const { category, difficulty, search, author, favorites, page = '1', limit = '12', sort = 'recent' } = req.query;
+    const useCache = canUseListCache(req, { sort, page, limit, category, difficulty, search, author, favorites });
+    const cacheKey = useCache
+      ? buildRecipesCacheKey({ route: 'list', query: { category, difficulty, page, limit, sort } })
+      : null;
+
+    if (cacheKey) {
+      const cachedResponse = getCacheEntry(cacheKey);
+      if (cachedResponse) {
+        return res.json(cachedResponse);
+      }
+    }
 
     const currentPage = Math.max(1, toNumber(page, 1));
     const pageLimit = Math.min(MAX_LIMIT, Math.max(1, toNumber(limit, 12)));
@@ -318,7 +375,7 @@ router.get('/', optionalProtect, async (req, res) => {
     ]);
     const items = await Promise.all(rawItems.map((recipe) => ensureRecipeNutrition(recipe)));
 
-    return res.json({
+    const responsePayload = {
       success: true,
       data: items,
       meta: {
@@ -327,7 +384,11 @@ router.get('/', optionalProtect, async (req, res) => {
         total,
         totalPages: Math.ceil(total / pageLimit)
       }
-    });
+    };
+
+    if (cacheKey) setCacheEntry(cacheKey, responsePayload);
+
+    return res.json(responsePayload);
   } catch {
     return sendError(res, 500, 'No se pudieron obtener las recetas');
   }
@@ -362,6 +423,11 @@ router.get('/user/favorites', protect, async (req, res) => {
 router.get('/featured/popular', async (req, res) => {
   try {
     const limit = Math.min(MAX_LIMIT, Math.max(1, toNumber(req.query.limit, 6)));
+    const cacheKey = buildRecipesCacheKey({ route: 'featured-popular', query: { limit } });
+    const cachedResponse = getCacheEntry(cacheKey);
+    if (cachedResponse) {
+      return res.json(cachedResponse);
+    }
 
     const rawRecipes = await Recipe.find({ isPublished: true, isDeleted: { $ne: true } })
       .populate('author', 'name avatar')
@@ -369,7 +435,10 @@ router.get('/featured/popular', async (req, res) => {
       .limit(limit);
     const recipes = await Promise.all(rawRecipes.map((recipe) => ensureRecipeNutrition(recipe)));
 
-    return res.json({ success: true, data: recipes });
+    const responsePayload = { success: true, data: recipes };
+    setCacheEntry(cacheKey, responsePayload);
+
+    return res.json(responsePayload);
   } catch {
     return sendError(res, 500, 'No se pudieron obtener las recetas destacadas');
   }
@@ -406,6 +475,7 @@ router.post('/', protect, async (req, res) => {
 
     const recipe = await Recipe.create({ ...normalized, author: req.user._id });
     const populatedRecipe = await Recipe.findById(recipe._id).populate('author', 'name avatar');
+    clearRecipesCache();
 
     return res.status(201).json({
       success: true,
@@ -455,6 +525,7 @@ router.put('/:id', validateObjectIdParam('id'), protect, async (req, res) => {
     recipe.tags = normalized.tags;
 
     await recipe.save();
+    clearRecipesCache();
     await logAuditEvent({
       req,
       actor: req.user,
@@ -501,6 +572,7 @@ router.delete('/:id', validateObjectIdParam('id'), protect, async (req, res) => 
 
     await User.updateMany({}, { $pull: { favoriteRecipes: recipe._id } });
     await Recipe.updateMany({ _id: recipe._id }, { $set: { favoritedBy: [], favoritesCount: 0 } });
+    clearRecipesCache();
 
     await logAuditEvent({
       req,
@@ -542,6 +614,7 @@ router.post('/:id/favorite', validateObjectIdParam('id'), protect, async (req, r
         ? User.updateOne({ _id: req.user._id }, { $pull: { favoriteRecipes: recipe._id } })
         : User.updateOne({ _id: req.user._id }, { $addToSet: { favoriteRecipes: recipe._id } })
     ]);
+    clearRecipesCache();
 
     return res.json({
       success: true,
@@ -570,6 +643,7 @@ router.patch('/:id/restore', validateObjectIdParam('id'), protect, async (req, r
     recipe.deletedBy = null;
     recipe.isPublished = true;
     await recipe.save();
+    clearRecipesCache();
 
     await logAuditEvent({
       req,

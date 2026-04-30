@@ -6,7 +6,7 @@ import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { Progress } from './ui/progress';
 import { useAuth } from '../context/AuthContext';
-import { getUserStats } from '../services/userService';
+import { getUserProfile, getUserStats } from '../services/userService';
 import { getFavoriteRecipes, getMyRecipes } from '../services/recipeService';
 
 const categoryLabels = {
@@ -32,46 +32,91 @@ const formatDate = (date) =>
 
 export function Dashboard() {
   const { token, user } = useAuth();
+  const [profileUser, setProfileUser] = useState(null);
   const [stats, setStats] = useState(null);
   const [favoriteRecipes, setFavoriteRecipes] = useState([]);
   const [myRecipes, setMyRecipes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [refreshTick, setRefreshTick] = useState(0);
 
   useEffect(() => {
     const loadDashboardData = async () => {
-      if (!token) return;
+      if (!token) {
+        setLoading(false);
+        setStats(null);
+        setFavoriteRecipes([]);
+        setMyRecipes([]);
+        setProfileUser(null);
+        return;
+      }
 
       try {
         setLoading(true);
         setError('');
 
-        const [statsResult, favoritesResult, recipesResult] = await Promise.allSettled([
+        const [statsResult, favoritesResult, recipesResult, profileResult] = await Promise.allSettled([
           getUserStats(token),
           getFavoriteRecipes(token),
-          getMyRecipes(token)
+          getMyRecipes(token),
+          getUserProfile(token)
         ]);
 
-        if (statsResult.status === 'fulfilled') {
-          setStats(statsResult.value?.data || null);
-        } else {
-          setStats(null);
-        }
+        const nextFavorites = favoritesResult.status === 'fulfilled' && Array.isArray(favoritesResult.value?.data)
+          ? favoritesResult.value.data
+          : [];
+        const nextMyRecipes = recipesResult.status === 'fulfilled' && Array.isArray(recipesResult.value?.data)
+          ? recipesResult.value.data
+          : [];
+        const nextProfile = profileResult.status === 'fulfilled' ? profileResult.value?.data || null : null;
 
+        setFavoriteRecipes(nextFavorites);
+        setMyRecipes(nextMyRecipes);
+        setProfileUser(nextProfile);
+
+        const fallbackStats = {
+          totalFavorites: nextFavorites.length,
+          totalRecipes: nextMyRecipes.length,
+          totalSavedNews: Array.isArray(nextProfile?.savedNews) ? nextProfile.savedNews.length : 0,
+          bmi: nextProfile?.bmi ?? null,
+          goalProgress: null
+        };
+
+        setStats(statsResult.status === 'fulfilled' ? statsResult.value?.data || fallbackStats : fallbackStats);
+
+        if (statsResult.status !== 'fulfilled' && profileResult.status === 'fulfilled') {
+          const current = Number(nextProfile?.weight);
+          const target = Number(nextProfile?.goals?.targetWeight);
+          if (Number.isFinite(current) && Number.isFinite(target) && current > 0 && target > 0) {
+            const difference = Math.abs(current - target);
+            const progress = difference === 0 ? 100 : Math.max(0, Math.min(100, 100 - (difference / current) * 100));
+            setStats((prev) => ({
+              ...(prev || fallbackStats),
+              goalProgress: {
+                current,
+                target,
+                difference,
+                progress: Math.round(progress)
+              }
+            }));
+          }
+        }
+        
         if (favoritesResult.status === 'fulfilled') {
-          setFavoriteRecipes(Array.isArray(favoritesResult.value?.data) ? favoritesResult.value.data : []);
-        } else {
-          setFavoriteRecipes([]);
+          // no-op: ya asignado arriba, mantenemos esta rama para evitar cambios grandes en flujo.
         }
 
-        if (recipesResult.status === 'fulfilled') {
-          setMyRecipes(Array.isArray(recipesResult.value?.data) ? recipesResult.value.data : []);
-        } else {
-          setMyRecipes([]);
-        }
-
-        if (statsResult.status === 'rejected' && favoritesResult.status === 'rejected' && recipesResult.status === 'rejected') {
-          const reason = statsResult.reason?.message || favoritesResult.reason?.message || recipesResult.reason?.message;
+        if (
+          statsResult.status === 'rejected' &&
+          favoritesResult.status === 'rejected' &&
+          recipesResult.status === 'rejected' &&
+          profileResult.status === 'rejected'
+        ) {
+          const reason =
+            statsResult.reason?.message ||
+            favoritesResult.reason?.message ||
+            recipesResult.reason?.message ||
+            profileResult.reason?.message;
           setError(reason || 'No se pudo cargar el dashboard');
         }
       } catch (err) {
@@ -82,9 +127,9 @@ export function Dashboard() {
     };
 
     loadDashboardData();
-  }, [token]);
+  }, [token, refreshTick]);
 
-  const goals = user?.goals || {};
+  const goals = profileUser?.goals || user?.goals || {};
   const dailyGoals = useMemo(
     () => ({
       calories: numberOrDefault(goals.dailyCalories),
@@ -109,7 +154,7 @@ export function Dashboard() {
                 {todayLabel}
               </p>
               <h1 className="text-4xl text-gray-900">
-                Hola, <span className="text-pink-accent">{user?.name || 'NutraUser'}</span>
+                Hola, <span className="text-pink-accent">{profileUser?.name || user?.name || 'NutraUser'}</span>
               </h1>
               <p className="text-gray-600">Tu panel personal de progreso, recetas y objetivos diarios.</p>
             </div>
@@ -138,7 +183,16 @@ export function Dashboard() {
         )}
         {error && (
           <Card className="p-4 bg-red-50 border-2 border-red-300 rounded-none">
-            <p className="text-red-700">{error}</p>
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-red-700">{error}</p>
+              <Button
+                variant="outline"
+                className="border-2 border-red-700 text-red-700 rounded-none hover:bg-red-100"
+                onClick={() => setRefreshTick((prev) => prev + 1)}
+              >
+                Reintentar
+              </Button>
+            </div>
           </Card>
         )}
 
@@ -157,10 +211,17 @@ export function Dashboard() {
             </div>
 
             <div className="grid sm:grid-cols-2 gap-4">
-              <GoalBar label="Calorías" value={`${dailyGoals.calories} kcal`} percent={(dailyGoals.calories / maxGoalValue) * 100} icon={<Flame className="w-4 h-4 text-pink-accent" />} />
-              <GoalBar label="Proteína" value={`${dailyGoals.protein} g`} percent={(dailyGoals.protein / maxGoalValue) * 100} icon={<Activity className="w-4 h-4 text-blue-600" />} />
-              <GoalBar label="Carbohidratos" value={`${dailyGoals.carbs} g`} percent={(dailyGoals.carbs / maxGoalValue) * 100} icon={<Activity className="w-4 h-4 text-green-600" />} />
-              <GoalBar label="Grasas" value={`${dailyGoals.fats} g`} percent={(dailyGoals.fats / maxGoalValue) * 100} icon={<Activity className="w-4 h-4 text-yellow-600" />} />
+              <GoalBar label="Calorías" value={`${dailyGoals.calories} kcal`} percent={(dailyGoals.calories / maxGoalValue) * 100} icon={<Flame className="w-4 h-4 text-pink-accent" />} tone="pink" />
+              <GoalBar label="Proteína" value={`${dailyGoals.protein} g`} percent={(dailyGoals.protein / maxGoalValue) * 100} icon={<Activity className="w-4 h-4 text-blue-600" />} tone="blue" />
+              <GoalBar label="Carbohidratos" value={`${dailyGoals.carbs} g`} percent={(dailyGoals.carbs / maxGoalValue) * 100} icon={<Activity className="w-4 h-4 text-green-600" />} tone="green" />
+              <GoalBar label="Grasas" value={`${dailyGoals.fats} g`} percent={(dailyGoals.fats / maxGoalValue) * 100} icon={<Activity className="w-4 h-4 text-yellow-600" />} tone="yellow" />
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <GoalDonut label="Kcal" percent={(dailyGoals.calories / maxGoalValue) * 100} tone="pink" />
+              <GoalDonut label="Prot" percent={(dailyGoals.protein / maxGoalValue) * 100} tone="blue" />
+              <GoalDonut label="Carb" percent={(dailyGoals.carbs / maxGoalValue) * 100} tone="green" />
+              <GoalDonut label="Grasa" percent={(dailyGoals.fats / maxGoalValue) * 100} tone="yellow" />
             </div>
 
             <div className="border-2 border-gray-200 p-4 bg-gray-50">
@@ -246,14 +307,24 @@ function KpiCard({ label, value, icon }) {
         {icon}
         <span className="text-sm text-gray-600">{label}</span>
       </div>
-      <Badge className="bg-gray-900 text-white rounded-none border-0 text-base">{value}</Badge>
+      <Badge className="kpi-value-badge rounded-none border-0 !text-4xl font-bold leading-none px-3 py-2">{value}</Badge>
     </Card>
   );
 }
 
-function GoalBar({ label, value, percent, icon }) {
+function GoalBar({ label, value, percent, icon, tone = 'pink' }) {
+  const safePercent = Math.max(0, Math.min(100, Math.round(Number(percent) || 0)));
+  const gradientByTone = {
+    pink: 'from-pink-500 via-pink-400 to-rose-500',
+    blue: 'from-sky-500 via-blue-500 to-indigo-500',
+    green: 'from-emerald-500 via-green-500 to-lime-500',
+    yellow: 'from-amber-400 via-yellow-500 to-orange-500'
+  };
+  const gradient = gradientByTone[tone] || gradientByTone.pink;
+
   return (
-    <div className="border-2 border-gray-200 p-3 bg-gray-50">
+    <div className="border-2 border-gray-200 p-3 bg-gray-50 relative overflow-hidden group">
+      <div className="absolute inset-y-0 left-0 w-1 bg-pink-accent/30 group-hover:bg-pink-accent transition-colors" />
       <div className="flex items-center justify-between mb-2">
         <div className="inline-flex items-center gap-2">
           {icon}
@@ -261,7 +332,44 @@ function GoalBar({ label, value, percent, icon }) {
         </div>
         <span className="text-sm font-bold text-gray-900">{value}</span>
       </div>
-      <Progress value={percent} className="h-2" />
+      <div className="relative h-3 rounded-full bg-gray-200 overflow-hidden">
+        <div
+          className={`absolute inset-y-0 left-0 bg-gradient-to-r ${gradient} transition-all duration-700 ease-out`}
+          style={{ width: `${safePercent}%` }}
+        />
+        <div
+          className="absolute inset-y-0 left-0 w-10 bg-white/30 blur-sm animate-pulse"
+          style={{ transform: `translateX(${Math.max(0, safePercent - 8)}%)` }}
+        />
+      </div>
+      <div className="mt-2 flex justify-end">
+        <span className="text-xs font-bold text-gray-600">{safePercent}%</span>
+      </div>
+    </div>
+  );
+}
+
+function GoalDonut({ label, percent, tone = 'pink' }) {
+  const safePercent = Math.max(0, Math.min(100, Math.round(Number(percent) || 0)));
+  const toneColor = {
+    pink: '#ff0a60',
+    blue: '#2563eb',
+    green: '#16a34a',
+    yellow: '#ca8a04'
+  };
+  const color = toneColor[tone] || toneColor.pink;
+  const background = `conic-gradient(${color} ${safePercent * 3.6}deg, #e5e7eb 0deg)`;
+
+  return (
+    <div className="border border-gray-200 bg-white p-3 flex items-center gap-3">
+      <div className="relative w-12 h-12 rounded-full" style={{ background }}>
+        <div className="absolute inset-[5px] rounded-full bg-white" />
+        <div className="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-gray-700">{safePercent}</div>
+      </div>
+      <div>
+        <p className="text-xs uppercase tracking-wide text-gray-500">{label}</p>
+        <p className="text-sm font-semibold text-gray-800">Objetivo</p>
+      </div>
     </div>
   );
 }

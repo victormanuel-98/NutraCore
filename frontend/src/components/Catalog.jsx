@@ -177,9 +177,16 @@ export function Catalog() {
   const [fatsPctMax, setFatsPctMax] = useState("");
   const [excludedAllergensInput, setExcludedAllergensInput] = useState("");
   const [apiRecipes, setApiRecipes] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalRecipes, setTotalRecipes] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [selectedRecipe, setSelectedRecipe] = useState(null);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, selectedCategory, selectedDifficulty]);
 
   useEffect(() => {
     const fetchRecipes = async () => {
@@ -187,9 +194,20 @@ export function Catalog() {
       setError("");
 
       try {
-        const response = await getRecipes({ limit: 100 }, token || undefined);
+        const response = await getRecipes(
+          {
+            page: currentPage,
+            limit: 12,
+            search: searchTerm,
+            category: selectedCategory,
+            difficulty: selectedDifficulty
+          },
+          token || undefined
+        );
         const mapped = (response.data || []).map(mapApiRecipe);
         setApiRecipes(mapped);
+        setTotalPages(Math.max(1, Number(response.meta?.totalPages || 1)));
+        setTotalRecipes(Number(response.meta?.total || 0));
       } catch (err) {
         setError(err.message || "No se pudo cargar el catálogo desde la API");
       } finally {
@@ -198,19 +216,10 @@ export function Catalog() {
     };
 
     fetchRecipes();
-  }, [token]);
+  }, [token, currentPage, searchTerm, selectedCategory, selectedDifficulty]);
 
-  const allRecipes = useMemo(() => apiRecipes, [apiRecipes]);
-
-  const categories = useMemo(() => {
-    const generated = new Set(allRecipes.map((recipe) => recipe.category));
-    return ["all", ...generated];
-  }, [allRecipes]);
-
-  const difficulties = useMemo(() => {
-    const generated = new Set(allRecipes.map((recipe) => recipe.difficulty).filter(Boolean));
-    return ["all", ...generated];
-  }, [allRecipes]);
+  const categories = useMemo(() => ["all", ...Object.keys(categoryLabels)], []);
+  const difficulties = useMemo(() => ["all", "fácil", "media", "difícil", "facil", "dificil"], []);
 
   const filteredRecipes = useMemo(() => {
     const minCals = safeNumber(minCalories);
@@ -228,13 +237,7 @@ export function Catalog() {
       .map((value) => normalizeAllergenTerm(value))
       .filter(Boolean);
 
-    return allRecipes.filter((recipe) => {
-      const matchesSearch =
-        recipe.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        recipe.tags.some((tag) => tag.toLowerCase().includes(searchTerm.toLowerCase()));
-
-      const matchesCategory = selectedCategory === "all" || recipe.category === selectedCategory;
-      const matchesDifficulty = selectedDifficulty === "all" || recipe.difficulty === selectedDifficulty;
+    return apiRecipes.filter((recipe) => {
       const calories = Number(recipe.calories || 0);
       const hasValidCalories = Number.isFinite(calories) && calories > 0;
       const matchesCalories =
@@ -256,19 +259,13 @@ export function Catalog() {
       const excludedByAllergen = recipeContainsExcludedAllergen(recipe, excludedAllergens);
 
       return (
-        matchesSearch &&
-        matchesCategory &&
-        matchesDifficulty &&
         matchesCalories &&
         matchesMacroPercents &&
         !excludedByAllergen
       );
     });
   }, [
-    allRecipes,
-    searchTerm,
-    selectedCategory,
-    selectedDifficulty,
+    apiRecipes,
     minCalories,
     maxCalories,
     proteinPctMin,
@@ -293,6 +290,7 @@ export function Catalog() {
     setFatsPctMin("");
     setFatsPctMax("");
     setExcludedAllergensInput("");
+    setCurrentPage(1);
   };
 
   const handleToggleFavorite = async (recipe) => {
@@ -488,7 +486,8 @@ export function Catalog() {
             />
 
             <div className="flex items-center justify-between">
-              <p className="text-gray-700">Mostrando {filteredRecipes.length} recetas</p>
+              <p className="text-gray-700">Mostrando {filteredRecipes.length} recetas (total: {totalRecipes})</p>
+              <p className="text-sm text-gray-500">Página {currentPage} de {totalPages}</p>
             </div>
 
             {loading && <p className="text-gray-500">Cargando recetas publicadas...</p>}
@@ -599,6 +598,25 @@ export function Catalog() {
               <p className="text-gray-600 mb-6">Intenta con otros términos de búsqueda o ajusta los filtros.</p>
             </Card>
           )}
+
+          <div className="flex items-center justify-center gap-3">
+            <Button
+              variant="outline"
+              className="catalog-pagination-btn h-10 px-4 border-2 border-gray-900 rounded-none disabled:opacity-45 disabled:cursor-not-allowed"
+              disabled={currentPage <= 1 || loading}
+              onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+            >
+              Anterior
+            </Button>
+            <Button
+              variant="outline"
+              className="catalog-pagination-btn h-10 px-4 border-2 border-gray-900 rounded-none disabled:opacity-45 disabled:cursor-not-allowed"
+              disabled={currentPage >= totalPages || loading}
+              onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+            >
+              Siguiente
+            </Button>
+          </div>
         </div>
       </div>
     </div>
