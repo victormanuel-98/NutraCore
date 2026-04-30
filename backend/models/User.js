@@ -140,6 +140,20 @@ const userSchema = new mongoose.Schema(
     isActive: {
       type: Boolean,
       default: true
+    },
+    tokenVersion: {
+      type: Number,
+      default: 0,
+      min: 0
+    },
+    deletedAt: {
+      type: Date,
+      default: null
+    },
+    deletedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      default: null
     }
   },
   {
@@ -179,6 +193,11 @@ userSchema.methods.calculateBMI = function calculateBMI() {
   }
   const heightInMeters = this.height / 100;
   return (this.weight / (heightInMeters * heightInMeters)).toFixed(2);
+};
+
+userSchema.methods.incrementTokenVersion = async function incrementTokenVersion() {
+  this.tokenVersion = (this.tokenVersion || 0) + 1;
+  return this.save();
 };
 
 const User = mongoose.model('User', userSchema);

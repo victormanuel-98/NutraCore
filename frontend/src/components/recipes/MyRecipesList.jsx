@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
-import { Heart, Trash2 } from 'lucide-react';
+import { Trash2 } from 'lucide-react';
 import { Card } from '../ui/card';
 import { Button } from '../ui/button';
-import { deleteRecipe, getMyRecipes, toggleFavorite } from '../../services/recipeService';
+import { deleteRecipe, getMyRecipes } from '../../services/recipeService';
 
 const formatCategory = (value = '') => {
   const text = String(value).trim();
@@ -44,26 +44,6 @@ export function MyRecipesList({ token, refreshKey = 0 }) {
       setRecipes((prev) => prev.filter((recipe) => recipe._id !== id));
     } catch (err) {
       alert(err.message || 'No se pudo eliminar la receta');
-    }
-  };
-
-  const handleToggleFavorite = async (id) => {
-    try {
-      const response = await toggleFavorite(id, token);
-      const { isFavorite, favoritesCount } = response.data;
-      setRecipes((prev) =>
-        prev.map((recipe) =>
-          recipe._id === id
-            ? {
-                ...recipe,
-                favoritesCount,
-                favoritedBy: isFavorite ? [...(recipe.favoritedBy || []), 'me'] : (recipe.favoritedBy || []).filter((entry) => entry !== 'me')
-              }
-            : recipe
-        )
-      );
-    } catch (err) {
-      alert(err.message || 'No se pudo actualizar favorito');
     }
   };
 
@@ -121,14 +101,6 @@ export function MyRecipesList({ token, refreshKey = 0 }) {
                     </div>
 
                     <div className="flex items-center gap-2">
-                      <button 
-                        type="button" 
-                        onClick={() => handleToggleFavorite(recipe._id)}
-                        className="flex items-center gap-1.5 px-3 py-1.5 border-2 border-gray-900 text-xs font-bold hover:bg-pink-accent hover:border-pink-accent hover:text-white transition-all"
-                      >
-                        <Heart className={`w-3.5 h-3.5 ${recipe.favoritedBy?.includes('me') ? 'fill-current' : ''}`} />
-                        {recipe.favoritesCount || 0}
-                      </button>
                       <button 
                         type="button" 
                         onClick={() => handleDelete(recipe._id)}

@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const { connectDB, closeDB, mongoose } = require('./config/db');
+const { rateLimit } = require('./middleware/rateLimiter');
 
 dotenv.config();
 
@@ -18,6 +19,7 @@ const app = express();
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(rateLimit({ keyPrefix: 'global', windowMs: 60 * 1000, max: 240 }));
 
 if (process.env.NODE_ENV === 'development') {
   app.use((req, res, next) => {
@@ -26,10 +28,10 @@ if (process.env.NODE_ENV === 'development') {
   });
 }
 
-app.use('/api/auth', authRoutes);
+app.use('/api/auth', rateLimit({ keyPrefix: 'auth', windowMs: 15 * 60 * 1000, max: 50 }), authRoutes);
 app.use('/api/dishes', dishRoutes);
 app.use('/api/news', newsRoutes);
-app.use('/api/users', userRoutes);
+app.use('/api/users', rateLimit({ keyPrefix: 'users', windowMs: 60 * 1000, max: 120 }), userRoutes);
 app.use('/api/recipes', recipeRoutes);
 app.use('/api/ingredients', ingredientRoutes);
 app.use('/api/reviews', reviewRoutes);

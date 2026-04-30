@@ -10,7 +10,16 @@ const getTokenFromHeader = (req) => {
 
 const getUserFromToken = async (token) => {
   const decoded = jwt.verify(token, process.env.JWT_SECRET);
-  return User.findById(decoded.id).select('-password');
+  const user = await User.findById(decoded.id).select('-password');
+  if (!user) return null;
+
+  if ((decoded.tokenVersion || 0) !== (user.tokenVersion || 0)) {
+    const error = new Error('Token invalidado');
+    error.name = 'TokenVersionError';
+    throw error;
+  }
+
+  return user;
 };
 
 const protect = async (req, res, next) => {
@@ -61,10 +70,34 @@ const optionalProtect = async (req, res, next) => {
   return next();
 };
 
-const generateToken = (userId) => jwt.sign({ id: userId }, process.env.JWT_SECRET, { expiresIn: '30d' });
+const generateToken = (user) => {
+  const isAdmin = user?.role === 'admin';
+  const expiresIn = isAdmin ? '12h' : '30d';
+  return jwt.sign(
+    { id: user._id || user.id, tokenVersion: user.tokenVersion || 0, role: user.role || 'user' },
+    process.env.JWT_SECRET,
+    { expiresIn }
+  );
+};
+
+const authorizeRoles = (...allowedRoles) => (req, res, next) => {
+  if (!req.user) {
+    return res.status(401).json({ success: false, error: 'No autorizado' });
+  }
+
+  if (!allowedRoles.includes(req.user.role)) {
+    return res.status(403).json({ success: false, error: 'No tienes permisos para realizar esta acción' });
+  }
+
+  return next();
+};
+
+const requireAdmin = authorizeRoles('admin');
 
 module.exports = {
   protect,
   optionalProtect,
-  generateToken
+  generateToken,
+  authorizeRoles,
+  requireAdmin
 };

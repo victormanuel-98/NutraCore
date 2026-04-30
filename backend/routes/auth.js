@@ -1,7 +1,7 @@
-/**
- * Rutas de Autenticación
+﻿/**
+ * Rutas de AutenticaciÃ³n
  *
- * Endpoints para registro, login y gestión de autenticación
+ * Endpoints para registro, login y gestiÃ³n de autenticaciÃ³n
  */
 
 const express = require('express');
@@ -10,6 +10,8 @@ const crypto = require('crypto');
 const User = require('../models/User');
 const { generateToken, protect } = require('../config/auth');
 const { sendVerificationEmail } = require('../services/emailService');
+const { requireBodyFields } = require('../middleware/validation');
+const { rateLimit } = require('../middleware/rateLimiter');
 
 const buildVerificationToken = () => crypto.randomBytes(32).toString('hex');
 const hashToken = (token) => crypto.createHash('sha256').update(token).digest('hex');
@@ -50,7 +52,7 @@ const sendVerificationEmailForUser = async (user) => {
  * @desc    Registrar nuevo usuario
  * @access  Public
  */
-router.post('/register', async (req, res) => {
+router.post('/register', rateLimit({ keyPrefix: 'auth-register', windowMs: 15 * 60 * 1000, max: 12 }), requireBodyFields(['email', 'password']), async (req, res) => {
   try {
     const { email, password, age, gender, height, weight, goals } = req.body;
     const normalizedEmail = String(email || '').toLowerCase().trim();
@@ -58,7 +60,7 @@ router.post('/register', async (req, res) => {
     if (!normalizedEmail || !password) {
       return res.status(400).json({
         success: false,
-        error: 'Por favor proporciona email y contraseña'
+        error: 'Por favor proporciona email y contraseÃ±a'
       });
     }
 
@@ -66,7 +68,7 @@ router.post('/register', async (req, res) => {
     if (userExists) {
       return res.status(400).json({
         success: false,
-        error: 'El email ya está registrado'
+        error: 'El email ya estÃ¡ registrado'
       });
     }
 
@@ -88,7 +90,7 @@ router.post('/register', async (req, res) => {
       emailVerificationExpires: expires
     });
 
-    // REFUERZO: Forzar el guardado por si User.create falló en persistir esos campos específicos
+    // REFUERZO: Forzar el guardado por si User.create fallÃ³ en persistir esos campos especÃ­ficos
     await User.updateOne({ _id: user._id }, {
       $set: {
         emailVerificationToken: hashedToken,
@@ -107,7 +109,7 @@ router.post('/register', async (req, res) => {
       await User.deleteOne({ _id: user._id });
       return res.status(500).json({
         success: false,
-        error: emailError.message || 'No se pudo enviar el correo de verificación'
+        error: emailError.message || 'No se pudo enviar el correo de verificaciÃ³n'
       });
     }
 
@@ -136,10 +138,10 @@ router.post('/register', async (req, res) => {
 
 /**
  * @route   POST /api/auth/login
- * @desc    Iniciar sesión
+ * @desc    Iniciar sesiÃ³n
  * @access  Public
  */
-router.post('/login', async (req, res) => {
+router.post('/login', rateLimit({ keyPrefix: 'auth-login', windowMs: 15 * 60 * 1000, max: 20 }), requireBodyFields(['email', 'password']), async (req, res) => {
   try {
     const { email, password } = req.body;
     const normalizedEmail = String(email || '').toLowerCase().trim();
@@ -147,7 +149,7 @@ router.post('/login', async (req, res) => {
     if (!normalizedEmail || !password) {
       return res.status(400).json({
         success: false,
-        error: 'Por favor proporciona email y contraseña'
+        error: 'Por favor proporciona email y contraseÃ±a'
       });
     }
 
@@ -155,7 +157,7 @@ router.post('/login', async (req, res) => {
     if (!user) {
       return res.status(401).json({
         success: false,
-        error: 'Credenciales inválidas'
+        error: 'Credenciales invÃ¡lidas'
       });
     }
 
@@ -163,7 +165,7 @@ router.post('/login', async (req, res) => {
     if (!isPasswordValid) {
       return res.status(401).json({
         success: false,
-        error: 'Credenciales inválidas'
+        error: 'Credenciales invÃ¡lidas'
       });
     }
 
@@ -177,11 +179,11 @@ router.post('/login', async (req, res) => {
     if (!user.isEmailVerified && user.role !== 'admin') {
       return res.status(401).json({
         success: false,
-        error: 'Debes verificar tu correo antes de iniciar sesión'
+        error: 'Debes verificar tu correo antes de iniciar sesiÃ³n'
       });
     }
 
-    const token = generateToken(user._id);
+    const token = generateToken(user);
 
     res.json({
       success: true,
@@ -189,12 +191,12 @@ router.post('/login', async (req, res) => {
         user: user.toPublicProfile(),
         token
       },
-      message: 'Inicio de sesión exitoso'
+      message: 'Inicio de sesiÃ³n exitoso'
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      error: 'Error al iniciar sesión'
+      error: 'Error al iniciar sesiÃ³n'
     });
   }
 });
@@ -228,7 +230,7 @@ router.get('/verify-email', async (req, res) => {
     if (!user) {
       return res.status(400).json({
         success: false,
-        error: 'El enlace de verificación es inválido o ha caducado'
+        error: 'El enlace de verificaciÃ³n es invÃ¡lido o ha caducado'
       });
     }
 
@@ -248,7 +250,7 @@ router.get('/verify-email', async (req, res) => {
       success: true,
       data: {
         user: user.toPublicProfile(),
-        token: generateToken(user._id)
+        token: generateToken(user)
       },
       message: 'Correo verificado correctamente. Accediendo a tu cuenta...'
     });
@@ -262,10 +264,10 @@ router.get('/verify-email', async (req, res) => {
 
 /**
  * @route   POST /api/auth/resend-verification
- * @desc    Reenviar correo de verificación
+ * @desc    Reenviar correo de verificaciÃ³n
  * @access  Public
  */
-router.post('/resend-verification', async (req, res) => {
+router.post('/resend-verification', rateLimit({ keyPrefix: 'auth-resend', windowMs: 15 * 60 * 1000, max: 8 }), async (req, res) => {
   try {
     const { email } = req.body;
     const normalizedEmail = String(email || '').toLowerCase().trim();
@@ -289,7 +291,7 @@ router.post('/resend-verification', async (req, res) => {
     if (user.isEmailVerified) {
       return res.status(400).json({
         success: false,
-        error: 'La cuenta ya está verificada'
+        error: 'La cuenta ya estÃ¡ verificada'
       });
     }
 
@@ -297,12 +299,12 @@ router.post('/resend-verification', async (req, res) => {
 
     return res.json({
       success: true,
-      message: 'Correo de verificación reenviado'
+      message: 'Correo de verificaciÃ³n reenviado'
     });
   } catch (error) {
     return res.status(500).json({
       success: false,
-      error: error.message || 'No se pudo reenviar el correo de verificación'
+      error: error.message || 'No se pudo reenviar el correo de verificaciÃ³n'
     });
   }
 });
@@ -325,7 +327,7 @@ router.get('/me', protect, async (req, res) => {
   } catch (error) {
     res.status(500).json({
       success: false,
-      error: 'Error al obtener información del usuario'
+      error: 'Error al obtener informaciÃ³n del usuario'
     });
   }
 });
@@ -333,7 +335,7 @@ router.get('/me', protect, async (req, res) => {
 router.post('/logout', protect, async (req, res) => {
   res.json({
     success: true,
-    message: 'Sesión cerrada exitosamente'
+    message: 'SesiÃ³n cerrada exitosamente'
   });
 });
 
@@ -344,7 +346,7 @@ router.put('/change-password', protect, async (req, res) => {
     if (!currentPassword || !newPassword) {
       return res.status(400).json({
         success: false,
-        error: 'Por favor proporciona la contraseña actual y la nueva'
+        error: 'Por favor proporciona la contraseÃ±a actual y la nueva'
       });
     }
 
@@ -354,16 +356,20 @@ router.put('/change-password', protect, async (req, res) => {
     if (!isPasswordValid) {
       return res.status(401).json({
         success: false,
-        error: 'Contraseña actual incorrecta'
+        error: 'ContraseÃ±a actual incorrecta'
       });
     }
 
     user.password = newPassword;
+    user.tokenVersion = (user.tokenVersion || 0) + 1;
     await user.save();
 
     res.json({
       success: true,
-      message: 'Contraseña actualizada exitosamente'
+      data: {
+        token: generateToken(user)
+      },
+      message: 'ContraseÃ±a actualizada exitosamente'
     });
   } catch (error) {
     if (error.name === 'ValidationError') {
@@ -376,9 +382,10 @@ router.put('/change-password', protect, async (req, res) => {
 
     res.status(500).json({
       success: false,
-      error: 'Error al cambiar contraseña'
+      error: 'Error al cambiar contraseÃ±a'
     });
   }
 });
 
 module.exports = router;
+

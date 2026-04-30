@@ -9,6 +9,7 @@ const router = express.Router();
 const Dish = require('../models/Dish');
 const User = require('../models/User');
 const { protect } = require('../config/auth');
+const { validateObjectIdParam } = require('../middleware/validation');
 
 /**
  * @route   GET /api/dishes
@@ -121,7 +122,7 @@ router.get('/featured', async (req, res) => {
  * @desc    Obtener un plato por ID
  * @access  Public
  */
-router.get('/:id', async (req, res) => {
+router.get('/:id', validateObjectIdParam('id'), async (req, res) => {
   try {
     const dish = await Dish.findById(req.params.id);
 
@@ -161,7 +162,7 @@ router.get('/:id', async (req, res) => {
  * @desc    Agregar/quitar plato de favoritos
  * @access  Private
  */
-router.post('/:id/favorite', protect, async (req, res) => {
+router.post('/:id/favorite', validateObjectIdParam('id'), protect, async (req, res) => {
   try {
     const dish = await Dish.findById(req.params.id);
 

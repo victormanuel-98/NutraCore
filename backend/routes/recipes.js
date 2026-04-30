@@ -4,6 +4,8 @@ const { Recipe, RECIPE_CATEGORIES, RECIPE_DIFFICULTIES, RECIPE_TAG_OPTIONS } = r
 const User = require('../models/User');
 const { protect, optionalProtect } = require('../config/auth');
 const { searchIngredients, getIngredientNutritionProfile } = require('../services/openFoodFactsService');
+const { logAuditEvent } = require('../services/auditService');
+const { validateObjectIdParam } = require('../middleware/validation');
 
 const router = express.Router();
 const MAX_LIMIT = 50;
@@ -225,7 +227,12 @@ const validateRecipePayload = (payload, { partial = false } = {}) => {
 
 const isAdminUser = (user) => Boolean(user && (user.role === 'admin' || user.isAdmin === true));
 
-const canManageRecipe = (recipe, user) => {
+const canEditRecipe = (recipe, user) => {
+  if (!recipe || !user) return false;
+  return recipe.author.toString() === user._id.toString();
+};
+
+const canDeleteRecipe = (recipe, user) => {
   if (!recipe || !user) return false;
   return recipe.author.toString() === user._id.toString() || isAdminUser(user);
 };
@@ -263,7 +270,7 @@ router.get('/', optionalProtect, async (req, res) => {
 
     const currentPage = Math.max(1, toNumber(page, 1));
     const pageLimit = Math.min(MAX_LIMIT, Math.max(1, toNumber(limit, 12)));
-    const filter = { isPublished: true };
+    const filter = { isPublished: true, isDeleted: { $ne: true } };
 
     if (category) filter.category = String(category).trim().toLowerCase();
     if (difficulty) filter.difficulty = String(difficulty).trim().toLowerCase();
@@ -328,7 +335,7 @@ router.get('/', optionalProtect, async (req, res) => {
 
 router.get('/user/me', protect, async (req, res) => {
   try {
-    const rawRecipes = await Recipe.find({ author: req.user._id })
+    const rawRecipes = await Recipe.find({ author: req.user._id, isDeleted: { $ne: true } })
       .populate('author', 'name avatar')
       .sort({ createdAt: -1 });
     const recipes = await Promise.all(rawRecipes.map((recipe) => ensureRecipeNutrition(recipe)));
@@ -341,7 +348,7 @@ router.get('/user/me', protect, async (req, res) => {
 
 router.get('/user/favorites', protect, async (req, res) => {
   try {
-    const rawRecipes = await Recipe.find({ favoritedBy: req.user._id, isPublished: true })
+    const rawRecipes = await Recipe.find({ favoritedBy: req.user._id, isPublished: true, isDeleted: { $ne: true } })
       .populate('author', 'name avatar')
       .sort({ createdAt: -1 });
     const recipes = await Promise.all(rawRecipes.map((recipe) => ensureRecipeNutrition(recipe)));
@@ -356,7 +363,7 @@ router.get('/featured/popular', async (req, res) => {
   try {
     const limit = Math.min(MAX_LIMIT, Math.max(1, toNumber(req.query.limit, 6)));
 
-    const rawRecipes = await Recipe.find({ isPublished: true })
+    const rawRecipes = await Recipe.find({ isPublished: true, isDeleted: { $ne: true } })
       .populate('author', 'name avatar')
       .sort({ favoritesCount: -1, createdAt: -1 })
       .limit(limit);
@@ -375,10 +382,10 @@ router.get('/tags/available', (_req, res) => {
   });
 });
 
-router.get('/:id', optionalProtect, async (req, res) => {
+router.get('/:id', validateObjectIdParam('id'), optionalProtect, async (req, res) => {
   try {
     const recipe = await Recipe.findById(req.params.id).populate('author', 'name avatar');
-    if (!recipe) return sendError(res, 404, 'Receta no encontrada');
+    if (!recipe || recipe.isDeleted) return sendError(res, 404, 'Receta no encontrada');
     const hydratedRecipe = await ensureRecipeNutrition(recipe);
     return res.json({ success: true, data: hydratedRecipe });
   } catch (error) {
@@ -419,12 +426,12 @@ router.post('/', protect, async (req, res) => {
   }
 });
 
-router.put('/:id', protect, async (req, res) => {
+router.put('/:id', validateObjectIdParam('id'), protect, async (req, res) => {
   try {
     const recipe = await Recipe.findById(req.params.id);
-    if (!recipe) return sendError(res, 404, 'Receta no encontrada');
+    if (!recipe || recipe.isDeleted) return sendError(res, 404, 'Receta no encontrada');
 
-    if (!canManageRecipe(recipe, req.user)) {
+    if (!canEditRecipe(recipe, req.user)) {
       return sendError(res, 403, 'No tienes permisos para editar esta receta');
     }
 
@@ -448,6 +455,13 @@ router.put('/:id', protect, async (req, res) => {
     recipe.tags = normalized.tags;
 
     await recipe.save();
+    await logAuditEvent({
+      req,
+      actor: req.user,
+      action: 'recipe.update',
+      targetType: 'Recipe',
+      targetId: recipe._id
+    });
 
     const populatedRecipe = await Recipe.findById(recipe._id).populate('author', 'name avatar');
 
@@ -470,27 +484,47 @@ router.put('/:id', protect, async (req, res) => {
   }
 });
 
-router.delete('/:id', protect, async (req, res) => {
+router.delete('/:id', validateObjectIdParam('id'), protect, async (req, res) => {
   try {
     const recipe = await Recipe.findById(req.params.id);
-    if (!recipe) return sendError(res, 404, 'Receta no encontrada');
+    if (!recipe || recipe.isDeleted) return sendError(res, 404, 'Receta no encontrada');
 
-    if (!canManageRecipe(recipe, req.user)) {
+    if (!canDeleteRecipe(recipe, req.user)) {
       return sendError(res, 403, 'No tienes permisos para eliminar esta receta');
     }
 
-    await recipe.deleteOne();
-    return res.json({ success: true, message: 'Receta eliminada correctamente' });
+    recipe.isDeleted = true;
+    recipe.deletedAt = new Date();
+    recipe.deletedBy = req.user._id;
+    recipe.isPublished = false;
+    await recipe.save();
+
+    await User.updateMany({}, { $pull: { favoriteRecipes: recipe._id } });
+    await Recipe.updateMany({ _id: recipe._id }, { $set: { favoritedBy: [], favoritesCount: 0 } });
+
+    await logAuditEvent({
+      req,
+      actor: req.user,
+      action: 'recipe.delete.soft',
+      targetType: 'Recipe',
+      targetId: recipe._id
+    });
+
+    return res.json({ success: true, message: 'Receta eliminada correctamente (soft-delete)' });
   } catch (error) {
     if (error.name === 'CastError') return sendError(res, 404, 'Receta no encontrada');
     return sendError(res, 500, 'No se pudo eliminar la receta');
   }
 });
 
-router.post('/:id/favorite', protect, async (req, res) => {
+router.post('/:id/favorite', validateObjectIdParam('id'), protect, async (req, res) => {
   try {
     const recipe = await Recipe.findById(req.params.id);
-    if (!recipe) return sendError(res, 404, 'Receta no encontrada');
+    if (!recipe || recipe.isDeleted) return sendError(res, 404, 'Receta no encontrada');
+
+    if (recipe.author.toString() === req.user._id.toString()) {
+      return sendError(res, 403, 'No puedes dar me gusta ni guardar en favoritos tu propia receta');
+    }
 
     const userId = req.user._id.toString();
     const exists = recipe.favoritedBy.some((id) => id.toString() === userId);
@@ -520,6 +554,34 @@ router.post('/:id/favorite', protect, async (req, res) => {
   } catch (error) {
     if (error.name === 'CastError') return sendError(res, 404, 'Receta no encontrada');
     return sendError(res, 500, 'No se pudo actualizar el favorito');
+  }
+});
+
+router.patch('/:id/restore', validateObjectIdParam('id'), protect, async (req, res) => {
+  try {
+    if (!isAdminUser(req.user)) return sendError(res, 403, 'Solo admin puede restaurar recetas');
+
+    const recipe = await Recipe.findById(req.params.id);
+    if (!recipe) return sendError(res, 404, 'Receta no encontrada');
+    if (!recipe.isDeleted) return sendError(res, 400, 'La receta no está eliminada');
+
+    recipe.isDeleted = false;
+    recipe.deletedAt = null;
+    recipe.deletedBy = null;
+    recipe.isPublished = true;
+    await recipe.save();
+
+    await logAuditEvent({
+      req,
+      actor: req.user,
+      action: 'recipe.restore',
+      targetType: 'Recipe',
+      targetId: recipe._id
+    });
+
+    return res.json({ success: true, message: 'Receta restaurada correctamente' });
+  } catch {
+    return sendError(res, 500, 'No se pudo restaurar la receta');
   }
 });
 

@@ -13,8 +13,9 @@ export function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [hasScrolled, setHasScrolled] = useState(false);
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
-  const { isAuthenticated, logout } = useAuth();
+  const { isAuthenticated, logout, user } = useAuth();
   const { isDark, toggleTheme } = useTheme();
+  const isAdmin = user?.role === 'admin';
 
   useEffect(() => {
     const handleScroll = () => setHasScrolled(window.scrollY > 8);
@@ -30,14 +31,15 @@ export function Navbar() {
   const navLinks = isAuthenticated
     ? [
         { name: 'Dashboard', href: '/dashboard' },
-        { name: 'Catálogo', href: '/catalog' },
+        { name: 'Catalogo', href: '/catalog' },
         { name: 'NutraCore Lab', href: '/lab' },
         { name: 'Noticias', href: '/news' },
-        { name: 'Perfil', href: '/profile' }
+        { name: 'Perfil', href: '/profile' },
+        ...(isAdmin ? [{ name: 'Admin', href: '/admin/dashboard' }] : [])
       ]
     : [
         { name: 'Inicio', href: '/' },
-        { name: 'Catálogo', href: '/catalog' },
+        { name: 'Catalogo', href: '/catalog' },
         { name: 'NutraCore Lab', href: '/lab' },
         { name: 'Noticias', href: '/news' }
       ];
@@ -70,14 +72,12 @@ export function Navbar() {
     <nav className={navClasses}>
       <div className="w-full px-4 sm:px-8 lg:px-12">
         <div className="grid grid-cols-[1fr_auto_1fr] items-center h-20 gap-4">
-          {/* Lado Izquierdo: Logo */}
           <div className="flex justify-start">
             <Link to="/" className="flex items-center leading-none">
               <span className="font-logo text-3xl md:text-[2.7rem] tracking-tight whitespace-nowrap">NutraCore!</span>
             </Link>
           </div>
 
-          {/* Centro: Navegación */}
           <div className="hidden md:flex justify-center items-center">
             <div className="flex items-center space-x-8 lg:space-x-12">
               {navLinks.map((link) => (
@@ -92,14 +92,13 @@ export function Navbar() {
             </div>
           </div>
 
-          {/* Lado Derecho: Botones y Menú Móvil */}
           <div className="flex justify-end items-center">
             <div className="hidden md:flex items-center space-x-6 whitespace-nowrap">
               {!isAuthenticated ? (
                 <>
                   <Link to="/login">
                     <Button variant="ghost" className={`${loginButtonClasses} text-lg px-4`}>
-                      Iniciar Sesión
+                      Iniciar sesion
                     </Button>
                   </Link>
                   <Link to="/register">
@@ -108,7 +107,7 @@ export function Navbar() {
                 </>
               ) : (
                 <Button variant="ghost" className={`${loginButtonClasses} text-lg px-4`} onClick={() => setIsLogoutModalOpen(true)}>
-                  Cerrar sesión
+                  Cerrar sesion
                 </Button>
               )}
             </div>
@@ -167,7 +166,7 @@ export function Navbar() {
                 <>
                   <Link to="/login" onClick={() => setMobileMenuOpen(false)}>
                     <Button variant="ghost" className={`w-full ${loginButtonClasses}`}>
-                      Iniciar Sesión
+                      Iniciar sesion
                     </Button>
                   </Link>
                   <Link to="/register" onClick={() => setMobileMenuOpen(false)}>
@@ -183,7 +182,7 @@ export function Navbar() {
                     setMobileMenuOpen(false);
                   }}
                 >
-                  Cerrar sesión
+                  Cerrar sesion
                 </Button>
               )}
             </div>
@@ -197,7 +196,7 @@ export function Navbar() {
         onConfirm={() => {
           logout();
           setIsLogoutModalOpen(false);
-          showNotification('Sesión cerrada correctamente', 'info');
+          showNotification('Sesion cerrada correctamente', 'info');
         }}
       />
     </nav>

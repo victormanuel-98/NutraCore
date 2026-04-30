@@ -8,7 +8,22 @@ const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
 const Recipe = require('../models/Recipe');
-const { protect } = require('../config/auth');
+const Review = require('../models/Review');
+const AuditLog = require('../models/AuditLog');
+const { protect, requireAdmin } = require('../config/auth');
+const { isAdmin, canAdminManageUser } = require('../middleware/rbac');
+const { logAuditEvent } = require('../services/auditService');
+const { validateObjectIdParam } = require('../middleware/validation');
+
+const serializeAdminUser = (user, { recipesCount = 0, reviewsCount = 0 } = {}) => {
+  const publicProfile = user.toPublicProfile();
+  return {
+    ...publicProfile,
+    id: String(publicProfile._id),
+    recipesCount,
+    reviewsCount
+  };
+};
 
 /**
  * @route   GET /api/users/profile
@@ -20,7 +35,7 @@ router.get('/profile', protect, async (req, res) => {
     const user = await User.findById(req.user._id)
       .populate('favorites', 'name image nutrition category')
       .populate('savedNews', 'title summary image category');
-    const recipeFavoritesCount = await Recipe.countDocuments({ favoritedBy: req.user._id });
+    const recipeFavoritesCount = await Recipe.countDocuments({ favoritedBy: req.user._id, isDeleted: { $ne: true } });
 
     // Calcular IMC si tiene los datos necesarios
     const bmi = user.calculateBMI();
@@ -159,8 +174,8 @@ router.get('/stats', protect, async (req, res) => {
       .populate('favorites')
       .populate('savedNews');
     const [recipeFavoritesCount, totalRecipes] = await Promise.all([
-      Recipe.countDocuments({ favoritedBy: req.user._id }),
-      Recipe.countDocuments({ author: user._id })
+      Recipe.countDocuments({ favoritedBy: req.user._id, isDeleted: { $ne: true } }),
+      Recipe.countDocuments({ author: user._id, isDeleted: { $ne: true } })
     ]);
 
     // Calcular estadÃ­sticas
@@ -214,8 +229,27 @@ router.get('/stats', protect, async (req, res) => {
 router.delete('/account', protect, async (req, res) => {
   try {
     const user = await User.findById(req.user._id);
+
+    if (isAdmin(user)) {
+      return res.status(403).json({
+        success: false,
+        error: 'La cuenta admin no puede eliminarse ni desactivarse desde esta ruta'
+      });
+    }
+
     user.isActive = false;
+    user.deletedAt = new Date();
+    user.deletedBy = req.user._id;
+    user.tokenVersion = (user.tokenVersion || 0) + 1;
     await user.save();
+
+    await logAuditEvent({
+      req,
+      actor: req.user,
+      action: 'user.self.soft_delete',
+      targetType: 'User',
+      targetId: user._id
+    });
 
     res.json({
       success: true,
@@ -226,6 +260,285 @@ router.delete('/account', protect, async (req, res) => {
     res.status(500).json({
       success: false,
       error: 'Error al desactivar cuenta'
+    });
+  }
+});
+
+/**
+ * @route   GET /api/users/admin/list
+ * @desc    Listar usuarios para administración
+ * @access  Admin
+ */
+router.get('/admin/list', protect, requireAdmin, async (req, res) => {
+  try {
+    const users = await User.find({})
+      .select('-password -emailVerificationToken -emailVerificationExpires')
+      .sort({ createdAt: -1 });
+
+    const usersWithStats = await Promise.all(
+      users.map(async (user) => {
+        const [recipesCount, reviewsCount] = await Promise.all([
+          Recipe.countDocuments({ author: user._id, isDeleted: { $ne: true } }),
+          Review.countDocuments({ user: user._id })
+        ]);
+        return serializeAdminUser(user, { recipesCount, reviewsCount });
+      })
+    );
+
+    return res.json({
+      success: true,
+      data: usersWithStats
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      error: 'Error al listar usuarios'
+    });
+  }
+});
+
+/**
+ * @route   GET /api/users/admin/:id
+ * @desc    Ver perfil de un usuario por ID
+ * @access  Admin
+ */
+router.get('/admin/:id', validateObjectIdParam('id'), protect, requireAdmin, async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id)
+      .select('-password -emailVerificationToken -emailVerificationExpires')
+      .populate('favorites', 'name image nutrition category')
+      .populate('favoriteRecipes', 'title category difficulty prepTime')
+      .populate('savedNews', 'title summary image category');
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        error: 'Usuario no encontrado'
+      });
+    }
+
+    const [recipesCount, reviewsCount] = await Promise.all([
+      Recipe.countDocuments({ author: user._id, isDeleted: { $ne: true } }),
+      Review.countDocuments({ user: user._id })
+    ]);
+
+    return res.json({
+      success: true,
+      data: serializeAdminUser(user, { recipesCount, reviewsCount })
+    });
+  } catch (error) {
+    if (error.name === 'CastError') {
+      return res.status(404).json({
+        success: false,
+        error: 'Usuario no encontrado'
+      });
+    }
+
+    return res.status(500).json({
+      success: false,
+      error: 'Error al obtener usuario'
+    });
+  }
+});
+
+/**
+ * @route   PATCH /api/users/admin/:id/status
+ * @desc    Suspender/reactivar usuario
+ * @access  Admin
+ */
+router.patch('/admin/:id/status', validateObjectIdParam('id'), protect, requireAdmin, async (req, res) => {
+  try {
+    const { isActive } = req.body;
+    const nextStatus = Boolean(isActive);
+    const targetUser = await User.findById(req.params.id);
+
+    if (!targetUser) {
+      return res.status(404).json({
+        success: false,
+        error: 'Usuario no encontrado'
+      });
+    }
+
+    if (!canAdminManageUser(targetUser, req.user)) {
+      return res.status(403).json({
+        success: false,
+        error: 'No está permitido modificar este usuario'
+      });
+    }
+
+    targetUser.isActive = nextStatus;
+    targetUser.tokenVersion = (targetUser.tokenVersion || 0) + 1;
+    await targetUser.save();
+
+    await logAuditEvent({
+      req,
+      actor: req.user,
+      action: nextStatus ? 'user.reactivate' : 'user.suspend',
+      targetType: 'User',
+      targetId: targetUser._id
+    });
+
+    return res.json({
+      success: true,
+      data: targetUser.toPublicProfile(),
+      message: nextStatus ? 'Usuario reactivado correctamente' : 'Usuario suspendido correctamente'
+    });
+  } catch (error) {
+    if (error.name === 'CastError') {
+      return res.status(404).json({
+        success: false,
+        error: 'Usuario no encontrado'
+      });
+    }
+
+    return res.status(500).json({
+      success: false,
+      error: 'Error al actualizar el estado del usuario'
+    });
+  }
+});
+
+/**
+ * @route   DELETE /api/users/admin/:id
+ * @desc    Eliminar usuario (solo admins y nunca cuentas admin)
+ * @access  Admin
+ */
+router.delete('/admin/:id', validateObjectIdParam('id'), protect, requireAdmin, async (req, res) => {
+  try {
+    const targetUser = await User.findById(req.params.id);
+
+    if (!targetUser) {
+      return res.status(404).json({
+        success: false,
+        error: 'Usuario no encontrado'
+      });
+    }
+
+    if (!canAdminManageUser(targetUser, req.user)) {
+      return res.status(403).json({
+        success: false,
+        error: 'No está permitido eliminar este usuario'
+      });
+    }
+
+    const ownedRecipes = await Recipe.find({ author: targetUser._id }).select('_id');
+    const ownedRecipeIds = ownedRecipes.map((recipe) => recipe._id);
+
+    await Promise.all([
+      Review.deleteMany({ user: targetUser._id }),
+      Review.deleteMany({ recipe: { $in: ownedRecipeIds } }),
+      Recipe.updateMany(
+        { author: targetUser._id },
+        {
+          $set: {
+            isDeleted: true,
+            isPublished: false,
+            deletedAt: new Date(),
+            deletedBy: req.user._id,
+            favoritedBy: [],
+            favoritesCount: 0
+          }
+        }
+      ),
+      Recipe.updateMany(
+        { favoritedBy: targetUser._id },
+        { $pull: { favoritedBy: targetUser._id }, $inc: { favoritesCount: -1 } }
+      ),
+      User.updateMany({ favoriteRecipes: { $in: ownedRecipeIds } }, { $pull: { favoriteRecipes: { $in: ownedRecipeIds } } })
+    ]);
+
+    targetUser.isActive = false;
+    targetUser.deletedAt = new Date();
+    targetUser.deletedBy = req.user._id;
+    targetUser.tokenVersion = (targetUser.tokenVersion || 0) + 1;
+    await targetUser.save();
+
+    await logAuditEvent({
+      req,
+      actor: req.user,
+      action: 'user.admin.soft_delete',
+      targetType: 'User',
+      targetId: targetUser._id
+    });
+
+    return res.json({
+      success: true,
+      message: 'Usuario eliminado correctamente (soft-delete)'
+    });
+  } catch (error) {
+    if (error.name === 'CastError') {
+      return res.status(404).json({
+        success: false,
+        error: 'Usuario no encontrado'
+      });
+    }
+
+    return res.status(500).json({
+      success: false,
+      error: 'Error al eliminar usuario'
+    });
+  }
+});
+
+router.patch('/admin/:id/restore', validateObjectIdParam('id'), protect, requireAdmin, async (req, res) => {
+  try {
+    const targetUser = await User.findById(req.params.id);
+    if (!targetUser) {
+      return res.status(404).json({
+        success: false,
+        error: 'Usuario no encontrado'
+      });
+    }
+
+    if (targetUser.role === 'admin') {
+      return res.status(403).json({
+        success: false,
+        error: 'No está permitido restaurar esta cuenta'
+      });
+    }
+
+    targetUser.isActive = true;
+    targetUser.deletedAt = null;
+    targetUser.deletedBy = null;
+    targetUser.tokenVersion = (targetUser.tokenVersion || 0) + 1;
+    await targetUser.save();
+
+    await logAuditEvent({
+      req,
+      actor: req.user,
+      action: 'user.restore',
+      targetType: 'User',
+      targetId: targetUser._id
+    });
+
+    return res.json({
+      success: true,
+      message: 'Usuario restaurado correctamente'
+    });
+  } catch {
+    return res.status(500).json({
+      success: false,
+      error: 'Error al restaurar usuario'
+    });
+  }
+});
+
+router.get('/admin/audit/logs', protect, requireAdmin, async (req, res) => {
+  try {
+    const limit = Math.min(200, Math.max(1, Number(req.query.limit) || 50));
+    const logs = await AuditLog.find({})
+      .populate('actor', 'name email role')
+      .sort({ createdAt: -1 })
+      .limit(limit);
+
+    return res.json({
+      success: true,
+      data: logs
+    });
+  } catch {
+    return res.status(500).json({
+      success: false,
+      error: 'Error al obtener la auditoria'
     });
   }
 });

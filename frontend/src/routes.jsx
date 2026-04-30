@@ -16,6 +16,7 @@ import { PrivacyPolicy } from './components/PrivacyPolicy';
 import { TermsPage } from './components/TermsPage';
 import { CookiesPolicyPage } from './components/CookiesPolicyPage';
 import { LegalNoticePage } from './components/LegalNoticePage';
+import { AdminDashboard } from './components/AdminDashboard';
 
 function RouteError() {
   return (
@@ -63,6 +64,14 @@ export const router = createBrowserRouter([
         element: (
           <ProtectedRoute>
             <Profile />
+          </ProtectedRoute>
+        )
+      },
+      {
+        path: 'admin/dashboard',
+        element: (
+          <ProtectedRoute allowedRoles={['admin']}>
+            <AdminDashboard />
           </ProtectedRoute>
         )
       },

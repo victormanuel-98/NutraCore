@@ -30,6 +30,7 @@ const getDifficultyLabel = (difficulty) => {
 
 const mapApiRecipe = (recipe) => ({
   id: recipe._id,
+  authorId: recipe.author?._id || recipe.author || null,
   title: recipe.title,
   image: recipe.images?.[0] || null,
   calories: recipe.nutrition?.calories || 0,
@@ -152,6 +153,11 @@ export function Catalog() {
       return;
     }
 
+    if (String(recipe.authorId) === String(user?._id)) {
+      showNotification('No puedes dar me gusta ni guardar en favoritos tu propia receta.', 'info');
+      return;
+    }
+
     try {
       const response = await toggleFavorite(recipe.id, token);
       const isFavorite = response.data?.isFavorite;
@@ -264,6 +270,7 @@ export function Catalog() {
                     <CatalogImage src={recipe.image} alt={recipe.title} />
                     <button
                       onClick={() => handleToggleFavorite(recipe)}
+                      disabled={String(recipe.authorId) === String(user?._id)}
                       className="absolute top-4 right-4 bg-white p-2 rounded-full shadow-lg hover:bg-pink-50 transition-colors border border-gray-200"
                       aria-label="Anadir o quitar favorito"
                     >

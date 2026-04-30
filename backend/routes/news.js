@@ -9,6 +9,7 @@ const router = express.Router();
 const News = require('../models/News');
 const User = require('../models/User');
 const { protect } = require('../config/auth');
+const { validateObjectIdParam } = require('../middleware/validation');
 
 /**
  * @route   GET /api/news
@@ -112,7 +113,7 @@ router.get('/featured', async (req, res) => {
  * @desc    Obtener una noticia por ID
  * @access  Public
  */
-router.get('/:id', async (req, res) => {
+router.get('/:id', validateObjectIdParam('id'), async (req, res) => {
   try {
     const news = await News.findById(req.params.id);
 
@@ -152,7 +153,7 @@ router.get('/:id', async (req, res) => {
  * @desc    Guardar/quitar noticia
  * @access  Private
  */
-router.post('/:id/save', protect, async (req, res) => {
+router.post('/:id/save', validateObjectIdParam('id'), protect, async (req, res) => {
   try {
     const news = await News.findById(req.params.id);
 
@@ -204,7 +205,7 @@ router.post('/:id/save', protect, async (req, res) => {
  * @desc    Dar/quitar like a noticia
  * @access  Private
  */
-router.post('/:id/like', protect, async (req, res) => {
+router.post('/:id/like', validateObjectIdParam('id'), protect, async (req, res) => {
   try {
     const news = await News.findById(req.params.id);
 
@@ -240,7 +241,7 @@ router.post('/:id/like', protect, async (req, res) => {
  * @desc    Incrementar contador de compartidos
  * @access  Public
  */
-router.post('/:id/share', async (req, res) => {
+router.post('/:id/share', validateObjectIdParam('id'), async (req, res) => {
   try {
     const news = await News.findById(req.params.id);
 

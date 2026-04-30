@@ -3,6 +3,7 @@ const router = express.Router();
 const Review = require('../models/Review');
 const Recipe = require('../models/Recipe');
 const { protect, optionalProtect } = require('../config/auth');
+const { validateObjectIdParam, requireBodyFields } = require('../middleware/validation');
 
 const BAD_WORDS = ['puto', 'puta', 'mierda', 'cabron', 'cabrona', 'joder', 'fuck', 'shit', 'asshole', 'idiota', 'estupido', 'estupida', 'coño', 'pendejo', 'pendeja'];
 
@@ -21,7 +22,7 @@ const filterBadWords = (text) => {
  * @desc    Add or update a review for a recipe
  * @access  Private
  */
-router.post('/', protect, async (req, res) => {
+router.post('/', protect, requireBodyFields(['recipeId', 'rating']), async (req, res) => {
   try {
     const { recipeId, rating, comment } = req.body;
     const userId = req.user._id;
@@ -80,7 +81,7 @@ router.post('/', protect, async (req, res) => {
  * @desc    Get all reviews for a recipe
  * @access  Public (Comments hidden for guests)
  */
-router.get('/recipe/:recipeId', optionalProtect, async (req, res) => {
+router.get('/recipe/:recipeId', validateObjectIdParam('recipeId'), optionalProtect, async (req, res) => {
   try {
     const { recipeId } = req.params;
     const isAuthenticated = !!req.user;
@@ -118,7 +119,7 @@ router.get('/recipe/:recipeId', optionalProtect, async (req, res) => {
  * @desc    Delete a review
  * @access  Private (Owner only)
  */
-router.delete('/:id', protect, async (req, res) => {
+router.delete('/:id', validateObjectIdParam('id'), protect, async (req, res) => {
   try {
     const review = await Review.findById(req.params.id);
 

@@ -2,11 +2,12 @@ import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 /**
- * Componente que protege rutas que requieren autenticaci√≥n.
- * Si el usuario no est√° autenticado, lo redirige al login.
+ * Componente que protege rutas que requieren autenticaciÛn.
+ * Si el usuario no est· autenticado, lo redirige al login.
+ * TambiÈn puede limitar por roles.
  */
-export function ProtectedRoute({ children }) {
-  const { isAuthenticated, isLoading } = useAuth();
+export function ProtectedRoute({ children, allowedRoles = [] }) {
+  const { isAuthenticated, isLoading, user } = useAuth();
   const location = useLocation();
 
   if (isLoading) {
@@ -18,8 +19,14 @@ export function ProtectedRoute({ children }) {
   }
 
   if (!isAuthenticated) {
-    // Redirigir al login pero guardando la ubicaci√≥n de donde ven√≠a
     return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  if (allowedRoles.length > 0) {
+    const currentRole = user?.role || 'user';
+    if (!allowedRoles.includes(currentRole)) {
+      return <Navigate to="/dashboard" replace />;
+    }
   }
 
   return children;
