@@ -12,12 +12,10 @@ const toNumber = (value, fallback) => {
   return Number.isFinite(parsed) ? parsed : fallback;
 };
 
+const normalizeIp = (value = '') => String(value || '').replace(/^::ffff:/, '');
+
 const getClientIp = (req) => {
-  const forwarded = req.headers['x-forwarded-for'];
-  if (typeof forwarded === 'string' && forwarded.trim()) {
-    return forwarded.split(',')[0].trim();
-  }
-  return req.ip || req.connection?.remoteAddress || 'unknown';
+  return normalizeIp(req.ip || req.connection?.remoteAddress || 'unknown');
 };
 
 const buildKey = (req, keyPrefix) => `${keyPrefix}:${getClientIp(req)}`;

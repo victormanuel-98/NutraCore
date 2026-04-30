@@ -1,6 +1,7 @@
 const nodemailer = require('nodemailer');
 
 const env = (key, fallback = '') => String(process.env[key] ?? fallback).trim();
+const envBool = (key, fallback = 'false') => env(key, fallback).toLowerCase() === 'true';
 
 /* ── Detectar si hay SMTP real configurado ────────────────────────── */
 const hasSmtpConfig = () =>
@@ -15,16 +16,19 @@ const hasSmtpConfig = () =>
 
 /* ── Transporter con SMTP real ────────────────────────────────────── */
 const buildRealTransporter = () => {
+  const secure = envBool('SMTP_SECURE', 'false');
+  const rejectUnauthorized = envBool('SMTP_TLS_REJECT_UNAUTHORIZED', 'true');
+
   return nodemailer.createTransport({
     host: env('SMTP_HOST'),
     port: Number(env('SMTP_PORT')),
-    secure: env('SMTP_SECURE', 'false').toLowerCase() === 'true',
+    secure,
     auth: {
       user: env('SMTP_USER'),
       pass: env('SMTP_PASS')
     },
     tls: {
-      rejectUnauthorized: false
+      rejectUnauthorized
     }
   });
 };

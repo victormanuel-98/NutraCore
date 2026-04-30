@@ -1,12 +1,8 @@
 ﻿const AuditLog = require('../models/AuditLog');
 
-const getClientIp = (req) => {
-  const forwarded = req.headers['x-forwarded-for'];
-  if (typeof forwarded === 'string' && forwarded.trim()) {
-    return forwarded.split(',')[0].trim();
-  }
-  return req.ip || req.connection?.remoteAddress || '';
-};
+const normalizeIp = (value = '') => String(value || '').replace(/^::ffff:/, '');
+
+const getClientIp = (req) => normalizeIp(req?.ip || req?.connection?.remoteAddress || '');
 
 const logAuditEvent = async ({ req, actor, action, targetType, targetId = null, metadata = {} }) => {
   try {
