@@ -6,6 +6,7 @@ const { protect, optionalProtect } = require('../config/auth');
 const { searchIngredients, getIngredientNutritionProfile } = require('../services/openFoodFactsService');
 const { logAuditEvent } = require('../services/auditService');
 const { validateObjectIdParam } = require('../middleware/validation');
+const { sendError: sendHttpError } = require('../utils/http');
 
 const router = express.Router();
 const MAX_LIMIT = 12;
@@ -283,13 +284,17 @@ const canDeleteRecipe = (recipe, user) => {
   return recipe.author.toString() === user._id.toString() || isAdminUser(user);
 };
 
-const sendError = (res, status, message, details) => {
-  return res.status(status).json({
-    success: false,
-    error: message,
-    ...(details ? { details } : {})
-  });
+const mapCodeByStatus = (status) => {
+  if (status === 400) return 'VALIDATION_ERROR';
+  if (status === 401) return 'UNAUTHORIZED';
+  if (status === 403) return 'FORBIDDEN';
+  if (status === 404) return 'NOT_FOUND';
+  if (status === 429) return 'RATE_LIMITED';
+  return 'REQUEST_ERROR';
 };
+
+const sendError = (res, status, message, details, code = mapCodeByStatus(status)) =>
+  sendHttpError(res, status, code, message, details);
 
 const isNutritionEmpty = (nutrition = {}) => {
   const calories = toNumber(nutrition?.calories, 0);

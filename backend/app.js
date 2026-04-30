@@ -1,5 +1,8 @@
 const express = require('express');
 const cors = require('cors');
+const helmet = require('helmet');
+const hpp = require('hpp');
+const mongoSanitize = require('express-mongo-sanitize');
 const { mongoose } = require('./config/db');
 const { rateLimit, readEnvLimit } = require('./middleware/rateLimiter');
 
@@ -11,6 +14,7 @@ const recipeRoutes = require('./routes/recipes');
 const ingredientRoutes = require('./routes/ingredients');
 const reviewRoutes = require('./routes/reviews');
 const docsRoutes = require('./routes/docs');
+const { sendError } = require('./utils/http');
 
 const parseAllowedOrigins = () =>
   String(process.env.CORS_ORIGINS || '')
@@ -58,8 +62,19 @@ const createApp = ({ mongooseRef = mongoose } = {}) => {
   const reviewsLimit = readEnvLimit('RATE_LIMIT_REVIEWS_WINDOW_MS', 'RATE_LIMIT_REVIEWS_MAX', 60 * 1000, 120);
 
   app.use(buildCorsMiddleware());
+  app.use(
+    helmet({
+      crossOriginResourcePolicy: { policy: 'cross-origin' }
+    })
+  );
   app.use(express.json({ limit: '10mb' }));
   app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+  app.use(
+    mongoSanitize({
+      replaceWith: '_'
+    })
+  );
+  app.use(hpp());
   app.use(rateLimit({ keyPrefix: 'global', ...globalLimit }));
 
   if (process.env.NODE_ENV === 'development') {
@@ -104,20 +119,15 @@ const createApp = ({ mongooseRef = mongoose } = {}) => {
   });
 
   app.use((req, res) => {
-    res.status(404).json({
-      success: false,
-      error: 'Ruta no encontrada',
-      path: req.path
-    });
+    sendError(res, 404, 'ROUTE_NOT_FOUND', 'Ruta no encontrada', { path: req.path });
   });
 
   app.use((err, req, res, next) => {
     console.error('Error:', err);
-    res.status(err.status || 500).json({
-      success: false,
-      error: err.message || 'Error interno del servidor',
-      ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
-    });
+    const status = err.status || 500;
+    const code = err.code || (status >= 500 ? 'INTERNAL_SERVER_ERROR' : 'REQUEST_ERROR');
+    const details = process.env.NODE_ENV === 'development' ? { stack: err.stack } : undefined;
+    sendError(res, status, code, err.message || 'Error interno del servidor', details);
   });
 
   return app;
