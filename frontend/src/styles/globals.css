@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Bitcount+Single&family=Fugaz+One&family=Gajraj+One&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Bitcount+Single&family=Fugaz+One&family=Gajraj+One&family=Suranna&display=swap');
 
 :root {
   --pink-accent: #ff0a60;
@@ -900,22 +900,24 @@ svg.lucide,
 }
 
 .gaius-avatar-wrap {
-  width: 3.2rem;
-  height: 3.2rem;
+  width: 4.4rem;
+  height: 4.4rem;
   border: 1px solid #f472b6;
   background: #fff;
   flex-shrink: 0;
   position: relative;
   overflow: hidden;
-  animation: gaius-avatar-float 2.8s ease-in-out infinite;
+  animation: gaius-avatar-float 3.2s ease-in-out infinite;
 }
 
 .gaius-avatar {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: center 38%;
   transform-origin: center;
-  animation: gaius-avatar-breath 3.2s ease-in-out infinite;
+  animation: gaius-avatar-breath 4.4s ease-in-out infinite;
+  filter: saturate(1.08) contrast(1.04);
 }
 
 .gaius-avatar-fallback {
@@ -956,12 +958,20 @@ svg.lucide,
   animation: gaius-avatar-scan 2.6s linear infinite;
 }
 
+.gaius-avatar-wrap .gaius-avatar {
+  animation:
+    gaius-avatar-breath 4.4s ease-in-out infinite,
+    gaius-avatar-face-shift 6.8s ease-in-out infinite;
+}
+
 .gaius-title {
   margin: 0;
-  font-weight: 700;
+  font-family: 'Suranna', serif;
+  font-weight: 400;
   color: #111827;
-  font-size: 1.3rem;
+  font-size: 1.65rem;
   line-height: 1;
+  letter-spacing: 0.01em;
 }
 
 .gaius-subtitle {
@@ -1018,6 +1028,15 @@ svg.lucide,
   background: #fff;
 }
 
+.gaius-scroll-bottom {
+  border: 1px solid #f472b6;
+  background: #fff1f7;
+  color: #be185d;
+  font-size: 0.75rem;
+  padding: 0.35rem 0.55rem;
+  margin: 0 0.7rem 0.35rem auto;
+}
+
 .gaius-input {
   flex: 1;
   border: 1px solid #d1d5db;
@@ -1041,6 +1060,72 @@ svg.lucide,
   cursor: not-allowed;
 }
 
+html.theme-dark .gaius-window {
+  background: var(--surface-0);
+  border-color: var(--pink-accent);
+  box-shadow: 8px 8px 0 0 rgba(255, 10, 96, 0.7);
+}
+
+html.theme-dark .gaius-header {
+  background: #1a1323;
+  border-bottom-color: rgba(255, 10, 96, 0.4);
+}
+
+html.theme-dark .gaius-title {
+  color: #f9fafb;
+}
+
+html.theme-dark .gaius-subtitle {
+  color: #cbd5e1;
+}
+
+html.theme-dark .gaius-avatar-wrap {
+  background: #111827;
+  border-color: rgba(255, 10, 96, 0.55);
+}
+
+html.theme-dark .gaius-messages {
+  background: #0f172a;
+}
+
+html.theme-dark .gaius-bubble {
+  border-color: #334155;
+}
+
+html.theme-dark .gaius-bubble-bot {
+  background: #1e293b;
+  color: #e5e7eb;
+}
+
+html.theme-dark .gaius-lock-hint {
+  color: #cbd5e1;
+}
+
+html.theme-dark .gaius-input-row {
+  background: #111827;
+  border-top-color: rgba(255, 10, 96, 0.45);
+}
+
+html.theme-dark .gaius-scroll-bottom {
+  background: #1f2937;
+  color: #fbcfe8;
+  border-color: #f472b6;
+}
+
+html.theme-dark .gaius-input {
+  background: #1f2937;
+  color: #f3f4f6;
+  border-color: #4b5563;
+}
+
+html.theme-dark .gaius-input::placeholder {
+  color: #9ca3af;
+}
+
+html.theme-dark .gaius-send {
+  border-color: #f472b6;
+}
+
 @keyframes gaius-avatar-float {
   0%,
   100% {
@@ -1057,7 +1142,23 @@ svg.lucide,
     transform: scale(1);
   }
   50% {
-    transform: scale(1.045);
+    transform: scale(1.08);
+  }
+}
+
+@keyframes gaius-avatar-face-shift {
+  0%,
+  100% {
+    transform: translateX(0) translateY(0) scale(1.01);
+  }
+  25% {
+    transform: translateX(-1.2px) translateY(0.3px) scale(1.06);
+  }
+  50% {
+    transform: translateX(0.9px) translateY(-0.4px) scale(1.08);
+  }
+  75% {
+    transform: translateX(-0.6px) translateY(0.5px) scale(1.05);
   }
 }
 
