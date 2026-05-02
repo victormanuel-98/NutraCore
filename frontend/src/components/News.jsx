@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { Card } from "./ui/card";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
@@ -76,6 +76,12 @@ const newsArticles = [
 
 const categories = ["Todos", "Nutrición", "Fitness", "Bienestar", "Planificación"];
 
+const PixelX = ({ size = 18, className = "" }) => (
+  <svg width={size} height={size} viewBox="0 0 8 8" fill="currentColor" className={className} aria-hidden="true">
+    <path d="M0 0h1v1H0V0zm1 1h1v1H1V1zm1 1h1v1H2V2zm1 1h1v1H3V3zm1 1h1v1H4V4zm1 1h1v1H5V5zm1 1h1v1H6V6zm1 1h1v1H7V7zM0 7h1v1H0V7zm1-1h1v1H1V6zm1-1h1v1H2V5zm1-1h1v1H3V4zm2-2h1v1H5V2zm1-1h1v1H6V1zm1-1h1v1H7V0z" />
+  </svg>
+);
+
 function NewsImage({ src, alt, featured = false }) {
   const [imageError, setImageError] = useState(false);
 
@@ -105,6 +111,20 @@ function NewsImage({ src, alt, featured = false }) {
 export function News() {
   const [selectedCategory, setSelectedCategory] = useState("Todos");
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedArticle, setSelectedArticle] = useState(null);
+
+  useEffect(() => {
+    if (!selectedArticle) return undefined;
+
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") {
+        setSelectedArticle(null);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [selectedArticle]);
 
   const filteredArticles = newsArticles.filter((article) => {
     const matchesCategory = selectedCategory === "Todos" || article.category === selectedCategory;
@@ -170,6 +190,15 @@ export function News() {
                   <Card
                     key={article.id}
                     className="overflow-hidden group bg-white border-2 border-gray-200 rounded-none shadow-[4px_4px_0px_0px_#d1d5db] hover:shadow-[8px_8px_0px_0px_#ff0a60] hover:border-pink-accent transition-all"
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => setSelectedArticle(article)}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        setSelectedArticle(article);
+                      }
+                    }}
                   >
                     <div className="relative overflow-hidden aspect-[16/10] sm:aspect-[3/2] lg:aspect-[16/9]">
                       <NewsImage src={article.image} alt={article.title} featured />
@@ -196,7 +225,14 @@ export function News() {
                           </div>
                         </div>
 
-                        <Button variant="ghost" className="text-pink-accent hover:text-pink-accent/80 hover:bg-pink-50 rounded-none">
+                        <Button
+                          variant="ghost"
+                          className="text-pink-accent hover:text-pink-accent/80 hover:bg-pink-50 rounded-none"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            setSelectedArticle(article);
+                          }}
+                        >
                           Leer más
                           <ArrowRight className="w-4 h-4 ml-1" />
                         </Button>
@@ -220,6 +256,15 @@ export function News() {
                   <Card
                     key={article.id}
                     className="overflow-hidden group bg-white border-2 border-gray-200 rounded-none shadow-[4px_4px_0px_0px_#d1d5db] hover:shadow-[8px_8px_0px_0px_#ff0a60] hover:border-pink-accent transition-all"
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => setSelectedArticle(article)}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        setSelectedArticle(article);
+                      }
+                    }}
                   >
                     <div className="relative overflow-hidden aspect-[4/3] sm:aspect-[3/2] lg:aspect-[16/10]">
                       <NewsImage src={article.image} alt={article.title} />
@@ -251,6 +296,10 @@ export function News() {
                           variant="ghost"
                           size="sm"
                           className="text-pink-accent hover:text-pink-accent/80 hover:bg-pink-50 rounded-none"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            setSelectedArticle(article);
+                          }}
                         >
                           Leer
                           <ArrowRight className="w-3 h-3 ml-1" />
@@ -298,10 +347,62 @@ export function News() {
               </div>
             </div>
           </Card>
+
+          {selectedArticle && (
+            <div
+              className="fixed inset-0 z-[90] bg-black/55 p-4 sm:p-6 md:p-8 flex items-center justify-center"
+              onClick={() => setSelectedArticle(null)}
+            >
+              <Card
+                className="w-full max-w-3xl max-h-[90vh] overflow-y-auto bg-white border-2 border-pink-accent shadow-[10px_10px_0px_0px_#ff0a60] rounded-none"
+                onClick={(event) => event.stopPropagation()}
+              >
+                <div className="relative">
+                  <div className="aspect-[16/8] overflow-hidden border-b-2 border-pink-accent/40">
+                    <NewsImage src={selectedArticle.image} alt={selectedArticle.title} featured />
+                  </div>
+                  <button
+                    type="button"
+                    aria-label="Cerrar artículo"
+                    onClick={() => setSelectedArticle(null)}
+                    className="absolute top-3 right-3 h-11 w-11 border-2 border-pink-accent/40 bg-white/95 text-pink-accent hover:bg-pink-50 hover:border-pink-accent transition-all duration-200 flex items-center justify-center rounded-full group hover:scale-105"
+                  >
+                    <PixelX size={18} className="text-pink-accent pixel-icon group-hover:text-pink-accent" />
+                  </button>
+                </div>
+
+                <div className="p-6 md:p-8 space-y-5">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Badge className="bg-pink-accent text-white rounded-none">{selectedArticle.category}</Badge>
+                    <span className="text-sm text-gray-500 inline-flex items-center gap-1">
+                      <Calendar className="w-4 h-4" />
+                      {selectedArticle.date}
+                    </span>
+                    <span className="text-sm text-gray-500 inline-flex items-center gap-1">
+                      <Clock className="w-4 h-4" />
+                      {selectedArticle.readTime} min
+                    </span>
+                  </div>
+
+                  <h3 className="text-2xl md:text-3xl font-bold text-gray-900 leading-tight">{selectedArticle.title}</h3>
+
+                  <div className="space-y-4 text-gray-700 leading-relaxed">
+                    <p>{selectedArticle.excerpt}</p>
+                    <p>
+                      Este artículo forma parte de la sección informativa de NutraCore. Aquí puedes ampliar el contenido
+                      con recomendaciones prácticas, ejemplos reales y pautas aplicables a tu objetivo nutricional.
+                    </p>
+                    <p>
+                      También es un buen espacio para incluir detalles sobre frecuencia de consumo, combinaciones de
+                      alimentos, y sugerencias para adaptar estas ideas a tu rutina diaria.
+                    </p>
+                  </div>
+                </div>
+              </Card>
+            </div>
+          )}
         </div>
       </div>
     </div>
   );
 }
-
-
