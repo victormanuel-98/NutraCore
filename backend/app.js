@@ -50,6 +50,18 @@ const parseTrustProxy = () => {
   return raw || 1;
 };
 
+const defaultErrorCodeByStatus = (status) => {
+  if (status === 400) return 'BAD_REQUEST';
+  if (status === 401) return 'UNAUTHORIZED';
+  if (status === 403) return 'FORBIDDEN';
+  if (status === 404) return 'NOT_FOUND';
+  if (status === 409) return 'CONFLICT';
+  if (status === 422) return 'VALIDATION_ERROR';
+  if (status === 429) return 'RATE_LIMITED';
+  if (status >= 500) return 'INTERNAL_SERVER_ERROR';
+  return 'REQUEST_ERROR';
+};
+
 const createApp = ({ mongooseRef = mongoose } = {}) => {
   const app = express();
   app.set('trust proxy', parseTrustProxy());
@@ -75,6 +87,23 @@ const createApp = ({ mongooseRef = mongoose } = {}) => {
     })
   );
   app.use(hpp());
+
+  // Normalize API errors so routes returning { success: false, error } always include a machine-readable code.
+  app.use((req, res, next) => {
+    const originalJson = res.json.bind(res);
+    res.json = (payload) => {
+      if (payload && typeof payload === 'object' && payload.success === false) {
+        const status = res.statusCode || 500;
+        return originalJson({
+          ...payload,
+          code: payload.code || defaultErrorCodeByStatus(status)
+        });
+      }
+      return originalJson(payload);
+    };
+    next();
+  });
+
   app.use(rateLimit({ keyPrefix: 'global', ...globalLimit }));
 
   if (process.env.NODE_ENV === 'development') {
