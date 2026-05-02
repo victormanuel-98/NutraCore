@@ -3,6 +3,7 @@ import { Outlet, useLocation } from "react-router-dom";
 import { Navbar } from "./Navbar";
 import { Footer } from "./Footer";
 import { CookieConsentBanner } from "./CookieConsentBanner";
+import { GaiusChatbox } from "./GaiusChatbox";
 
 export function Root() {
   const location = useLocation();
@@ -51,6 +52,7 @@ export function Root() {
 
       <Footer />
       <CookieConsentBanner />
+      <GaiusChatbox />
     </div>
   );
 }

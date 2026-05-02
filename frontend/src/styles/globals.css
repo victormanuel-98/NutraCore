@@ -856,3 +856,240 @@ svg.lucide,
     transition: none;
   }
 }
+
+.gaius-chatbox {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 110;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.6rem;
+}
+
+.gaius-trigger {
+  width: 3.2rem;
+  height: 3.2rem;
+  border: 2px solid #111827;
+  background: var(--pink-accent);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  box-shadow: 4px 4px 0 0 #111827;
+}
+
+.gaius-window {
+  width: min(92vw, 360px);
+  height: min(68vh, 490px);
+  background: #fff;
+  border: 2px solid var(--pink-accent);
+  box-shadow: 8px 8px 0 0 #ff0a60;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.gaius-header {
+  padding: 0.75rem;
+  border-bottom: 1px solid #fbcfe8;
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  background: #fff1f7;
+}
+
+.gaius-avatar-wrap {
+  width: 3.2rem;
+  height: 3.2rem;
+  border: 1px solid #f472b6;
+  background: #fff;
+  flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+  animation: gaius-avatar-float 2.8s ease-in-out infinite;
+}
+
+.gaius-avatar {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform-origin: center;
+  animation: gaius-avatar-breath 3.2s ease-in-out infinite;
+}
+
+.gaius-avatar-fallback {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  font-family: 'Gajraj One', cursive;
+  font-size: 1.35rem;
+  color: #ffffff;
+  background: linear-gradient(135deg, #ff0a60 0%, #b90a48 100%);
+}
+
+.gaius-avatar-wrap::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border: 1px solid rgba(255, 10, 96, 0.65);
+  pointer-events: none;
+  animation: gaius-avatar-pulse 2.4s ease-out infinite;
+}
+
+.gaius-avatar-wrap::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -40%;
+  height: 38%;
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.32) 45%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  mix-blend-mode: screen;
+  pointer-events: none;
+  animation: gaius-avatar-scan 2.6s linear infinite;
+}
+
+.gaius-title {
+  margin: 0;
+  font-weight: 700;
+  color: #111827;
+  font-size: 1.3rem;
+  line-height: 1;
+}
+
+.gaius-subtitle {
+  margin: 0;
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+.gaius-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  background: #fff;
+}
+
+.gaius-bubble {
+  max-width: 90%;
+  padding: 0.55rem 0.65rem;
+  border: 1px solid #e5e7eb;
+  white-space: pre-wrap;
+  line-height: 1.35;
+  font-size: 0.88rem;
+}
+
+.gaius-bubble-bot {
+  align-self: flex-start;
+  background: #f9fafb;
+  color: #111827;
+}
+
+.gaius-bubble-user {
+  align-self: flex-end;
+  background: #ff0a60;
+  color: #fff;
+  border-color: #ff0a60;
+}
+
+.gaius-lock-hint {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: #6b7280;
+  font-size: 0.78rem;
+}
+
+.gaius-input-row {
+  display: flex;
+  gap: 0.45rem;
+  padding: 0.7rem;
+  border-top: 1px solid #fbcfe8;
+  background: #fff;
+}
+
+.gaius-input {
+  flex: 1;
+  border: 1px solid #d1d5db;
+  padding: 0.5rem 0.6rem;
+  font-size: 0.86rem;
+}
+
+.gaius-send {
+  width: 2.2rem;
+  height: 2.2rem;
+  border: 1px solid #111827;
+  background: var(--pink-accent);
+  color: #fff;
+  display: grid;
+  place-items: center;
+}
+
+.gaius-send:disabled,
+.gaius-input:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+@keyframes gaius-avatar-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-1.5px);
+  }
+}
+
+@keyframes gaius-avatar-breath {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.045);
+  }
+}
+
+@keyframes gaius-avatar-pulse {
+  0% {
+    opacity: 0.7;
+    transform: scale(1);
+  }
+  70% {
+    opacity: 0;
+    transform: scale(1.14);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.14);
+  }
+}
+
+@keyframes gaius-avatar-scan {
+  0% {
+    transform: translateY(-120%);
+  }
+  100% {
+    transform: translateY(260%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gaius-avatar-wrap,
+  .gaius-avatar,
+  .gaius-avatar-wrap::before,
+  .gaius-avatar-wrap::after {
+    animation: none;
+  }
+}
