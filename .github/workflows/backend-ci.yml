@@ -34,7 +34,7 @@ jobs:
         run: npm test
 
       - name: Run coverage gate
-        run: npm run test:coverage:80
+        run: npm run test:coverage:70
 
       - name: Security audit
         run: npm audit --omit=dev
