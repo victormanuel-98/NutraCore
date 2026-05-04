@@ -135,7 +135,7 @@ const sendVerificationEmail = async ({ toEmail, userName, verifyUrl }) => {
       }
     }
   } catch (error) {
-    throw mapSmtpError(error);
+    throw error;
   }
 };
 
