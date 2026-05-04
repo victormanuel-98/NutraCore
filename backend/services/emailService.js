@@ -31,11 +31,11 @@ const mapSmtpError = (error) => {
 const hasSmtpConfig = () =>
   Boolean(
     env('SMTP_HOST') &&
-      env('SMTP_PORT') &&
-      env('SMTP_USER') &&
-      env('SMTP_PASS') &&
-      env('SMTP_FROM') &&
-      env('SMTP_USER') !== 'tu_gmail@gmail.com'
+    env('SMTP_PORT') &&
+    env('SMTP_USER') &&
+    env('SMTP_PASS') &&
+    env('SMTP_FROM') &&
+    env('SMTP_USER') !== 'tu_gmail@gmail.com'
   );
 
 const buildRealTransporter = () => {
@@ -99,7 +99,7 @@ const sendVerificationEmail = async ({ toEmail, userName, verifyUrl }) => {
     transporter = resolved.transporter;
     mode = resolved.mode;
   } catch (error) {
-    throw mapSmtpError(error);
+    throw error;
   }
 
   const fromAddress = mode === 'real' ? env('SMTP_FROM') : '"NutraCore" <noreply@nutracore.dev>';
