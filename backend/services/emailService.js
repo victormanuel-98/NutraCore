@@ -43,15 +43,10 @@ const buildRealTransporter = () => {
   const rejectUnauthorized = envBool('SMTP_TLS_REJECT_UNAUTHORIZED', 'true');
 
   return nodemailer.createTransport({
-    host: env('SMTP_HOST'),
-    port: Number(env('SMTP_PORT')),
-    secure,
+    service: 'gmail',
     auth: {
       user: env('SMTP_USER'),
       pass: env('SMTP_PASS')
-    },
-    tls: {
-      rejectUnauthorized
     }
   });
 };
