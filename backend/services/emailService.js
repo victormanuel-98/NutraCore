@@ -82,7 +82,7 @@ const getTransporter = async () => {
       await transporter.verify();
       return { transporter, mode: 'real' };
     } catch (error) {
-      throw mapSmtpError(error);
+      throw error;
     }
   }
 
