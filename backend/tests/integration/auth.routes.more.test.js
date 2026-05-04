@@ -6,7 +6,8 @@ jest.mock('../../config/auth', () => ({
   protect: (req, res, next) => {
     req.user = { _id: 'u1', role: 'user' };
     next();
-  }
+  },
+  requireAdmin: (req, res, next) => next()
 }));
 
 jest.mock('../../services/emailService', () => ({

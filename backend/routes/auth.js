@@ -8,7 +8,7 @@ const express = require('express');
 const router = express.Router();
 const crypto = require('crypto');
 const User = require('../models/User');
-const { generateToken, protect } = require('../config/auth');
+const { generateToken, protect, requireAdmin } = require('../config/auth');
 const { sendVerificationEmail } = require('../services/emailService');
 const { requireBodyFields } = require('../middleware/validation');
 const { rateLimit } = require('../middleware/rateLimiter');
@@ -106,10 +106,27 @@ router.post('/register', rateLimit({ keyPrefix: 'auth-register', windowMs: 15 * 
         verifyUrl
       });
     } catch (emailError) {
-      await User.deleteOne({ _id: user._id });
-      return res.status(500).json({
-        success: false,
-        error: emailError.message || 'No se pudo enviar el correo de verificaciÃ³n'
+      const isProduction = process.env.NODE_ENV === 'production';
+      if (isProduction) {
+        await User.deleteOne({ _id: user._id });
+        return res.status(500).json({
+          success: false,
+          error: emailError.message || 'No se pudo enviar el correo de verificaciÃ³n'
+        });
+      }
+
+      user.isEmailVerified = true;
+      user.emailVerificationToken = null;
+      user.emailVerificationExpires = null;
+      await user.save();
+
+      return res.status(201).json({
+        success: true,
+        data: {
+          user: user.toPublicProfile()
+        },
+        message:
+          'Usuario registrado en modo desarrollo. No se pudo enviar el correo de verificación, pero la cuenta quedó activada para pruebas.'
       });
     }
 
@@ -308,6 +325,48 @@ router.post('/resend-verification', rateLimit({ keyPrefix: 'auth-resend', window
     });
   }
 });
+
+/**
+ * @route   POST /api/auth/test-email
+ * @desc    Probar envío SMTP real
+ * @access  Admin
+ */
+router.post(
+  '/test-email',
+  protect,
+  requireAdmin,
+  rateLimit({ keyPrefix: 'auth-test-email', windowMs: 10 * 60 * 1000, max: 6 }),
+  async (req, res) => {
+    try {
+      const targetEmail = String(req.body?.email || req.user?.email || '').trim().toLowerCase();
+
+      if (!targetEmail) {
+        return res.status(400).json({
+          success: false,
+          error: 'Debes indicar un email destino para la prueba'
+        });
+      }
+
+      const verifyUrl = `${getClientUrl()}/verify-email?token=test-smtp&email=${encodeURIComponent(targetEmail)}`;
+
+      await sendVerificationEmail({
+        toEmail: targetEmail,
+        userName: req.user?.name || 'Admin',
+        verifyUrl
+      });
+
+      return res.json({
+        success: true,
+        message: `Correo de prueba enviado correctamente a ${targetEmail}`
+      });
+    } catch (error) {
+      return res.status(500).json({
+        success: false,
+        error: error.message || 'Falló el envío del correo de prueba'
+      });
+    }
+  }
+);
 
 /**
  * @route   GET /api/auth/me

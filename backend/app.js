@@ -22,6 +22,17 @@ const parseAllowedOrigins = () =>
     .map((value) => value.trim())
     .filter(Boolean);
 
+const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+const matchesAllowedOrigin = (origin, allowedOrigins) =>
+  allowedOrigins.some((allowedOrigin) => {
+    if (allowedOrigin === origin) return true;
+    if (!allowedOrigin.includes('*')) return false;
+
+    const pattern = `^${escapeRegex(allowedOrigin).replace(/\\\*/g, '.*')}$`;
+    return new RegExp(pattern).test(origin);
+  });
+
 const buildCorsMiddleware = () => {
   const allowedOrigins = parseAllowedOrigins();
   const isProd = process.env.NODE_ENV === 'production';
@@ -35,7 +46,7 @@ const buildCorsMiddleware = () => {
     origin: (origin, callback) => {
       // Allow non-browser requests (curl, server-to-server).
       if (!origin) return callback(null, true);
-      if (allowedOrigins.includes(origin)) return callback(null, true);
+      if (matchesAllowedOrigin(origin, allowedOrigins)) return callback(null, true);
       return callback(new Error('Origen no permitido por CORS'));
     }
   });

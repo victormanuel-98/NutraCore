@@ -8,6 +8,22 @@ const parseJsonSafely = async (response) => {
   }
 };
 
+const translateTechnicalError = (message = '') => {
+  const normalized = String(message || '').toLowerCase();
+
+  if (normalized.includes('self-signed certificate') || normalized.includes('certificate chain')) {
+    return 'No se pudo crear la cuenta por un problema de certificado SSL en el servidor de correo. Inténtalo más tarde.';
+  }
+  if (normalized.includes('failed to fetch') || normalized.includes('networkerror') || normalized.includes('network error')) {
+    return 'No se pudo conectar con el servidor. Comprueba tu conexión e inténtalo de nuevo.';
+  }
+  if (normalized.includes('certificate has expired')) {
+    return 'No se pudo completar la operación por un problema de certificado SSL expirado.';
+  }
+
+  return message;
+};
+
 export async function apiRequest(path, { method = 'GET', token, body, headers = {} } = {}) {
   const finalHeaders = {
     ...headers
@@ -33,7 +49,8 @@ export async function apiRequest(path, { method = 'GET', token, body, headers = 
 
   if (!response.ok) {
     const details = payload?.details && Array.isArray(payload.details) ? payload.details.join(' | ') : '';
-    const message = payload?.error || payload?.message || 'Error en la petición';
+    const rawMessage = payload?.error || payload?.message || 'Error en la petición';
+    const message = translateTechnicalError(rawMessage);
     throw new Error(details ? `${message}: ${details}` : message);
   }
 

@@ -1,9 +1,33 @@
-const nodemailer = require('nodemailer');
+﻿const nodemailer = require('nodemailer');
 
 const env = (key, fallback = '') => String(process.env[key] ?? fallback).trim();
 const envBool = (key, fallback = 'false') => env(key, fallback).toLowerCase() === 'true';
 
-/* ── Detectar si hay SMTP real configurado ────────────────────────── */
+const mapSmtpError = (error) => {
+  const raw = String(error?.message || '').toLowerCase();
+  const code = String(error?.code || '').toUpperCase();
+
+  if (raw.includes('self-signed certificate') || raw.includes('certificate chain') || code === 'SELF_SIGNED_CERT_IN_CHAIN') {
+    return new Error(
+      'No se pudo enviar el correo de verificación por un certificado SSL del servidor de correo. Contacta con soporte.'
+    );
+  }
+
+  if (raw.includes('certificate has expired') || code === 'CERT_HAS_EXPIRED') {
+    return new Error('No se pudo enviar el correo de verificación porque el certificado SSL del correo ha expirado.');
+  }
+
+  if (raw.includes('invalid login') || raw.includes('auth') || code === 'EAUTH') {
+    return new Error('No se pudo enviar el correo de verificación. Revisa las credenciales SMTP.');
+  }
+
+  if (raw.includes('getaddrinfo') || code === 'ENOTFOUND') {
+    return new Error('No se pudo conectar al servidor de correo. Revisa la configuración SMTP.');
+  }
+
+  return new Error('No se pudo enviar el correo de verificación en este momento.');
+};
+
 const hasSmtpConfig = () =>
   Boolean(
     env('SMTP_HOST') &&
@@ -14,7 +38,6 @@ const hasSmtpConfig = () =>
       env('SMTP_USER') !== 'tu_gmail@gmail.com'
   );
 
-/* ── Transporter con SMTP real ────────────────────────────────────── */
 const buildRealTransporter = () => {
   const secure = envBool('SMTP_SECURE', 'false');
   const rejectUnauthorized = envBool('SMTP_TLS_REJECT_UNAUTHORIZED', 'true');
@@ -33,21 +56,12 @@ const buildRealTransporter = () => {
   });
 };
 
-/* ── Transporter con Ethereal (test) ──────────────────────────────── */
 let etherealTransporter = null;
 
 const getEtherealTransporter = async () => {
   if (etherealTransporter) return etherealTransporter;
 
   const testAccount = await nodemailer.createTestAccount();
-
-  console.log('\n╔══════════════════════════════════════════════════════════╗');
-  console.log('║  📧 MODO DESARROLLO — Ethereal Email activado          ║');
-  console.log('║  Los correos NO llegan a bandejas reales.              ║');
-  console.log('║  Podrás ver cada email con el enlace que aparece       ║');
-  console.log('║  en la consola tras cada envío.                        ║');
-  console.log('╚══════════════════════════════════════════════════════════╝\n');
-
   etherealTransporter = nodemailer.createTransport({
     host: 'smtp.ethereal.email',
     port: 587,
@@ -61,26 +75,34 @@ const getEtherealTransporter = async () => {
   return etherealTransporter;
 };
 
-/* ── Obtener transporter adecuado ─────────────────────────────────── */
 const getTransporter = async () => {
   if (hasSmtpConfig()) {
-    const transporter = buildRealTransporter();
-    await transporter.verify();
-    return { transporter, mode: 'real' };
+    try {
+      const transporter = buildRealTransporter();
+      await transporter.verify();
+      return { transporter, mode: 'real' };
+    } catch (error) {
+      throw mapSmtpError(error);
+    }
   }
 
   const transporter = await getEtherealTransporter();
   return { transporter, mode: 'ethereal' };
 };
 
-/* ── Enviar correo de verificación ────────────────────────────────── */
 const sendVerificationEmail = async ({ toEmail, userName, verifyUrl }) => {
-  const { transporter, mode } = await getTransporter();
+  let transporter;
+  let mode;
 
-  const fromAddress =
-    mode === 'real'
-      ? env('SMTP_FROM')
-      : '"NutraCore" <noreply@nutracore.dev>';
+  try {
+    const resolved = await getTransporter();
+    transporter = resolved.transporter;
+    mode = resolved.mode;
+  } catch (error) {
+    throw mapSmtpError(error);
+  }
+
+  const fromAddress = mode === 'real' ? env('SMTP_FROM') : '"NutraCore" <noreply@nutracore.dev>';
 
   const html = `
     <div style="font-family: Arial, sans-serif; line-height: 1.5; color: #111827;">
@@ -97,30 +119,23 @@ const sendVerificationEmail = async ({ toEmail, userName, verifyUrl }) => {
     </div>
   `;
 
-  const info = await transporter.sendMail({
-    from: fromAddress,
-    to: toEmail,
-    subject: 'Verifica tu cuenta de NutraCore',
-    text: `Hola ${userName || ''}, verifica tu cuenta aquí: ${verifyUrl}`,
-    html
-  });
+  try {
+    const info = await transporter.sendMail({
+      from: fromAddress,
+      to: toEmail,
+      subject: 'Verifica tu cuenta de NutraCore',
+      text: `Hola ${userName || ''}, verifica tu cuenta aquí: ${verifyUrl}`,
+      html
+    });
 
-  /* Si es Ethereal, mostrar enlace para ver el email en el navegador */
-  if (mode === 'ethereal') {
-    const previewUrl = nodemailer.getTestMessageUrl(info);
-    console.log('\n╔══════════════════════════════════════════════════════════╗');
-    console.log('║  ✉️  CORREO DE VERIFICACIÓN ENVIADO (Ethereal)          ║');
-    console.log('╠══════════════════════════════════════════════════════════╣');
-    console.log(`║  Para: ${toEmail}`);
-    console.log('║                                                          ║');
-    console.log('║  👉 Abre este enlace en tu navegador para ver el email:  ║');
-    console.log(`║  ${previewUrl}`);
-    console.log('║                                                          ║');
-    console.log('║  Dentro del email, haz clic en "Verificar correo"        ║');
-    console.log('║  para activar tu cuenta.                                 ║');
-    console.log('╚══════════════════════════════════════════════════════════╝\n');
-  } else {
-    console.log(`✅ Correo de verificación enviado a: ${toEmail}`);
+    if (mode === 'ethereal') {
+      const previewUrl = nodemailer.getTestMessageUrl(info);
+      if (previewUrl) {
+        console.log(`Vista previa del correo (Ethereal): ${previewUrl}`);
+      }
+    }
+  } catch (error) {
+    throw mapSmtpError(error);
   }
 };
 
