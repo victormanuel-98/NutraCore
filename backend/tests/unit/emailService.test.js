@@ -18,7 +18,7 @@ jest.mock('nodemailer', () => ({
 
 jest.mock('node-mailjet', () => ({
   apiConnect: (...args) => mockMailjetConnect(...args)
-}), { virtual: true });
+}));
 
 describe('emailService', () => {
   beforeEach(() => {
