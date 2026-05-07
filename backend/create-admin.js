@@ -3,7 +3,7 @@ const User = require('./models/User');
 const { connectDB, closeDB } = require('./config/db');
 
 const MONGODB_URI = process.env.MONGODB_URI;
-const ADMIN_NAME = process.env.ADMIN_NAME;
+const ADMIN_NAME = process.env.ADMIN_NAME || 'NutraAdmin0001';
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
 
@@ -13,7 +13,6 @@ const fail = (message) => {
 };
 
 if (!MONGODB_URI) fail('Falta MONGODB_URI en el entorno.');
-if (!ADMIN_NAME) fail('Falta ADMIN_NAME en el entorno.');
 if (!ADMIN_EMAIL) fail('Falta ADMIN_EMAIL en el entorno.');
 if (!ADMIN_PASSWORD) fail('Falta ADMIN_PASSWORD en el entorno.');
 if (ADMIN_PASSWORD.length < 8) fail('ADMIN_PASSWORD debe tener al menos 8 caracteres.');

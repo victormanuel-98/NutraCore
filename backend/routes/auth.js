@@ -12,20 +12,10 @@ const { generateToken, protect, requireAdmin } = require('../config/auth');
 const { sendVerificationEmail } = require('../services/emailService');
 const { requireBodyFields } = require('../middleware/validation');
 const { rateLimit } = require('../middleware/rateLimiter');
+const { buildNextUserAlias } = require('../utils/alias');
 
 const buildVerificationToken = () => crypto.randomBytes(32).toString('hex');
 const hashToken = (token) => crypto.createHash('sha256').update(token).digest('hex');
-const buildAliasCandidate = () => `NutraUser${Math.floor(1000 + Math.random() * 9000)}`;
-const buildUniqueAlias = async () => {
-  const maxAttempts = 30;
-  for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
-    const candidate = buildAliasCandidate();
-    const exists = await User.exists({ name: candidate });
-    if (!exists) return candidate;
-  }
-  return `NutraUser${String(Date.now()).slice(-4)}`;
-};
-
 const normalizeUrl = (value) => String(value || '').trim().replace(/\/+$/, '');
 
 const getClientUrl = () => {
@@ -105,7 +95,7 @@ router.post('/register', rateLimit({ keyPrefix: 'auth-register', windowMs: 15 * 
     const rawToken = buildVerificationToken();
     const hashedToken = hashToken(rawToken);
     const expires = new Date(Date.now() + 24 * 60 * 60 * 1000);
-    const alias = await buildUniqueAlias();
+    const alias = await buildNextUserAlias();
 
     const user = await User.create({
       email: normalizedEmail,

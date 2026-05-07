@@ -15,6 +15,7 @@ import {
   ArrowRight
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
+import { getCloudinaryStaticAsset } from "../config/cloudinaryStaticAssets";
 
 function AnimatedHackCounter({ target, duration = 1700, formatValue }) {
   const [displayValue, setDisplayValue] = useState(0);
@@ -60,9 +61,9 @@ export function Home() {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
   const heroVideos = [
-    "/images/home/zumoFresa.mp4",
-    "/images/home/zumokiwi.mp4",
-    "/images/home/zumos.mp4"
+    getCloudinaryStaticAsset("/images/home/zumoFresa.mp4"),
+    getCloudinaryStaticAsset("/images/home/zumokiwi.mp4"),
+    getCloudinaryStaticAsset("/images/home/zumos.mp4")
   ];
   const [heroVideoIndex, setHeroVideoIndex] = useState(0);
   const [isDesktop, setIsDesktop] = useState(() =>
@@ -224,7 +225,7 @@ export function Home() {
                     muted
                     playsInline
                     preload="auto"
-                    poster="/images/home/Batido-de-frutos-rojos.jpg"
+                    poster={getCloudinaryStaticAsset("/images/home/Batido-de-frutos-rojos.jpg")}
                     onEnded={handleHeroVideoEnded}
                     onError={handleHeroVideoError}
                   >
@@ -247,7 +248,7 @@ export function Home() {
                       muted
                       playsInline
                       preload="auto"
-                      poster="/images/home/Batido-de-frutos-rojos.jpg"
+                      poster={getCloudinaryStaticAsset("/images/home/Batido-de-frutos-rojos.jpg")}
                       onEnded={handleHeroVideoEnded}
                       onError={handleHeroVideoError}
                     >
@@ -319,7 +320,7 @@ export function Home() {
 
               <aside className="bg-pink-accent border-l-2 border-white/35 h-full flex items-center justify-center p-6">
                 <img
-                  src="/images/logos/PanelLateral.png"
+                  src={getCloudinaryStaticAsset("/images/logos/PanelLateral.png")}
                   alt="Panel lateral"
                   className="w-full h-auto max-h-[90%] object-contain select-none"
                 />
@@ -401,7 +402,7 @@ export function Home() {
             <div className="grid lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1fr)] gap-6 lg:gap-7 items-start bg-[#0f172a]">
               <div className="overflow-hidden border-2 border-white/30 reveal-item">
               <img
-                src="/images/home/hombreEnGym.jpg"
+                src={getCloudinaryStaticAsset("/images/home/hombreEnGym.jpg")}
                 alt="Entrenamiento en gimnasio"
                 className="w-full h-[280px] sm:h-[320px] lg:h-[350px] xl:h-[390px] object-cover"
               />
@@ -476,7 +477,8 @@ export function Home() {
             <Link to="/register">
               <Button
                 size="lg"
-                className="!bg-pink-accent hover:!bg-pink-accent/90 !text-white px-10 py-6 text-lg w-full sm:w-auto rounded-none border-2 border-pink-accent"
+                className="!bg-pink-accent hover:!bg-pink-accent/90 !text-white px-10 py-6 text-lg w-full sm:w-auto rounded-none border-2 !border-pink-accent"
+                style={{ backgroundColor: 'var(--pink-accent)', color: '#ffffff' }}
               >
                 Comenzar Gratis
               </Button>

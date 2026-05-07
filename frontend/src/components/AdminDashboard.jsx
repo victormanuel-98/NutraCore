@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import { Shield, Users, UserX, Trash2, RefreshCw, History, Eye, X } from 'lucide-react';
 import { Card } from './ui/card';
 import { Button } from './ui/button';
@@ -18,7 +18,7 @@ const fmtDate = (value) => {
 };
 
 export function AdminDashboard() {
-  const { token } = useAuth();
+  const { token, user: currentUser } = useAuth();
   const [users, setUsers] = useState([]);
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -56,6 +56,11 @@ export function AdminDashboard() {
   }, [token]);
 
   const handleSuspendToggle = async (user) => {
+    if (currentUser?.role === 'admin' && String(user.id) === String(currentUser?._id)) {
+      setError('No puedes suspender tu propia cuenta de administrador.');
+      return;
+    }
+
     try {
       setActionLoading(user.id, true);
       await setAdminUserStatus(user.id, !user.isActive, token);
@@ -103,6 +108,25 @@ export function AdminDashboard() {
     }
   };
 
+  const actionLabelByCode = {
+    'user.suspend': 'Suspensi\u00f3n de usuario',
+    'user.reactivate': 'Reactivaci\u00f3n de usuario',
+    'user.restore': 'Restauraci\u00f3n de usuario',
+    'user.admin.soft_delete': 'Eliminaci\u00f3n l\u00f3gica de usuario',
+    'user.self.soft_delete': 'Autodesactivaci\u00f3n de cuenta'
+  };
+
+  const targetTypeLabelByCode = {
+    User: 'Usuario',
+    Recipe: 'Receta',
+    Review: 'Rese\u00f1a',
+    News: 'Noticia',
+    Dish: 'Plato'
+  };
+
+  const formatAuditAction = (code) => actionLabelByCode[code] || code;
+  const formatTargetType = (code) => targetTypeLabelByCode[code] || code || 'N/D';
+
   return (
     <div className="min-h-screen bg-gray-50 pt-24 pb-16 px-4 sm:px-6 lg:px-8 dark-pink-fields">
       <div className="max-w-7xl mx-auto space-y-6">
@@ -136,14 +160,14 @@ export function AdminDashboard() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="text-left border-b border-gray-200">
-                  <th className="py-2 pr-2">Alias</th>
-                  <th className="py-2 pr-2">Email</th>
-                  <th className="py-2 pr-2">Rol</th>
-                  <th className="py-2 pr-2">Estado</th>
-                  <th className="py-2 pr-2">Recetas</th>
-                  <th className="py-2 pr-2">Borrado</th>
-                  <th className="py-2">Acciones</th>
+                <tr className="text-center border-b border-gray-200">
+                  <th className="py-3 px-2">Alias</th>
+                  <th className="py-3 px-2">Email</th>
+                  <th className="py-3 px-2">Rol</th>
+                  <th className="py-3 px-2">Estado</th>
+                  <th className="py-3 px-2">Recetas</th>
+                  <th className="py-3 px-2">Borrado</th>
+                  <th className="py-3 px-2">Acciones</th>
                 </tr>
               </thead>
               <tbody>
@@ -152,15 +176,15 @@ export function AdminDashboard() {
                   const isDeleted = Boolean(user.deletedAt);
 
                   return (
-                    <tr key={user.id} className="border-b border-gray-100">
-                      <td className="py-2 pr-2 font-semibold">{user.name}</td>
-                      <td className="py-2 pr-2">{user.email}</td>
-                      <td className="py-2 pr-2 uppercase">{user.role}</td>
-                      <td className="py-2 pr-2">{user.isActive ? 'Activo' : 'Suspendido'}</td>
-                      <td className="py-2 pr-2">{user.recipesCount || 0}</td>
-                      <td className="py-2 pr-2">{isDeleted ? fmtDate(user.deletedAt) : 'No'}</td>
-                      <td className="py-2">
-                        <div className="flex flex-wrap gap-2">
+                    <tr key={user.id} className="border-b border-gray-100 text-center align-middle">
+                      <td className="py-3 px-2 font-semibold">{user.name}</td>
+                      <td className="py-3 px-2 break-all">{user.email}</td>
+                      <td className="py-3 px-2 uppercase">{user.role}</td>
+                      <td className="py-3 px-2">{user.isActive ? 'Activo' : 'Suspendido'}</td>
+                      <td className="py-3 px-2">{user.recipesCount || 0}</td>
+                      <td className="py-3 px-2">{isDeleted ? fmtDate(user.deletedAt) : 'No'}</td>
+                      <td className="py-3 px-2">
+                        <div className="flex flex-wrap items-center justify-center gap-2">
                           <Button
                             variant="outline"
                             className="h-8 border-2 border-gray-900"
@@ -214,18 +238,22 @@ export function AdminDashboard() {
         <Card className="p-5 border-2 border-pink-accent rounded-none">
           <div className="flex items-center gap-2 mb-4">
             <History className="w-5 h-5 text-pink-accent" />
-            <h2 className="font-bold text-gray-900 text-xl">Auditoria</h2>
+            <h2 className="font-bold text-gray-900 text-xl">Auditoría</h2>
           </div>
 
           <div className="space-y-2 max-h-[420px] overflow-y-auto pr-1">
             {logs.map((log) => (
               <div key={log._id} className="border border-gray-200 p-3">
-                <p className="text-sm font-semibold text-gray-900">
-                  {log.action} · {fmtDate(log.createdAt)}
-                </p>
-                <p className="text-xs text-gray-600">
-                  Actor: {log.actor?.name || 'N/D'} ({log.actorRole}) · Target: {log.targetType} {log.targetId || ''}
-                </p>
+                <div className="grid md:grid-cols-[1.2fr_1fr] gap-2 items-center">
+                  <p className="text-sm font-semibold text-gray-900 text-center md:text-left">
+                    {formatAuditAction(log.action)}
+                  </p>
+                  <p className="text-xs text-gray-700 text-center md:text-right">{fmtDate(log.createdAt)}</p>
+                </div>
+                <div className="grid md:grid-cols-2 gap-1 mt-1 text-xs text-gray-600 text-center md:text-left">
+                  <p>Actor: {log.actor?.name || 'N/D'} ({log.actorRole})</p>
+                  <p className="md:text-right">Objetivo: {formatTargetType(log.targetType)} {log.targetId || ''}</p>
+                </div>
               </div>
             ))}
             {logs.length === 0 ? <p className="text-sm text-gray-500">Sin eventos recientes.</p> : null}
@@ -274,7 +302,7 @@ export function AdminDashboard() {
                     selectedUser.favoriteRecipes.map((recipe) => (
                       <div key={recipe._id} className="border border-gray-200 p-2">
                         <p className="text-sm font-semibold text-gray-900">{recipe.title}</p>
-                        <p className="text-xs text-gray-600">{recipe.category} · {recipe.prepTime || 0} min</p>
+                        <p className="text-xs text-gray-600">{recipe.category} Â· {recipe.prepTime || 0} min</p>
                       </div>
                     ))
                   )}
@@ -303,3 +331,4 @@ export function AdminDashboard() {
     </div>
   );
 }
+

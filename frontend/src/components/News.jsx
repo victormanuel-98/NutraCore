@@ -1,21 +1,92 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useRef, useState } from "react";
 import { Card } from "./ui/card";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Clock, TrendingUp, BookOpen, Search, Calendar, ArrowRight, ImageOff } from "lucide-react";
+import { getCloudinaryStaticAsset } from "../config/cloudinaryStaticAssets";
 
 const newsArticles = [
   {
     id: 1,
-    title: "Los mejores alimentos para mejorar tu rendimiento deportivo",
+    title: "Estas son las verduras que no pueden faltar en tu lista de la compra este mes",
     excerpt:
-      "Descubre qué nutrientes necesitas antes y después del entrenamiento para maximizar tus resultados y recuperación muscular.",
-    category: "Fitness",
-    image: "/images/news/news-1.jpg",
-    date: "15 Abril 2026",
-    readTime: 5,
+      "Las verduras de temporada no solo son más económicas y sostenibles, también aportan vitaminas, fibra y nutrientes esenciales para mantener una alimentación equilibrada. Descubre cuáles no deberían faltar en tu cocina esta primavera.",
+    category: "Alimentación saludable",
+    image: getCloudinaryStaticAsset("/images/news/news-1.jpg"),
+    date: "8 de mayo de 2026",
+    readTime: 4,
     isFeatured: true,
+    intro:
+      "Las verduras no deben reservarse únicamente para momentos puntuales o dietas específicas. Los expertos insisten en que forman parte esencial de una alimentación saludable y equilibrada, por lo que deberían estar presentes cada día en nuestras comidas y cenas, e incluso en desayunos o tentempiés.",
+    sections: [
+      {
+        heading: "Contexto de temporada",
+        paragraphs: [
+          "Con la llegada de la primavera, abril y mayo traen una gran variedad de verduras de temporada que destacan por su sabor, frescura y beneficios nutricionales.",
+          "Además, apostar por productos de temporada y de proximidad también ayuda a reducir el impacto ambiental y favorece la economía local.",
+          "Según explica Patricia L. Vilca Salazar, dietista-nutricionista del Grupo de Trabajo de Dietoterapia de la Sociedad Española para el Estudio de la Obesidad (Seedo), lo importante es incorporar frutas y verduras de forma **habitual** y no solo cuando estamos a dieta."
+        ]
+      },
+      {
+        heading: "¿Por qué consumir verduras a diario?",
+        paragraphs: [
+          "Las verduras aportan nutrientes esenciales como **vitaminas**, **minerales**, **fibra** y compuestos antioxidantes que ayudan a mantener el organismo en buen estado.",
+          "Su consumo habitual se relaciona con beneficios como:"
+        ],
+        bullets: [
+          "Reducción del riesgo de enfermedades cardiovasculares.",
+          "Mejora del tránsito intestinal y prevención del estreñimiento.",
+          "Ayuda en el control del peso y la obesidad.",
+          "Posible efecto protector frente a algunos tipos de cáncer."
+        ]
+      },
+      {
+        heading: "Verduras de temporada en abril y mayo",
+        paragraphs: ["Durante estas semanas es posible encontrar en el mercado verduras **frescas** y llenas de nutrientes como:"],
+        bullets: [
+          "Espárragos",
+          "Guisantes",
+          "Berenjena",
+          "Alcachofas",
+          "Puerro",
+          "Judías verdes",
+          "Habas",
+          "Pepino",
+          "Acelga",
+          "Espinaca",
+          "Endivia",
+          "Zanahoria",
+          "Remolacha",
+          "Lechuga",
+          "Brócoli",
+          "Coliflor",
+          "Col",
+          "Rábano"
+        ]
+      },
+      {
+        heading: "Beneficios de algunas verduras destacadas",
+        bullets: [
+          "Espárragos, alcachofas, guisantes y habas: ricos en fibra, folatos y compuestos prebióticos que favorecen la salud digestiva y metabólica.",
+          "Brócoli, coliflor y col: contienen glucosinolatos y compuestos sulfurados con potencial protector frente a ciertos tipos de cáncer.",
+          "Pepino y endivia: destacan por su elevado contenido en agua y minerales.",
+          "Zanahoria y remolacha: la zanahoria aporta betacarotenos y vitamina A, mientras que la remolacha contiene nitratos beneficiosos para la salud vascular.",
+          "Verduras de hoja verde: espinacas, acelgas y lechuga son fuente de vitamina K y folato, importantes para la salud ósea y celular."
+        ]
+      },
+      {
+        heading: "Ideas para incluir más verduras en tu dieta",
+        paragraphs: [
+          "La primavera es una época ideal para preparar ensaladas frescas, sopas frías y platos ligeros.",
+          "Los expertos recomiendan combinar hojas verdes con frutas de temporada como fresas o frambuesas, añadiendo también aguacate o legumbres para conseguir platos más completos y nutritivos.",
+          "Además de verduras y frutas, una alimentación equilibrada debe incluir legumbres, cereales integrales y proteínas magras como pescado, ave o conejo."
+        ]
+      }
+    ],
+    sourceLabel: "CuidatePlus (Marca)",
+    sourceUrl:
+      "https://cuidateplus.marca.com/alimentacion/nutricion/2026/04/26/son-verduras-faltar-lista-compra-mes-185000.html"
   },
   {
     id: 2,
@@ -23,10 +94,10 @@ const newsArticles = [
     excerpt:
       "Entiende cómo funcionan los macronutrientes y cómo equilibrarlos según tus objetivos de salud y composición corporal.",
     category: "Nutrición",
-    image: "/images/news/news-2.jpg",
-    date: "14 Abril 2026",
+    image: getCloudinaryStaticAsset("/images/news/news-2.jpg"),
+    date: "14 de abril de 2026",
     readTime: 8,
-    isFeatured: true,
+    isFeatured: true
   },
   {
     id: 3,
@@ -34,10 +105,10 @@ const newsArticles = [
     excerpt:
       "Separamos la ciencia de los mitos más comunes en el mundo de la nutrición y la pérdida de peso.",
     category: "Bienestar",
-    image: "/images/news/news-3.jpg",
-    date: "13 Abril 2026",
+    image: getCloudinaryStaticAsset("/images/news/news-3.jpg"),
+    date: "13 de abril de 2026",
     readTime: 6,
-    isFeatured: false,
+    isFeatured: false
   },
   {
     id: 4,
@@ -45,10 +116,10 @@ const newsArticles = [
     excerpt:
       "Estrategias prácticas para organizar tu alimentación semanal, ahorrar tiempo y mantener hábitos saludables.",
     category: "Planificación",
-    image: "/images/news/news-4.jpg",
-    date: "12 Abril 2026",
+    image: getCloudinaryStaticAsset("/images/news/news-4.jpg"),
+    date: "12 de abril de 2026",
     readTime: 7,
-    isFeatured: false,
+    isFeatured: false
   },
   {
     id: 5,
@@ -56,10 +127,10 @@ const newsArticles = [
     excerpt:
       "Analizamos los llamados superalimentos y su verdadero impacto en tu salud basándonos en evidencia científica.",
     category: "Nutrición",
-    image: "/images/news/news-5.jpg",
-    date: "11 Abril 2026",
+    image: getCloudinaryStaticAsset("/images/news/news-5.jpg"),
+    date: "11 de abril de 2026",
     readTime: 5,
-    isFeatured: false,
+    isFeatured: false
   },
   {
     id: 6,
@@ -67,14 +138,14 @@ const newsArticles = [
     excerpt:
       "Por qué el agua es esencial para tu salud y rendimiento, y cómo asegurarte de estar correctamente hidratado.",
     category: "Bienestar",
-    image: "/images/news/news-6.jpg",
-    date: "10 Abril 2026",
+    image: getCloudinaryStaticAsset("/images/news/news-6.jpg"),
+    date: "10 de abril de 2026",
     readTime: 4,
-    isFeatured: false,
-  },
+    isFeatured: false
+  }
 ];
 
-const categories = ["Todos", "Nutrición", "Fitness", "Bienestar", "Planificación"];
+const categories = ["Todos", "Alimentación saludable", "Nutrición", "Fitness", "Bienestar", "Planificación"];
 
 const PixelX = ({ size = 18, className = "" }) => (
   <svg width={size} height={size} viewBox="0 0 8 8" fill="currentColor" className={className} aria-hidden="true">
@@ -112,6 +183,7 @@ export function News() {
   const [selectedCategory, setSelectedCategory] = useState("Todos");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedArticle, setSelectedArticle] = useState(null);
+  const modalRef = useRef(null);
 
   useEffect(() => {
     if (!selectedArticle) return undefined;
@@ -125,6 +197,51 @@ export function News() {
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [selectedArticle]);
+
+  useEffect(() => {
+    if (!selectedArticle) return undefined;
+
+    const scrollY = window.scrollY;
+    const previousBodyOverflow = document.body.style.overflow;
+    const previousBodyPosition = document.body.style.position;
+    const previousBodyTop = document.body.style.top;
+    const previousBodyWidth = document.body.style.width;
+
+    document.body.style.overflow = "hidden";
+    document.body.style.position = "fixed";
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.width = "100%";
+
+    const focusTimer = window.setTimeout(() => {
+      if (modalRef.current) {
+        modalRef.current.focus({ preventScroll: true });
+      }
+    }, 10);
+
+    return () => {
+      document.body.style.overflow = previousBodyOverflow;
+      document.body.style.position = previousBodyPosition;
+      document.body.style.top = previousBodyTop;
+      document.body.style.width = previousBodyWidth;
+      window.scrollTo(0, scrollY);
+      window.clearTimeout(focusTimer);
+    };
+  }, [selectedArticle]);
+
+  const renderFormattedText = (text) => {
+    if (!text) return null;
+    const parts = String(text).split(/(\*\*[^*]+\*\*)/g);
+    return parts.map((part, index) => {
+      if (part.startsWith("**") && part.endsWith("**")) {
+        return (
+          <strong key={`strong-${index}`} className="font-bold text-gray-900">
+            {part.slice(2, -2)}
+          </strong>
+        );
+      }
+      return <span key={`text-${index}`}>{part}</span>;
+    });
+  };
 
   const filteredArticles = newsArticles.filter((article) => {
     const matchesCategory = selectedCategory === "Todos" || article.category === selectedCategory;
@@ -182,7 +299,7 @@ export function News() {
             <div className="mb-12">
               <div className="flex items-center gap-2 mb-6">
                 <TrendingUp className="w-5 h-5 text-pink-accent" />
-                <h2 className="text-2xl font-bold text-gray-900">Artículos Destacados</h2>
+                <h2 className="text-2xl font-bold text-gray-900">Artículos destacados</h2>
               </div>
 
               <div className="grid md:grid-cols-2 gap-6">
@@ -248,7 +365,7 @@ export function News() {
             <div>
               <div className="flex items-center gap-2 mb-6">
                 <BookOpen className="w-5 h-5 text-pink-accent" />
-                <h2 className="text-2xl font-bold text-gray-900">Todos los Artículos</h2>
+                <h2 className="text-2xl font-bold text-gray-900">Todos los artículos</h2>
               </div>
 
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -350,11 +467,13 @@ export function News() {
 
           {selectedArticle && (
             <div
-              className="fixed inset-0 z-[90] bg-black/55 p-4 sm:p-6 md:p-8 flex items-center justify-center"
+              className="fixed inset-0 z-[90] bg-black/55 px-4 sm:px-6 md:px-8 py-4 sm:py-6 flex items-center justify-center overflow-y-auto"
               onClick={() => setSelectedArticle(null)}
             >
               <Card
-                className="w-full max-w-3xl max-h-[90vh] overflow-y-auto bg-white border-2 border-pink-accent shadow-[10px_10px_0px_0px_#ff0a60] rounded-none"
+                ref={modalRef}
+                tabIndex={-1}
+                className="w-full max-w-3xl max-h-[92vh] overflow-y-auto bg-white border-2 border-pink-accent shadow-[10px_10px_0px_0px_#ff0a60] rounded-none"
                 onClick={(event) => event.stopPropagation()}
               >
                 <div className="relative">
@@ -371,7 +490,7 @@ export function News() {
                   </button>
                 </div>
 
-                <div className="p-6 md:p-8 space-y-5">
+                <div className="p-6 md:p-8 space-y-6">
                   <div className="flex flex-wrap items-center gap-2">
                     <Badge className="bg-pink-accent text-white rounded-none">{selectedArticle.category}</Badge>
                     <span className="text-sm text-gray-500 inline-flex items-center gap-1">
@@ -386,16 +505,67 @@ export function News() {
 
                   <h3 className="text-2xl md:text-3xl font-bold text-gray-900 leading-tight">{selectedArticle.title}</h3>
 
-                  <div className="space-y-4 text-gray-700 leading-relaxed">
-                    <p>{selectedArticle.excerpt}</p>
-                    <p>
-                      Este artículo forma parte de la sección informativa de NutraCore. Aquí puedes ampliar el contenido
-                      con recomendaciones prácticas, ejemplos reales y pautas aplicables a tu objetivo nutricional.
-                    </p>
-                    <p>
-                      También es un buen espacio para incluir detalles sobre frecuencia de consumo, combinaciones de
-                      alimentos, y sugerencias para adaptar estas ideas a tu rutina diaria.
-                    </p>
+                  <div className="space-y-5 text-gray-700 leading-relaxed">
+                    <p className="text-base md:text-lg text-gray-800">{renderFormattedText(selectedArticle.excerpt)}</p>
+
+                    {selectedArticle.intro ? (
+                      <Card className="p-4 border border-pink-accent/25 rounded-none bg-gray-50 shadow-[4px_4px_0px_0px_#ffe2ef]">
+                        <p>{renderFormattedText(selectedArticle.intro)}</p>
+                      </Card>
+                    ) : null}
+
+                    {Array.isArray(selectedArticle.sections) && selectedArticle.sections.length > 0 ? (
+                      <div className="space-y-4">
+                        {selectedArticle.sections.map((section, sectionIndex) => (
+                          <Card key={`${selectedArticle.id}-section-${sectionIndex}`} className="p-0 border border-gray-200 rounded-none overflow-hidden">
+                            <div className="grid grid-cols-[6px_1fr]">
+                              <div className="bg-pink-accent" />
+                              <div className="p-4 bg-white">
+                            {section.heading ? (
+                              <h4 className="text-lg font-bold text-gray-900 mb-3 pb-2 border-b border-pink-accent/25">{section.heading}</h4>
+                            ) : null}
+                            {Array.isArray(section.paragraphs)
+                              ? section.paragraphs.map((paragraph, paragraphIndex) => (
+                                  <p key={`${selectedArticle.id}-section-${sectionIndex}-paragraph-${paragraphIndex}`} className="mb-2 last:mb-0">
+                                    {renderFormattedText(paragraph)}
+                                  </p>
+                                ))
+                              : null}
+                            {Array.isArray(section.bullets) && section.bullets.length > 0 ? (
+                              <ul className="list-disc pl-5 space-y-1 marker:text-pink-accent">
+                                {section.bullets.map((item, itemIndex) => (
+                                  <li key={`${selectedArticle.id}-section-${sectionIndex}-bullet-${itemIndex}`}>{renderFormattedText(item)}</li>
+                                ))}
+                              </ul>
+                            ) : null}
+                          </div>
+                            </div>
+                          </Card>
+                        ))}
+                      </div>
+                    ) : Array.isArray(selectedArticle.content) && selectedArticle.content.length > 0 ? (
+                      selectedArticle.content.map((paragraph, index) => (
+                        <p key={`${selectedArticle.id}-paragraph-${index}`}>{paragraph}</p>
+                      ))
+                    ) : (
+                      <p>Artículo en actualización.</p>
+                    )}
+
+                    {selectedArticle.sourceUrl ? (
+                      <div className="pt-2 border-t border-gray-200">
+                        <p className="text-sm text-gray-500">
+                          Fuente:{" "}
+                          <a
+                            href={selectedArticle.sourceUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="text-pink-accent hover:underline"
+                          >
+                            {selectedArticle.sourceLabel || "Enlace externo"}
+                          </a>
+                        </p>
+                      </div>
+                    ) : null}
                   </div>
                 </div>
               </Card>

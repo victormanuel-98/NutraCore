@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+﻿import { Link } from "react-router-dom";
 import { Instagram, Mail } from "lucide-react";
 
 export function Footer() {
@@ -13,7 +13,7 @@ export function Footer() {
               <h3 className="font-logo text-3xl md:text-[2.7rem] tracking-tight whitespace-nowrap">NutraCore!</h3>
             </Link>
             <p className="max-w-[28ch] text-[0.95rem] leading-relaxed text-slate-300">
-              Nutrici�n inteligente para optimizar tu d�a a d�a con herramientas pr�cticas, datos claros y decisiones m�s saludables.
+              Nutrición inteligente para optimizar tu día a día con herramientas prácticas, datos claros y decisiones más saludables.
             </p>
             <div className="flex items-center gap-3">
               <a
@@ -49,85 +49,37 @@ export function Footer() {
           <div>
             <h4 className="font-navbar text-xl text-white mb-4">Plataforma</h4>
             <ul className="space-y-2.5 text-[0.95rem] text-slate-300">
-              <li>
-                <Link to="/" className="inline-block transition-all duration-200 hover:text-pink-accent hover:translate-x-0.5 hover:underline hover:underline-offset-4">
-                  Inicio
-                </Link>
-              </li>
-              <li>
-                <Link to="/catalog" className="inline-block transition-all duration-200 hover:text-pink-accent hover:translate-x-0.5 hover:underline hover:underline-offset-4">
-                  Cat�logo
-                </Link>
-              </li>
-              <li>
-                <Link to="/lab" className="inline-block transition-all duration-200 hover:text-pink-accent hover:translate-x-0.5 hover:underline hover:underline-offset-4">
-                  NutraCore Lab
-                </Link>
-              </li>
-              <li>
-                <Link to="/news" className="inline-block transition-all duration-200 hover:text-pink-accent hover:translate-x-0.5 hover:underline hover:underline-offset-4">
-                  Noticias
-                </Link>
-              </li>
+              <li><Link to="/" className="inline-block transition-all duration-200 hover:text-pink-accent hover:translate-x-0.5 hover:underline hover:underline-offset-4">Inicio</Link></li>
+              <li><Link to="/catalog" className="inline-block transition-all duration-200 hover:text-pink-accent hover:translate-x-0.5 hover:underline hover:underline-offset-4">Catálogo</Link></li>
+              <li><Link to="/lab" className="inline-block transition-all duration-200 hover:text-pink-accent hover:translate-x-0.5 hover:underline hover:underline-offset-4">NutraCore Lab</Link></li>
+              <li><Link to="/news" className="inline-block transition-all duration-200 hover:text-pink-accent hover:translate-x-0.5 hover:underline hover:underline-offset-4">Noticias</Link></li>
             </ul>
           </div>
 
           <div>
             <h4 className="font-navbar text-xl text-white mb-4">Cuenta</h4>
             <ul className="space-y-2.5 text-[0.95rem] text-slate-300">
-              <li>
-                <Link to="/register" className="inline-block transition-all duration-200 hover:text-pink-accent hover:translate-x-0.5 hover:underline hover:underline-offset-4">
-                  Registrarse
-                </Link>
-              </li>
-              <li>
-                <Link to="/login" className="inline-block transition-all duration-200 hover:text-pink-accent hover:translate-x-0.5 hover:underline hover:underline-offset-4">
-                  Iniciar sesi�n
-                </Link>
-              </li>
-              <li>
-                <Link to="/profile" className="inline-block transition-all duration-200 hover:text-pink-accent hover:translate-x-0.5 hover:underline hover:underline-offset-4">
-                  Perfil
-                </Link>
-              </li>
-              <li>
-                <a href="mailto:soporte@nutracore.app" className="inline-block transition-all duration-200 hover:text-pink-accent hover:translate-x-0.5 hover:underline hover:underline-offset-4">
-                  Soporte
-                </a>
-              </li>
+              <li><Link to="/register" className="inline-block transition-all duration-200 hover:text-pink-accent hover:translate-x-0.5 hover:underline hover:underline-offset-4">Registrarse</Link></li>
+              <li><Link to="/login" className="inline-block transition-all duration-200 hover:text-pink-accent hover:translate-x-0.5 hover:underline hover:underline-offset-4">Iniciar sesión</Link></li>
+              <li><Link to="/profile" className="inline-block transition-all duration-200 hover:text-pink-accent hover:translate-x-0.5 hover:underline hover:underline-offset-4">Perfil</Link></li>
+              <li><a href="mailto:soporte@nutracore.app" className="inline-block transition-all duration-200 hover:text-pink-accent hover:translate-x-0.5 hover:underline hover:underline-offset-4">Soporte</a></li>
             </ul>
           </div>
 
           <div>
             <h4 className="font-navbar text-xl text-white mb-4">Legal</h4>
             <ul className="space-y-2.5 text-[0.95rem] text-slate-300">
-              <li>
-                <Link to="/privacy" className="inline-block transition-all duration-200 hover:text-pink-accent hover:translate-x-0.5 hover:underline hover:underline-offset-4">
-                  Privacidad
-                </Link>
-              </li>
-              <li>
-                <Link to="/terms" className="inline-block transition-all duration-200 hover:text-pink-accent hover:translate-x-0.5 hover:underline hover:underline-offset-4">
-                  T�rminos
-                </Link>
-              </li>
-              <li>
-                <Link to="/cookies" className="inline-block transition-all duration-200 hover:text-pink-accent hover:translate-x-0.5 hover:underline hover:underline-offset-4">
-                  Cookies
-                </Link>
-              </li>
-              <li>
-                <Link to="/legal-notice" className="inline-block transition-all duration-200 hover:text-pink-accent hover:translate-x-0.5 hover:underline hover:underline-offset-4">
-                  Aviso legal
-                </Link>
-              </li>
+              <li><Link to="/privacy" className="inline-block transition-all duration-200 hover:text-pink-accent hover:translate-x-0.5 hover:underline hover:underline-offset-4">Privacidad</Link></li>
+              <li><Link to="/terms" className="inline-block transition-all duration-200 hover:text-pink-accent hover:translate-x-0.5 hover:underline hover:underline-offset-4">Términos</Link></li>
+              <li><Link to="/cookies" className="inline-block transition-all duration-200 hover:text-pink-accent hover:translate-x-0.5 hover:underline hover:underline-offset-4">Cookies</Link></li>
+              <li><Link to="/legal-notice" className="inline-block transition-all duration-200 hover:text-pink-accent hover:translate-x-0.5 hover:underline hover:underline-offset-4">Aviso legal</Link></li>
             </ul>
           </div>
         </div>
 
         <div className="mt-10 border-t border-white/10 pt-6 flex flex-col gap-2 text-center md:flex-row md:items-center md:justify-between md:text-left">
-          <p className="text-sm text-slate-400">&copy; {year} NutraCore. Plataforma integral de nutrici�n y bienestar.</p>
-          <p className="text-sm text-slate-400">Comprometidos con recomendaciones basadas en evidencia cient�fica y resultados sostenibles.</p>
+          <p className="text-sm text-slate-400">&copy; {year} NutraCore. Plataforma integral de nutrición y bienestar.</p>
+          <p className="text-sm text-slate-400">Comprometidos con recomendaciones basadas en evidencia científica y resultados sostenibles.</p>
         </div>
       </div>
     </footer>

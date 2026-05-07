@@ -8,6 +8,8 @@
     "dev": "nodemon server.js",
     "seed": "node seed.js",
     "create-admin": "node scripts/create-admin.js",
+    "normalize-aliases": "node scripts/normalize-user-aliases.js",
+    "migrate-static-assets": "node scripts/migrate-static-assets-to-cloudinary.js",
     "clean-db": "node scripts/clean-db.js",
     "test": "jest --runInBand",
     "test:unit": "jest --runInBand tests/unit",

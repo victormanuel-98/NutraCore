@@ -1,4 +1,4 @@
-import { Link, useLocation } from 'react-router-dom';
+﻿import { Link, useLocation } from 'react-router-dom';
 import { Menu, X, Sun, Moon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Button } from './ui/button';
@@ -58,9 +58,7 @@ export function Navbar() {
     ? 'text-pink-accent hover:text-pink-accent hover:bg-pink-accent/10'
     : 'text-white hover:text-white hover:bg-white/10';
 
-  const registerButtonClasses = hasScrolled
-    ? 'bg-pink-accent hover:bg-pink-accent/90 hover:opacity-100 text-white'
-    : '!bg-white !text-pink-accent border-2 border-white hover:!bg-white hover:!text-pink-accent hover:opacity-100';
+  const registerButtonClasses = 'hover:!opacity-100';
 
   const mobileMenuClasses = hasScrolled
     ? 'md:hidden bg-white border-t border-pink-accent/20'
@@ -102,7 +100,22 @@ export function Navbar() {
                     </Button>
                   </Link>
                   <Link to="/register">
-                    <Button className={`${registerButtonClasses} px-8 h-12 text-lg`}>Registrarse</Button>
+                    <Button
+                      variant="ghost"
+                      className={`${registerButtonClasses} px-8 h-12 text-lg font-semibold`}
+                      style={{
+                        backgroundColor: hasScrolled ? 'var(--pink-accent)' : '#ffffff',
+                        color: hasScrolled ? '#ffffff' : 'var(--pink-accent)',
+                        border: '2px solid',
+                        borderColor: hasScrolled ? 'transparent' : '#ffffff',
+                        boxSizing: 'border-box',
+                        minWidth: '170px',
+                        opacity: 1,
+                        textShadow: '0 0 0 currentColor'
+                      }}
+                    >
+                      Registrarse
+                    </Button>
                   </Link>
                 </>
               ) : (
@@ -170,7 +183,21 @@ export function Navbar() {
                     </Button>
                   </Link>
                   <Link to="/register" onClick={() => setMobileMenuOpen(false)}>
-                    <Button className={`w-full ${registerButtonClasses}`}>Registrarse</Button>
+                    <Button
+                      variant="ghost"
+                      className={`w-full ${registerButtonClasses} font-semibold`}
+                      style={{
+                        backgroundColor: hasScrolled ? 'var(--pink-accent)' : '#ffffff',
+                        color: hasScrolled ? '#ffffff' : 'var(--pink-accent)',
+                        border: '2px solid',
+                        borderColor: hasScrolled ? 'transparent' : '#ffffff',
+                        boxSizing: 'border-box',
+                        opacity: 1,
+                        textShadow: '0 0 0 currentColor'
+                      }}
+                    >
+                      Registrarse
+                    </Button>
                   </Link>
                 </>
               ) : (

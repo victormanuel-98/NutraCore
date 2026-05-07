@@ -93,22 +93,29 @@ export function Register() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-50 to-white">
+    <div className="min-h-screen bg-gray-50 dark-pink-fields">
       <div className="pt-24 pb-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-md mx-auto">
-          <div className="text-center mb-8">
+          <Card className="text-center mb-6 p-6 md:p-8 bg-white border-2 border-pink-accent shadow-[8px_8px_0px_0px_#ff0a60] rounded-none">
             <h1 className="text-4xl text-gray-900 mb-2">Únete a NutraCore!</h1>
             <p className="text-gray-600">Crea tu cuenta y comienza tu transformación nutricional.</p>
             <p className="text-sm text-gray-500 mt-2">Tu alias se asignará automáticamente como NutraUser####.</p>
-          </div>
+          </Card>
 
-          <Card className="p-8">
+          <Card className="p-6 md:p-8 bg-white border-2 border-pink-accent shadow-[8px_8px_0px_0px_#ff0a60] rounded-none">
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
                 <Label htmlFor="email">Correo electrónico</Label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
-                  <Input id="email" type="email" value={formData.email} onChange={(event) => handleChange('email', event.target.value)} className="pl-10" required />
+                  <Input
+                    id="email"
+                    type="email"
+                    value={formData.email}
+                    onChange={(event) => handleChange('email', event.target.value)}
+                    className="pl-10 border-2 border-gray-300 rounded-none focus-visible:border-pink-accent"
+                    required
+                  />
                 </div>
               </div>
 
@@ -121,7 +128,7 @@ export function Register() {
                     type={showPassword ? 'text' : 'password'}
                     value={formData.password}
                     onChange={(event) => handleChange('password', event.target.value)}
-                    className="pl-10 pr-12"
+                    className="pl-10 pr-12 border-2 border-gray-300 rounded-none focus-visible:border-pink-accent"
                     minLength={7}
                     required
                   />
@@ -149,7 +156,7 @@ export function Register() {
                     type={showConfirmPassword ? 'text' : 'password'}
                     value={formData.confirmPassword}
                     onChange={(event) => handleChange('confirmPassword', event.target.value)}
-                    className="pl-10 pr-12"
+                    className="pl-10 pr-12 border-2 border-gray-300 rounded-none focus-visible:border-pink-accent"
                     minLength={7}
                     required
                   />
@@ -173,7 +180,7 @@ export function Register() {
                 <div className="relative">
                   <User className="absolute left-3 top-3 w-5 h-5 text-gray-400 z-10" />
                   <Select value={formData.gender} onValueChange={(value) => handleChange('gender', value)}>
-                    <SelectTrigger className="pl-10">
+                    <SelectTrigger className="pl-10 border-2 border-gray-300 rounded-none hover:border-pink-accent">
                       <SelectValue placeholder="Selecciona tu género" />
                     </SelectTrigger>
                     <SelectContent>
@@ -190,7 +197,7 @@ export function Register() {
                 <div className="relative">
                   <Target className="absolute left-3 top-3 w-5 h-5 text-gray-400 z-10" />
                   <Select value={formData.goal} onValueChange={(value) => handleChange('goal', value)}>
-                    <SelectTrigger className="pl-10">
+                    <SelectTrigger className="pl-10 border-2 border-gray-300 rounded-none hover:border-pink-accent">
                       <span className="ml-1">{formData.goal ? goalLabels[formData.goal] : 'Selecciona tu objetivo'}</span>
                     </SelectTrigger>
                     <SelectContent>
@@ -207,7 +214,7 @@ export function Register() {
               {error && <p className="text-sm text-red-600">{error}</p>}
               {info && <p className="text-sm text-green-700">{info}</p>}
 
-              <Button type="submit" className="w-full bg-pink-accent hover:bg-pink-accent/90 text-white py-6" disabled={isLoading}>
+              <Button type="submit" className="w-full bg-pink-accent hover:bg-pink-accent/90 text-white py-6 rounded-none" disabled={isLoading}>
                 {isLoading ? 'Creando cuenta...' : 'Crear Cuenta'}
               </Button>
             </form>

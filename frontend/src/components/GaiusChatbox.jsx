@@ -3,9 +3,10 @@ import { MessageCircle, SendHorizontal, Lock } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { getRecipes } from '../services/recipeService';
 import { getNews } from '../services/newsService';
+import { getCloudinaryStaticAsset } from '../config/cloudinaryStaticAssets';
 
-const GAIUS_AVATAR_URL = '/images/logos/gaius-avatar.png';
-const GAIUS_AVATAR_FALLBACK_URL = '/images/logos/nutracoreFavicon.png';
+const GAIUS_AVATAR_URL = getCloudinaryStaticAsset('/images/logos/gaius-avatar.png');
+const GAIUS_AVATAR_FALLBACK_URL = getCloudinaryStaticAsset('/images/logos/nutracoreFavicon.png');
 
 const FORBIDDEN_WORDS = [
   'puta', 'puto', 'mierda', 'joder', 'gilipollas', 'cabron', 'cabron', 'coño', 'hostia', 'pendejo'

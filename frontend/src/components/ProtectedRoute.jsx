@@ -1,10 +1,10 @@
-import { Navigate, useLocation } from 'react-router-dom';
+Ôªøimport { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 /**
- * Componente que protege rutas que requieren autenticaciÛn.
- * Si el usuario no est· autenticado, lo redirige al login.
- * TambiÈn puede limitar por roles.
+ * Componente que protege rutas que requieren autenticaci√≥n.
+ * Si el usuario no est√° autenticado, lo redirige al login.
+ * Tambi√©n puede limitar por roles.
  */
 export function ProtectedRoute({ children, allowedRoles = [] }) {
   const { isAuthenticated, isLoading, user } = useAuth();

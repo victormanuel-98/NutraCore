@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Rutas de Usuario
  * 
  * Endpoints para gesti?n de perfil y configuraci?n
@@ -266,7 +266,7 @@ router.delete('/account', protect, async (req, res) => {
 
 /**
  * @route   GET /api/users/admin/list
- * @desc    Listar usuarios para administración
+ * @desc    Listar usuarios para administraciÃ³n
  * @access  Admin
  */
 router.get('/admin/list', protect, requireAdmin, async (req, res) => {
@@ -359,10 +359,17 @@ router.patch('/admin/:id/status', validateObjectIdParam('id'), protect, requireA
       });
     }
 
+
+    if (String(targetUser._id) === String(req.user._id) && targetUser.role === 'admin') {
+      return res.status(403).json({
+        success: false,
+        error: 'No puedes suspender tu propia cuenta de administrador'
+      });
+    }
     if (!canAdminManageUser(targetUser, req.user)) {
       return res.status(403).json({
         success: false,
-        error: 'No está permitido modificar este usuario'
+        error: 'No estÃ¡ permitido modificar este usuario'
       });
     }
 
@@ -417,7 +424,7 @@ router.delete('/admin/:id', validateObjectIdParam('id'), protect, requireAdmin, 
     if (!canAdminManageUser(targetUser, req.user)) {
       return res.status(403).json({
         success: false,
-        error: 'No está permitido eliminar este usuario'
+        error: 'No estÃ¡ permitido eliminar este usuario'
       });
     }
 
@@ -493,7 +500,7 @@ router.patch('/admin/:id/restore', validateObjectIdParam('id'), protect, require
     if (targetUser.role === 'admin') {
       return res.status(403).json({
         success: false,
-        error: 'No está permitido restaurar esta cuenta'
+        error: 'No estÃ¡ permitido restaurar esta cuenta'
       });
     }
 
@@ -576,3 +583,4 @@ router.put('/preferences', protect, async (req, res) => {
 });
 
 module.exports = router;
+
