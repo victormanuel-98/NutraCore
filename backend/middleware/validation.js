@@ -1,4 +1,4 @@
-﻿const mongoose = require('mongoose');
+const mongoose = require('mongoose');
 
 const validateObjectIdParam = (paramName) => (req, res, next) => {
   const value = req.params[paramName];

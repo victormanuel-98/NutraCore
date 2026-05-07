@@ -1,4 +1,4 @@
-﻿const mongoose = require('mongoose');
+const mongoose = require('mongoose');
 
 const getMongoUri = () => process.env.MONGODB_URI || 'mongodb://localhost:27017/nutracore';
 

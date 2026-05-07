@@ -1,4 +1,4 @@
-﻿const mockSendMail = jest.fn();
+const mockSendMail = jest.fn();
 const mockVerify = jest.fn();
 const mockCreateTransport = jest.fn(() => ({
   verify: mockVerify,

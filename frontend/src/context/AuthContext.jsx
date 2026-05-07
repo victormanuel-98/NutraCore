@@ -1,4 +1,4 @@
-﻿import { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { getCurrentUser, loginUser, registerUser, resendVerificationEmail } from '../services/authService';
 
 const AUTH_STORAGE_KEY = 'nutracore_auth';

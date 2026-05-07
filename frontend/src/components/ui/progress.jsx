@@ -1,4 +1,4 @@
-﻿import React from "react";
+import React from "react";
 import { cn } from "./utils";
 
 export function Progress({ value = 0, className = "" }) {

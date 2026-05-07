@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { MessageCircle, SendHorizontal, Lock } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { getRecipes } from '../services/recipeService';

@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Shield, Users, UserX, Trash2, RefreshCw, History, Eye, X } from 'lucide-react';
 import { Card } from './ui/card';
 import { Button } from './ui/button';

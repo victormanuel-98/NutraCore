@@ -1,4 +1,4 @@
-﻿const nodemailer = require('nodemailer');
+const nodemailer = require('nodemailer');
 const Mailjet = require('node-mailjet');
 
 const env = (key, fallback = '') => String(process.env[key] ?? fallback).trim();

@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Modelo de Usuario
  *
  * Esquema Mongoose para los usuarios de NutraCore

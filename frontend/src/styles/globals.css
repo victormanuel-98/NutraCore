@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Bitcount+Single&family=Fugaz+One&family=Gajraj+One&family=Suranna&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Bitcount+Single&family=Fugaz+One&family=Gajraj+One&family=Suranna&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
 
 :root {
   --pink-accent: #ff0a60;
@@ -50,7 +50,7 @@ body,
 }
 
 body {
-  font-family: 'Bitcount Single', monospace;
+  font-family: 'IBM Plex Sans', sans-serif;
   color: var(--text-color);
   background: var(--bg-color);
   transition: background-color 220ms ease, color 220ms ease;

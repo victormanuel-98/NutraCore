@@ -1,7 +1,7 @@
-﻿/**
+/**
  * Rutas de Noticias
  * 
- * Endpoints para artÃ­culos y noticias de nutriciÃ³n
+ * Endpoints para art?culos y noticias de nutrici?n
  */
 
 const express = require('express');
@@ -48,7 +48,7 @@ router.get('/', async (req, res) => {
       filter.featured = featured === 'true';
     }
 
-    // Calcular paginaciÃ³n
+    // Calcular paginaci?n
     const skip = (Number(page) - 1) * Number(limit);
 
     // Ejecutar query
@@ -166,7 +166,7 @@ router.post('/:id/save', validateObjectIdParam('id'), protect, async (req, res) 
 
     const user = await User.findById(req.user._id);
 
-    // Verificar si ya estÃ¡ guardada
+    // Verificar si ya est? guardada
     const isSaved = user.savedNews.includes(news._id);
 
     if (isSaved) {
@@ -217,7 +217,7 @@ router.post('/:id/like', validateObjectIdParam('id'), protect, async (req, res) 
     }
 
     // Simplificado: solo incrementar likes
-    // En una app real, guardarÃ­as quÃ© usuarios dieron like
+    // En una app real, guardar?as qu? usuarios dieron like
     await news.addLike();
 
     res.json({
@@ -294,7 +294,7 @@ router.get('/user/saved', protect, async (req, res) => {
 
 /**
  * @route   GET /api/news/categories/list
- * @desc    Obtener lista de categorÃ­as con conteo
+ * @desc    Obtener lista de categor?as con conteo
  * @access  Public
  */
 router.get('/categories/list', async (req, res) => {
@@ -310,10 +310,10 @@ router.get('/categories/list', async (req, res) => {
       data: categories
     });
   } catch (error) {
-    console.error('Error al obtener categorÃ­as:', error);
+    console.error('Error al obtener categor?as:', error);
     res.status(500).json({
       success: false,
-      error: 'Error al obtener categorÃ­as'
+      error: 'Error al obtener categor?as'
     });
   }
 });

@@ -1,7 +1,7 @@
-﻿/**
+/**
  * Rutas de Platos
  * 
- * Endpoints para el catÃ¡logo de platos
+ * Endpoints para el cat?logo de platos
  */
 
 const express = require('express');
@@ -60,7 +60,7 @@ router.get('/', async (req, res) => {
       filter.featured = featured === 'true';
     }
 
-    // Calcular paginaciÃ³n
+    // Calcular paginaci?n
     const skip = (Number(page) - 1) * Number(limit);
 
     // Ejecutar query
@@ -69,7 +69,7 @@ router.get('/', async (req, res) => {
       .skip(skip)
       .limit(Number(limit));
 
-    // Contar total para paginaciÃ³n
+    // Contar total para paginaci?n
     const total = await Dish.countDocuments(filter);
 
     res.json({
@@ -175,7 +175,7 @@ router.post('/:id/favorite', validateObjectIdParam('id'), protect, async (req, r
 
     const user = await User.findById(req.user._id);
 
-    // Verificar si ya estÃ¡ en favoritos
+    // Verificar si ya est? en favoritos
     const isFavorite = user.favorites.includes(dish._id);
 
     if (isFavorite) {
@@ -233,7 +233,7 @@ router.get('/user/favorites', protect, async (req, res) => {
 
 /**
  * @route   GET /api/dishes/categories/list
- * @desc    Obtener lista de categorÃ­as con conteo
+ * @desc    Obtener lista de categor?as con conteo
  * @access  Public
  */
 router.get('/categories/list', async (req, res) => {
@@ -249,10 +249,10 @@ router.get('/categories/list', async (req, res) => {
       data: categories
     });
   } catch (error) {
-    console.error('Error al obtener categorÃ­as:', error);
+    console.error('Error al obtener categor?as:', error);
     res.status(500).json({
       success: false,
-      error: 'Error al obtener categorÃ­as'
+      error: 'Error al obtener categor?as'
     });
   }
 });

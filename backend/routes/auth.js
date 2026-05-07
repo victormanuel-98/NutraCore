@@ -1,7 +1,7 @@
-﻿/**
- * Rutas de AutenticaciÃ³n
+/**
+ * Rutas de Autenticaci?n
  *
- * Endpoints para registro, login y gestiÃ³n de autenticaciÃ³n
+ * Endpoints para registro, login y gesti?n de autenticaci?n
  */
 
 const express = require('express');
@@ -90,7 +90,7 @@ router.post('/register', rateLimit({ keyPrefix: 'auth-register', windowMs: 15 * 
     if (!normalizedEmail || !password) {
       return res.status(400).json({
         success: false,
-        error: 'Por favor proporciona email y contraseÃ±a'
+        error: 'Por favor proporciona email y contrase?a'
       });
     }
 
@@ -98,7 +98,7 @@ router.post('/register', rateLimit({ keyPrefix: 'auth-register', windowMs: 15 * 
     if (userExists) {
       return res.status(400).json({
         success: false,
-        error: 'El email ya estÃ¡ registrado'
+        error: 'El email ya est? registrado'
       });
     }
 
@@ -120,7 +120,7 @@ router.post('/register', rateLimit({ keyPrefix: 'auth-register', windowMs: 15 * 
       emailVerificationExpires: expires
     });
 
-    // REFUERZO: Forzar el guardado por si User.create fallÃ³ en persistir esos campos especÃ­ficos
+    // REFUERZO: Forzar el guardado por si User.create fall? en persistir esos campos espec?ficos
     await User.updateOne({ _id: user._id }, {
       $set: {
         emailVerificationToken: hashedToken,
@@ -141,7 +141,7 @@ router.post('/register', rateLimit({ keyPrefix: 'auth-register', windowMs: 15 * 
         await User.deleteOne({ _id: user._id });
         return res.status(500).json({
           success: false,
-          error: emailError.message || 'No se pudo enviar el correo de verificaciÃ³n'
+          error: emailError.message || 'No se pudo enviar el correo de verificaci?n'
         });
       }
 
@@ -185,7 +185,7 @@ router.post('/register', rateLimit({ keyPrefix: 'auth-register', windowMs: 15 * 
 
 /**
  * @route   POST /api/auth/login
- * @desc    Iniciar sesiÃ³n
+ * @desc    Iniciar sesi?n
  * @access  Public
  */
 router.post('/login', rateLimit({ keyPrefix: 'auth-login', windowMs: 15 * 60 * 1000, max: 20 }), requireBodyFields(['email', 'password']), async (req, res) => {
@@ -196,7 +196,7 @@ router.post('/login', rateLimit({ keyPrefix: 'auth-login', windowMs: 15 * 60 * 1
     if (!normalizedEmail || !password) {
       return res.status(400).json({
         success: false,
-        error: 'Por favor proporciona email y contraseÃ±a'
+        error: 'Por favor proporciona email y contrase?a'
       });
     }
 
@@ -204,7 +204,7 @@ router.post('/login', rateLimit({ keyPrefix: 'auth-login', windowMs: 15 * 60 * 1
     if (!user) {
       return res.status(401).json({
         success: false,
-        error: 'Credenciales invÃ¡lidas'
+        error: 'Credenciales inv?lidas'
       });
     }
 
@@ -212,7 +212,7 @@ router.post('/login', rateLimit({ keyPrefix: 'auth-login', windowMs: 15 * 60 * 1
     if (!isPasswordValid) {
       return res.status(401).json({
         success: false,
-        error: 'Credenciales invÃ¡lidas'
+        error: 'Credenciales inv?lidas'
       });
     }
 
@@ -226,7 +226,7 @@ router.post('/login', rateLimit({ keyPrefix: 'auth-login', windowMs: 15 * 60 * 1
     if (!user.isEmailVerified && user.role !== 'admin') {
       return res.status(401).json({
         success: false,
-        error: 'Debes verificar tu correo antes de iniciar sesiÃ³n'
+        error: 'Debes verificar tu correo antes de iniciar sesi?n'
       });
     }
 
@@ -238,12 +238,12 @@ router.post('/login', rateLimit({ keyPrefix: 'auth-login', windowMs: 15 * 60 * 1
         user: user.toPublicProfile(),
         token
       },
-      message: 'Inicio de sesiÃ³n exitoso'
+      message: 'Inicio de sesi?n exitoso'
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      error: 'Error al iniciar sesiÃ³n'
+      error: 'Error al iniciar sesi?n'
     });
   }
 });
@@ -277,7 +277,7 @@ router.get('/verify-email', async (req, res) => {
     if (!user) {
       return res.status(400).json({
         success: false,
-        error: 'El enlace de verificaciÃ³n es invÃ¡lido o ha caducado'
+        error: 'El enlace de verificaci?n es inv?lido o ha caducado'
       });
     }
 
@@ -311,7 +311,7 @@ router.get('/verify-email', async (req, res) => {
 
 /**
  * @route   POST /api/auth/resend-verification
- * @desc    Reenviar correo de verificaciÃ³n
+ * @desc    Reenviar correo de verificaci?n
  * @access  Public
  */
 router.post('/resend-verification', rateLimit({ keyPrefix: 'auth-resend', windowMs: 15 * 60 * 1000, max: 8 }), async (req, res) => {
@@ -338,7 +338,7 @@ router.post('/resend-verification', rateLimit({ keyPrefix: 'auth-resend', window
     if (user.isEmailVerified) {
       return res.status(400).json({
         success: false,
-        error: 'La cuenta ya estÃ¡ verificada'
+        error: 'La cuenta ya est? verificada'
       });
     }
 
@@ -346,12 +346,12 @@ router.post('/resend-verification', rateLimit({ keyPrefix: 'auth-resend', window
 
     return res.json({
       success: true,
-      message: 'Correo de verificaciÃ³n reenviado'
+      message: 'Correo de verificaci?n reenviado'
     });
   } catch (error) {
     return res.status(500).json({
       success: false,
-      error: error.message || 'No se pudo reenviar el correo de verificaciÃ³n'
+      error: error.message || 'No se pudo reenviar el correo de verificaci?n'
     });
   }
 });
@@ -416,7 +416,7 @@ router.get('/me', protect, async (req, res) => {
   } catch (error) {
     res.status(500).json({
       success: false,
-      error: 'Error al obtener informaciÃ³n del usuario'
+      error: 'Error al obtener informaci?n del usuario'
     });
   }
 });
@@ -424,7 +424,7 @@ router.get('/me', protect, async (req, res) => {
 router.post('/logout', protect, async (req, res) => {
   res.json({
     success: true,
-    message: 'SesiÃ³n cerrada exitosamente'
+    message: 'Sesi?n cerrada exitosamente'
   });
 });
 
@@ -435,7 +435,7 @@ router.put('/change-password', protect, async (req, res) => {
     if (!currentPassword || !newPassword) {
       return res.status(400).json({
         success: false,
-        error: 'Por favor proporciona la contraseÃ±a actual y la nueva'
+        error: 'Por favor proporciona la contrase?a actual y la nueva'
       });
     }
 
@@ -445,7 +445,7 @@ router.put('/change-password', protect, async (req, res) => {
     if (!isPasswordValid) {
       return res.status(401).json({
         success: false,
-        error: 'ContraseÃ±a actual incorrecta'
+        error: 'Contrase?a actual incorrecta'
       });
     }
 
@@ -458,7 +458,7 @@ router.put('/change-password', protect, async (req, res) => {
       data: {
         token: generateToken(user)
       },
-      message: 'ContraseÃ±a actualizada exitosamente'
+      message: 'Contrase?a actualizada exitosamente'
     });
   } catch (error) {
     if (error.name === 'ValidationError') {
@@ -471,7 +471,7 @@ router.put('/change-password', protect, async (req, res) => {
 
     res.status(500).json({
       success: false,
-      error: 'Error al cambiar contraseÃ±a'
+      error: 'Error al cambiar contrase?a'
     });
   }
 });

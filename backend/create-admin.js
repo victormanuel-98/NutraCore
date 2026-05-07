@@ -1,4 +1,4 @@
-﻿require('dotenv').config();
+require('dotenv').config();
 const User = require('./models/User');
 const { connectDB, closeDB } = require('./config/db');
 

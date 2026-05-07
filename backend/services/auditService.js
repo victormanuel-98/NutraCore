@@ -1,4 +1,4 @@
-﻿const AuditLog = require('../models/AuditLog');
+const AuditLog = require('../models/AuditLog');
 
 const normalizeIp = (value = '') => String(value || '').replace(/^::ffff:/, '');
 
