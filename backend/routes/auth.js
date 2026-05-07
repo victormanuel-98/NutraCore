@@ -26,7 +26,37 @@ const buildUniqueAlias = async () => {
   return `NutraUser${String(Date.now()).slice(-4)}`;
 };
 
-const getClientUrl = () => process.env.CLIENT_URL || 'http://localhost:5173';
+const normalizeUrl = (value) => String(value || '').trim().replace(/\/+$/, '');
+
+const getClientUrl = () => {
+  const preferred = [
+    process.env.CLIENT_URL,
+    process.env.FRONTEND_URL,
+    process.env.PUBLIC_CLIENT_URL
+  ]
+    .map(normalizeUrl)
+    .find(Boolean);
+
+  if (preferred) return preferred;
+
+  const firstCorsOrigin = String(process.env.CORS_ORIGINS || '')
+    .split(',')
+    .map(normalizeUrl)
+    .find(Boolean);
+  if (firstCorsOrigin) return firstCorsOrigin;
+
+  const renderExternalUrl = normalizeUrl(process.env.RENDER_EXTERNAL_URL);
+  if (renderExternalUrl) return renderExternalUrl;
+
+  const localFallback = 'http://localhost:5173';
+  const isProduction = process.env.NODE_ENV === 'production';
+  if (isProduction) {
+    throw new Error(
+      'Falta la URL pública del frontend. Define CLIENT_URL (o FRONTEND_URL/PUBLIC_CLIENT_URL) en el backend.'
+    );
+  }
+  return localFallback;
+};
 
 const sendVerificationEmailForUser = async (user) => {
   const rawToken = buildVerificationToken();
