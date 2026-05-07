@@ -60,7 +60,7 @@ export function Navbar() {
 
   const registerButtonClasses = hasScrolled
     ? 'bg-pink-accent hover:bg-pink-accent/90 text-white'
-    : 'bg-white hover:bg-white/90 text-pink-accent';
+    : '!bg-white !text-pink-accent border-2 border-white hover:!bg-white/95 hover:!text-pink-accent';
 
   const mobileMenuClasses = hasScrolled
     ? 'md:hidden bg-white border-t border-pink-accent/20'

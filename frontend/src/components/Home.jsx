@@ -191,7 +191,7 @@ export function Home() {
           <div className="relative bg-pink-accent border-2 border-gray-900 shadow-[10px_10px_0px_0px_#ff0a60] overflow-hidden">
             <div className="lg:hidden">
               <div className="p-8 text-white space-y-6">
-                <h1 className="text-5xl leading-none">
+                <h1 className="text-5xl leading-[1.08]">
                   <span className="block">¡Bienvenido a</span>
                   <span className="block">NutraCore!</span>
                 </h1>
@@ -235,7 +235,7 @@ export function Home() {
               </div>
             </div>
 
-            <div className="hidden lg:grid lg:grid-cols-[1fr_clamp(220px,14vw,320px)] lg:min-h-[calc(100svh-80px)]">
+            <div className="hidden lg:grid lg:grid-cols-[1fr_clamp(220px,14vw,320px)] lg:min-h-[calc(100svh-80px)] xl:min-h-[calc(100svh-80px)]">
               <div className="relative h-full overflow-hidden flex items-center">
                 {/* Imagen de fondo a la derecha */}
                 <div className="absolute inset-0 flex justify-end">
@@ -266,7 +266,7 @@ export function Home() {
                 {/* Contenido alineado con el logo del Navbar */}
                 <div className="relative z-10 w-full px-4 sm:px-8 lg:px-12">
                   <div className="max-w-[650px] text-white py-12">
-                    <h1 className="text-[clamp(3rem,4.5vw,5.5rem)] font-logo leading-[0.8] mb-8 drop-shadow-lg">
+                    <h1 className="text-[clamp(3rem,4.5vw,5.5rem)] font-logo leading-[1.02] mb-8 drop-shadow-lg">
                       ¡Bienvenido a
                       <br />
                       <span className="text-white">NutraCore!</span>
@@ -329,16 +329,16 @@ export function Home() {
         </div>
       </section>
 
-      <section id="indice" data-home-snap="true" className="min-h-[calc(100svh-80px)] py-10 px-4 sm:px-6 lg:px-8 bg-gray-50 home-snap-section flex items-center">
+      <section id="indice" data-home-snap="true" className="py-8 sm:py-10 px-4 sm:px-6 lg:px-8 bg-gray-50 home-snap-section flex items-start lg:items-center">
         <div className="max-w-7xl mx-auto">
-          <Card className="text-center mb-8 reveal-item p-6 md:p-8 bg-white border-2 border-pink-accent shadow-[8px_8px_0px_0px_#ff0a60] rounded-none">
+          <Card className="text-center mb-6 reveal-item p-5 md:p-7 bg-white border-2 border-pink-accent shadow-[8px_8px_0px_0px_#ff0a60] rounded-none">
             <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-3">Todo lo que necesitas para optimizar tu nutrición</h2>
             <p className="text-base lg:text-lg text-gray-600 max-w-3xl mx-auto">
               Herramientas inteligentes diseñadas para hacer tu alimentación más eficiente
             </p>
           </Card>
 
-          <div className="grid md:grid-cols-2 gap-5 lg:gap-6">
+          <div className="grid md:grid-cols-2 gap-4 lg:gap-5">
             {indexCards.map(({ icon: Icon, title, description, destination }) => (
               <button
                 type="button"
@@ -346,11 +346,11 @@ export function Home() {
                 onClick={() => handleIndexCardClick(destination)}
                 className="text-left"
               >
-                <Card className="p-6 border-2 border-pink-accent index-card-hover cursor-pointer h-full bg-white shadow-[6px_6px_0px_0px_#ff0a60] rounded-none">
-                  <div className="bg-pink-accent/10 w-12 h-12 border border-pink-accent/40 flex items-center justify-center mb-4 transition-colors">
-                    <Icon className="w-6 h-6 text-pink-accent pixel-icon" strokeWidth={2.7} />
+                <Card className="p-4 md:p-5 border-2 border-pink-accent index-card-hover cursor-pointer h-full bg-white shadow-[6px_6px_0px_0px_#ff0a60] rounded-none">
+                  <div className="bg-pink-accent/10 w-10 h-10 md:w-11 md:h-11 border border-pink-accent/40 flex items-center justify-center mb-3 transition-colors">
+                    <Icon className="w-5 h-5 text-pink-accent pixel-icon" strokeWidth={2.7} />
                   </div>
-                  <h3 className="text-lg font-bold text-gray-900 mb-2 transition-colors">{title}</h3>
+                  <h3 className="text-base md:text-lg font-bold text-gray-900 mb-2 transition-colors">{title}</h3>
                   <p className="text-sm text-gray-600 leading-relaxed transition-colors">{description}</p>
                 </Card>
               </button>
@@ -362,7 +362,7 @@ export function Home() {
       <section id="como-funciona" data-home-snap="true" className="py-20 px-4 sm:px-6 lg:px-8 home-snap-section bg-gray-50">
         <div className="max-w-7xl mx-auto">
           <Card className="text-center mb-16 reveal-item p-6 md:p-8 bg-white border-2 border-pink-accent shadow-[8px_8px_0px_0px_#ff0a60] rounded-none">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">Cómo funciona NutraCore</h2>
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">Cómo funciona NutraCore!</h2>
             <p className="text-xl text-gray-600">Solo tres pasos para transformar tu alimentación</p>
           </Card>
 
@@ -392,23 +392,23 @@ export function Home() {
         </div>
       </section>
 
-      <section data-home-snap="true" className="py-10 px-4 sm:px-6 lg:px-8 bg-[#0f172a] home-snap-section lg:min-h-[calc(100svh-80px)] lg:flex lg:items-center">
+      <section data-home-snap="true" className="py-10 px-4 sm:px-6 lg:px-8 bg-[#0f172a] home-snap-section lg:py-14">
         <div className="max-w-7xl mx-auto">
           <Card
             className="p-5 lg:p-7 !bg-[#0f172a] border-2 border-pink-accent shadow-[10px_10px_0px_0px_#ff0a60] rounded-none"
             style={{ backgroundColor: "#0f172a" }}
           >
-            <div className="grid lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1fr)] gap-7 lg:gap-9 items-start bg-[#0f172a]">
+            <div className="grid lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1fr)] gap-6 lg:gap-7 items-start bg-[#0f172a]">
               <div className="overflow-hidden border-2 border-white/30 reveal-item">
               <img
                 src="/images/home/hombreEnGym.jpg"
                 alt="Entrenamiento en gimnasio"
-                className="w-full h-[360px] lg:h-[390px] xl:h-[420px] object-cover"
+                className="w-full h-[280px] sm:h-[320px] lg:h-[350px] xl:h-[390px] object-cover"
               />
             </div>
 
             <div className="text-white reveal-item">
-              <h2 className="text-2xl xl:text-[1.9rem] font-bold leading-tight max-w-[18ch]">Potencia tu rendimiento con nutrición optimizada</h2>
+              <h2 className="text-xl sm:text-2xl xl:text-[1.8rem] font-bold leading-tight max-w-[20ch]">Potencia tu rendimiento con nutrición optimizada</h2>
 
               <div className="mt-4 space-y-2.5">
                 <div className="bg-white/5 border-2 border-white/20 rounded-none p-3">
@@ -476,7 +476,7 @@ export function Home() {
             <Link to="/register">
               <Button
                 size="lg"
-                className="bg-pink-accent hover:bg-pink-accent/90 text-white px-10 py-6 text-lg w-full sm:w-auto rounded-none border-2 border-pink-accent"
+                className="!bg-pink-accent hover:!bg-pink-accent/90 !text-white px-10 py-6 text-lg w-full sm:w-auto rounded-none border-2 border-pink-accent"
               >
                 Comenzar Gratis
               </Button>

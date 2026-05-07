@@ -13,12 +13,12 @@ export function Footer() {
               <h3 className="font-logo text-3xl md:text-[2.7rem] tracking-tight whitespace-nowrap">NutraCore!</h3>
             </Link>
             <p className="max-w-[28ch] text-[0.95rem] leading-relaxed text-slate-300">
-              NutriciÃ³n inteligente para optimizar tu dÃ­a a dÃ­a con herramientas prÃ¡cticas, datos claros y decisiones mÃ¡s saludables.
+              Nutrición inteligente para optimizar tu día a día con herramientas prácticas, datos claros y decisiones más saludables.
             </p>
             <div className="flex items-center gap-3">
               <a
                 href="mailto:soporte@nutracore.app"
-                className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-white/15 text-slate-200 transition-colors hover:border-pink-accent/80 hover:text-white"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-white/15 text-slate-200 transition-all duration-200 hover:-translate-y-0.5 hover:scale-105 hover:border-pink-accent hover:bg-pink-accent/20 hover:text-white"
                 aria-label="Correo de soporte"
               >
                 <Mail className="h-4 w-4" />
@@ -27,7 +27,7 @@ export function Footer() {
                 href="https://www.instagram.com/nutracore2026/"
                 target="_blank"
                 rel="noreferrer noopener"
-                className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-white/15 text-slate-200 transition-colors hover:border-pink-accent/80 hover:text-white"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-white/15 text-slate-200 transition-all duration-200 hover:-translate-y-0.5 hover:scale-105 hover:border-pink-accent hover:bg-pink-accent/20 hover:text-white"
                 aria-label="Instagram NutraCore"
               >
                 <Instagram className="h-4 w-4" />
@@ -36,7 +36,7 @@ export function Footer() {
                 href="https://x.com/nutra7029"
                 target="_blank"
                 rel="noreferrer noopener"
-                className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-white/15 text-slate-200 transition-colors hover:border-pink-accent/80 hover:text-white"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-white/15 text-slate-200 transition-all duration-200 hover:-translate-y-0.5 hover:scale-105 hover:border-pink-accent hover:bg-pink-accent/20 hover:text-white"
                 aria-label="X de NutraCore"
               >
                 <svg viewBox="0 0 24 24" aria-hidden="true" className="h-4 w-4 fill-current">
@@ -50,22 +50,22 @@ export function Footer() {
             <h4 className="font-navbar text-xl text-white mb-4">Plataforma</h4>
             <ul className="space-y-2.5 text-[0.95rem] text-slate-300">
               <li>
-                <Link to="/" className="transition-colors hover:text-pink-accent">
+                <Link to="/" className="inline-block transition-all duration-200 hover:text-pink-accent hover:translate-x-0.5 hover:underline hover:underline-offset-4">
                   Inicio
                 </Link>
               </li>
               <li>
-                <Link to="/catalog" className="transition-colors hover:text-pink-accent">
-                  CatÃ¡logo
+                <Link to="/catalog" className="inline-block transition-all duration-200 hover:text-pink-accent hover:translate-x-0.5 hover:underline hover:underline-offset-4">
+                  Catálogo
                 </Link>
               </li>
               <li>
-                <Link to="/lab" className="transition-colors hover:text-pink-accent">
+                <Link to="/lab" className="inline-block transition-all duration-200 hover:text-pink-accent hover:translate-x-0.5 hover:underline hover:underline-offset-4">
                   NutraCore Lab
                 </Link>
               </li>
               <li>
-                <Link to="/news" className="transition-colors hover:text-pink-accent">
+                <Link to="/news" className="inline-block transition-all duration-200 hover:text-pink-accent hover:translate-x-0.5 hover:underline hover:underline-offset-4">
                   Noticias
                 </Link>
               </li>
@@ -76,22 +76,22 @@ export function Footer() {
             <h4 className="font-navbar text-xl text-white mb-4">Cuenta</h4>
             <ul className="space-y-2.5 text-[0.95rem] text-slate-300">
               <li>
-                <Link to="/register" className="transition-colors hover:text-pink-accent">
+                <Link to="/register" className="inline-block transition-all duration-200 hover:text-pink-accent hover:translate-x-0.5 hover:underline hover:underline-offset-4">
                   Registrarse
                 </Link>
               </li>
               <li>
-                <Link to="/login" className="transition-colors hover:text-pink-accent">
-                  Iniciar sesiÃ³n
+                <Link to="/login" className="inline-block transition-all duration-200 hover:text-pink-accent hover:translate-x-0.5 hover:underline hover:underline-offset-4">
+                  Iniciar sesión
                 </Link>
               </li>
               <li>
-                <Link to="/profile" className="transition-colors hover:text-pink-accent">
+                <Link to="/profile" className="inline-block transition-all duration-200 hover:text-pink-accent hover:translate-x-0.5 hover:underline hover:underline-offset-4">
                   Perfil
                 </Link>
               </li>
               <li>
-                <a href="mailto:soporte@nutracore.app" className="transition-colors hover:text-pink-accent">
+                <a href="mailto:soporte@nutracore.app" className="inline-block transition-all duration-200 hover:text-pink-accent hover:translate-x-0.5 hover:underline hover:underline-offset-4">
                   Soporte
                 </a>
               </li>
@@ -102,22 +102,22 @@ export function Footer() {
             <h4 className="font-navbar text-xl text-white mb-4">Legal</h4>
             <ul className="space-y-2.5 text-[0.95rem] text-slate-300">
               <li>
-                <Link to="/privacy" className="transition-colors hover:text-pink-accent">
+                <Link to="/privacy" className="inline-block transition-all duration-200 hover:text-pink-accent hover:translate-x-0.5 hover:underline hover:underline-offset-4">
                   Privacidad
                 </Link>
               </li>
               <li>
-                <Link to="/terms" className="transition-colors hover:text-pink-accent">
-                  TÃ©rminos
+                <Link to="/terms" className="inline-block transition-all duration-200 hover:text-pink-accent hover:translate-x-0.5 hover:underline hover:underline-offset-4">
+                  Términos
                 </Link>
               </li>
               <li>
-                <Link to="/cookies" className="transition-colors hover:text-pink-accent">
+                <Link to="/cookies" className="inline-block transition-all duration-200 hover:text-pink-accent hover:translate-x-0.5 hover:underline hover:underline-offset-4">
                   Cookies
                 </Link>
               </li>
               <li>
-                <Link to="/legal-notice" className="transition-colors hover:text-pink-accent">
+                <Link to="/legal-notice" className="inline-block transition-all duration-200 hover:text-pink-accent hover:translate-x-0.5 hover:underline hover:underline-offset-4">
                   Aviso legal
                 </Link>
               </li>
@@ -126,8 +126,8 @@ export function Footer() {
         </div>
 
         <div className="mt-10 border-t border-white/10 pt-6 flex flex-col gap-2 text-center md:flex-row md:items-center md:justify-between md:text-left">
-          <p className="text-sm text-slate-400">&copy; {year} NutraCore. Todos los derechos reservados.</p>
-          <p className="text-sm text-slate-400">NutriciÃ³n basada en evidencia para resultados sostenibles.</p>
+          <p className="text-sm text-slate-400">&copy; {year} NutraCore. Plataforma integral de nutrición y bienestar.</p>
+          <p className="text-sm text-slate-400">Comprometidos con recomendaciones basadas en evidencia científica y resultados sostenibles.</p>
         </div>
       </div>
     </footer>
