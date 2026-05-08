@@ -9,8 +9,8 @@ export function RecipeImageManager({
   images = [],
   onChange,
   disabled = false,
-  title = 'Imagenes de la receta',
-  helperText = 'Maximo 5 imagenes por receta.',
+  title = 'Imágenes de la receta',
+  helperText = 'Máximo 5 imágenes por receta.',
   folder = 'nutracore/recipes',
   maxImages = 5
 }) {
@@ -19,9 +19,9 @@ export function RecipeImageManager({
   const remainingSlots = Math.max(0, maxImages - safeImages.length);
 
   const summaryText = useMemo(() => {
-    if (safeImages.length === 0) return 'No hay imagenes cargadas';
+    if (safeImages.length === 0) return 'No hay imágenes cargadas';
     if (safeImages.length === 1) return '1 imagen cargada';
-    return `${safeImages.length} imagenes cargadas`;
+    return `${safeImages.length} imágenes cargadas`;
   }, [safeImages.length]);
 
   const handleAddImage = (url) => {
@@ -65,14 +65,14 @@ export function RecipeImageManager({
         <div className="border-2 border-pink-accent bg-white shadow-[8px_8px_0px_0px_#ff0a60]">
           <div className="flex items-start justify-between gap-4 border-b-2 border-pink-accent/20 px-6 py-4">
             <div>
-              <h3 className="text-2xl font-bold text-gray-900">Gestor de imagenes</h3>
-              <p className="text-sm text-gray-600">Maximo {maxImages} imagenes.</p>
+              <h3 className="text-2xl font-bold text-gray-900">Gestor de imágenes</h3>
+              <p className="text-sm text-gray-600">Máximo {maxImages} imágenes.</p>
             </div>
             <button
               type="button"
               onClick={() => setIsOpen(false)}
               className="flex h-10 w-10 items-center justify-center border-2 border-gray-900 bg-white text-gray-900 transition-all duration-150 hover:border-pink-accent hover:bg-pink-50 hover:text-pink-accent"
-              aria-label="Cerrar gestor de imagenes"
+              aria-label="Cerrar gestor de imágenes"
             >
               <X className="h-5 w-5" />
             </button>
@@ -82,7 +82,7 @@ export function RecipeImageManager({
             <div className="space-y-4">
               <div className="flex flex-col gap-4 border-2 border-gray-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between">
                 <div className="space-y-1">
-                  <p className="text-xs uppercase tracking-[0.18em] text-gray-500">Imagenes cargadas</p>
+                  <p className="text-xs uppercase tracking-[0.18em] text-gray-500">Imágenes cargadas</p>
                   <p className="text-2xl font-semibold text-gray-900">{safeImages.length}/{maxImages}</p>
                 </div>
                 <div className="flex items-center">
@@ -99,11 +99,11 @@ export function RecipeImageManager({
                         className="rounded-none bg-pink-accent text-white transition-all duration-150 hover:-translate-y-0.5 hover:bg-pink-accent/90 hover:shadow-[4px_4px_0px_0px_rgba(255,10,96,0.24)]"
                       >
                         <ImagePlus className="mr-2 h-4 w-4" />
-                        Añadir imagenes
+                        Añadir imágenes
                       </Button>
                     </CloudinaryUploadWidget>
                   ) : (
-                    <p className="text-xs font-semibold uppercase text-gray-500">Limite alcanzado</p>
+                    <p className="text-xs font-semibold uppercase text-gray-500">Límite alcanzado</p>
                   )}
                 </div>
               </div>
@@ -137,8 +137,8 @@ export function RecipeImageManager({
                   ))
                 ) : (
                   <div className="border-2 border-dashed border-gray-300 bg-white p-8 text-center">
-                    <p className="text-sm font-semibold uppercase text-gray-700">Todavia no hay imagenes</p>
-                    <p className="mt-2 text-xs text-gray-500">Añade imagenes y elimina las que no quieras conservar.</p>
+                    <p className="text-sm font-semibold uppercase text-gray-700">Todavía no hay imágenes</p>
+                    <p className="mt-2 text-xs text-gray-500">Añade imágenes y elimina las que no quieras conservar.</p>
                   </div>
                 )}
               </div>

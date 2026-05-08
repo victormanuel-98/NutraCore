@@ -6,6 +6,8 @@ import { Input } from "./ui/input";
 import { Clock, TrendingUp, BookOpen, Search, Calendar, ArrowRight, ImageOff } from "lucide-react";
 import { getCloudinaryStaticAsset } from "../config/cloudinaryStaticAssets";
 import { useNotification } from "../context/NotificationContext";
+import { subscribeToNewsletter } from "../services/newsService";
+import { isEmailLocalPartTooLong, validateEmailAddress } from "../utils/emailValidation";
 
 const newsArticles = [
   {
@@ -637,22 +639,29 @@ export function News() {
   const [newsletterLoading, setNewsletterLoading] = useState(false);
   const { showNotification } = useNotification();
 
-  const handleNewsletterSubscribe = async () => {
-    const trimmedEmail = newsletterEmail.trim();
-    const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail);
+  const handleNewsletterEmailChange = (value) => {
+    if (isEmailLocalPartTooLong(value)) {
+      return;
+    }
 
-    if (!trimmedEmail || !isValidEmail) {
-      showNotification("Introduce un correo valido", "error");
+    setNewsletterEmail(value);
+  };
+
+  const handleNewsletterSubscribe = async () => {
+    const { isValid, normalizedEmail, error } = validateEmailAddress(newsletterEmail);
+
+    if (!isValid) {
+      showNotification(error || "Introduce un correo valido", "error");
       return;
     }
 
     try {
       setNewsletterLoading(true);
-      await new Promise((resolve) => window.setTimeout(resolve, 450));
-      showNotification("Suscripcion registrada", "success");
+      const response = await subscribeToNewsletter(normalizedEmail);
+      showNotification(response?.message || "Suscripcion registrada", "success");
       setNewsletterEmail("");
-    } catch {
-      showNotification("No se pudo registrar la suscripcion", "error");
+    } catch (error) {
+      showNotification(error.message || "No se pudo registrar la suscripcion", "error");
     } finally {
       setNewsletterLoading(false);
     }
@@ -729,10 +738,10 @@ export function News() {
                 <Badge
                   key={category}
                   variant={selectedCategory === category ? "default" : "outline"}
-                  className={`cursor-pointer px-4 py-2 text-sm transition-colors rounded-none border-2 ${
+                  className={`news-category-badge ${category === "Todos" ? "news-category-badge-all" : ""} cursor-pointer px-4 py-2 text-sm transition-colors rounded-none border-2 ${
                     selectedCategory === category
-                      ? "bg-pink-accent border-pink-accent hover:bg-pink-accent/90 text-white"
-                      : "border-gray-900 text-gray-900 hover:bg-pink-50 hover:border-pink-accent hover:text-pink-accent"
+                      ? "bg-pink-accent border-pink-accent text-white"
+                      : "border-gray-900 text-gray-900"
                   }`}
                   onClick={() => setSelectedCategory(category)}
                 >
@@ -910,7 +919,7 @@ export function News() {
                   type="email"
                   placeholder="tu@email.com"
                   value={newsletterEmail}
-                  onChange={(event) => setNewsletterEmail(event.target.value)}
+                  onChange={(event) => handleNewsletterEmailChange(event.target.value)}
                   className="flex-1 border-2 border-gray-300 rounded-none focus-visible:border-pink-accent bg-white"
                 />
                 <Button
@@ -922,6 +931,7 @@ export function News() {
                   {newsletterLoading ? "Enviando..." : "Suscribirse"}
                 </Button>
               </div>
+              <p className="mt-3 text-xs text-gray-500">M?ximo 30 caracteres antes de @.</p>
             </div>
           </Card>
 
@@ -1035,4 +1045,5 @@ export function News() {
     </div>
   );
 }
+
 

@@ -187,7 +187,7 @@ export function Home() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <section data-home-snap="true" className="pt-[80px] pb-0 home-snap-section">
+      <section data-home-snap="true" data-home-hero="true" className="pt-[80px] pb-0 home-snap-section">
         <div className="w-full">
           <div className="relative bg-pink-accent border-2 border-gray-900 shadow-[10px_10px_0px_0px_#ff0a60] overflow-hidden">
             <div className="lg:hidden">

@@ -16,6 +16,7 @@ jest.mock('../../services/emailService', () => ({
 
 jest.mock('../../models/User', () => ({
   findOne: jest.fn(),
+  find: jest.fn(),
   create: jest.fn(),
   updateOne: jest.fn(),
   deleteOne: jest.fn(),
@@ -31,6 +32,9 @@ describe('auth routes additional', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     process.env.CLIENT_URL = 'http://localhost:5173';
+    User.find.mockReturnValue({
+      lean: jest.fn().mockResolvedValue([])
+    });
   });
 
   test('POST /register success', async () => {
@@ -85,6 +89,28 @@ describe('auth routes additional', () => {
     const res = await request(app).post('/api/auth/login').send({ email: 'a@a.com', password: 'Password1!' });
     expect(res.status).toBe(200);
     expect(res.body.data.token).toBeDefined();
+  });
+
+  test('POST /register rejects long email local part', async () => {
+    const app = express();
+    app.use(express.json());
+    app.use('/api/auth', authRoutes);
+    const res = await request(app).post('/api/auth/register').send({
+      email: `${'a'.repeat(31)}@gmail.com`,
+      password: 'Password1!'
+    });
+    expect(res.status).toBe(400);
+  });
+
+  test('POST /login rejects long email local part', async () => {
+    const app = express();
+    app.use(express.json());
+    app.use('/api/auth', authRoutes);
+    const res = await request(app).post('/api/auth/login').send({
+      email: `${'a'.repeat(31)}@gmail.com`,
+      password: 'Password1!'
+    });
+    expect(res.status).toBe(400);
   });
 
   test('POST /login rejects non verified users', async () => {

@@ -384,7 +384,7 @@ export function MyRecipesList({ token, refreshKey = 0 }) {
         ) : error ? (
           <p className="font-medium text-red-600">{error}</p>
         ) : sortedRecipes.length === 0 ? (
-          <p className="italic text-gray-500">Todavia no tienes recetas publicadas en el laboratorio.</p>
+          <p className="italic text-gray-500">Todavía no tienes recetas publicadas en el laboratorio.</p>
         ) : (
           <div className="space-y-6">
             {sortedRecipes.map((recipe) => (
@@ -465,7 +465,7 @@ export function MyRecipesList({ token, refreshKey = 0 }) {
                 type="button"
                 onClick={closeEditModal}
                 className="modal-close-button flex h-11 w-11 items-center justify-center border-2 border-gray-900 transition-all duration-150 hover:-translate-y-0.5 hover:border-pink-accent"
-                aria-label="Cerrar edicion de receta"
+                aria-label="Cerrar edición de receta"
               >
                 <X className="modal-close-icon h-5 w-5" />
               </button>
@@ -610,7 +610,7 @@ export function MyRecipesList({ token, refreshKey = 0 }) {
                       folder="nutracore/recipes"
                       maxImages={MAX_RECIPE_IMAGES}
                       title="Imagenes de la receta"
-                      helperText="Maximo 5 imagenes. Puedes eliminarlas o sustituirlas desde el mismo popup."
+                      helperText="Máximo 5 imágenes. Puedes eliminarlas o sustituirlas desde el mismo popup."
                     />
                   </Section>
 

@@ -10,6 +10,8 @@ const News = require('../models/News');
 const User = require('../models/User');
 const { protect } = require('../config/auth');
 const { validateObjectIdParam } = require('../middleware/validation');
+const { sendNewsletterSubscriptionEmail } = require('../services/emailService');
+const { validateEmailAddress } = require('../utils/emailValidation');
 
 /**
  * @route   GET /api/news
@@ -104,6 +106,43 @@ router.get('/featured', async (req, res) => {
     res.status(500).json({
       success: false,
       error: 'Error al obtener noticias destacadas'
+    });
+  }
+});
+
+/**
+ * @route   POST /api/news/newsletter/subscribe
+ * @desc    Enviar confirmacion de suscripcion al boletin
+ * @access  Public
+ */
+router.post('/newsletter/subscribe', async (req, res) => {
+  try {
+    const { isValid, normalizedEmail, error } = validateEmailAddress(req.body?.email);
+
+    if (!normalizedEmail) {
+      return res.status(400).json({
+        success: false,
+        error: 'Email requerido'
+      });
+    }
+
+    if (!isValid) {
+      return res.status(400).json({
+        success: false,
+        error
+      });
+    }
+
+    await sendNewsletterSubscriptionEmail({ toEmail: normalizedEmail });
+
+    return res.json({
+      success: true,
+      message: 'Suscripcion registrada y correo enviado'
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      error: error.message || 'No se pudo enviar el correo de suscripcion'
     });
   }
 });

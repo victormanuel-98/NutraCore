@@ -13,3 +13,10 @@ export async function getNews(filters = {}) {
 
   return apiRequest(`/news${query}`);
 }
+
+export async function subscribeToNewsletter(email) {
+  return apiRequest('/news/newsletter/subscribe', {
+    method: 'POST',
+    body: { email }
+  });
+}

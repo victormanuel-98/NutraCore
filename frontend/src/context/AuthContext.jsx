@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { getCurrentUser, loginUser, registerUser, resendVerificationEmail } from '../services/authService';
 
 const AUTH_STORAGE_KEY = 'nutracore_auth';
@@ -48,7 +48,7 @@ export function AuthProvider({ children }) {
     syncUser();
   }, [authState.token, authState.user]);
 
-  const login = async (credentials) => {
+  const login = useCallback(async (credentials) => {
     setIsLoading(true);
     try {
       const response = await loginUser(credentials);
@@ -61,9 +61,9 @@ export function AuthProvider({ children }) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
-  const register = async (payload) => {
+  const register = useCallback(async (payload) => {
     setIsLoading(true);
     try {
       const response = await registerUser(payload);
@@ -78,20 +78,20 @@ export function AuthProvider({ children }) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
-  const resendVerification = async (email) => {
+  const resendVerification = useCallback(async (email) => {
     return resendVerificationEmail(email);
-  };
+  }, []);
 
-  const setSession = ({ token, user }) => {
+  const setSession = useCallback(({ token, user }) => {
     if (!token || !user) return;
     setAuthState({ token, user });
-  };
+  }, []);
 
-  const logout = () => {
+  const logout = useCallback(() => {
     setAuthState({ token: null, user: null });
-  };
+  }, []);
 
   const value = useMemo(
     () => ({
@@ -105,7 +105,7 @@ export function AuthProvider({ children }) {
       setSession,
       logout
     }),
-    [authState, isLoading]
+    [authState, isLoading, login, logout, register, resendVerification, setSession]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

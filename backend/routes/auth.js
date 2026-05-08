@@ -13,6 +13,7 @@ const { sendVerificationEmail } = require('../services/emailService');
 const { requireBodyFields } = require('../middleware/validation');
 const { rateLimit } = require('../middleware/rateLimiter');
 const { buildNextUserAlias } = require('../utils/alias');
+const { validateEmailAddress } = require('../utils/emailValidation');
 
 const buildVerificationToken = () => crypto.randomBytes(32).toString('hex');
 const hashToken = (token) => crypto.createHash('sha256').update(token).digest('hex');
@@ -75,12 +76,19 @@ const sendVerificationEmailForUser = async (user) => {
 router.post('/register', rateLimit({ keyPrefix: 'auth-register', windowMs: 15 * 60 * 1000, max: 12 }), requireBodyFields(['email', 'password']), async (req, res) => {
   try {
     const { email, password, age, gender, height, weight, goals } = req.body;
-    const normalizedEmail = String(email || '').toLowerCase().trim();
+    const { isValid, normalizedEmail, error: emailError } = validateEmailAddress(email);
 
     if (!normalizedEmail || !password) {
       return res.status(400).json({
         success: false,
         error: 'Por favor proporciona email y contrase?a'
+      });
+    }
+
+    if (!isValid) {
+      return res.status(400).json({
+        success: false,
+        error: emailError
       });
     }
 
@@ -181,12 +189,19 @@ router.post('/register', rateLimit({ keyPrefix: 'auth-register', windowMs: 15 * 
 router.post('/login', rateLimit({ keyPrefix: 'auth-login', windowMs: 15 * 60 * 1000, max: 20 }), requireBodyFields(['email', 'password']), async (req, res) => {
   try {
     const { email, password } = req.body;
-    const normalizedEmail = String(email || '').toLowerCase().trim();
+    const { isValid, normalizedEmail, error: emailError } = validateEmailAddress(email);
 
     if (!normalizedEmail || !password) {
       return res.status(400).json({
         success: false,
         error: 'Por favor proporciona email y contrase?a'
+      });
+    }
+
+    if (!isValid) {
+      return res.status(400).json({
+        success: false,
+        error: emailError
       });
     }
 
@@ -256,7 +271,14 @@ router.get('/verify-email', async (req, res) => {
 
     const rawToken = String(token || '').trim();
     const tokenHash = hashToken(rawToken);
-    const normalizedEmail = String(email || '').toLowerCase().trim();
+    const { isValid, normalizedEmail, error: emailError } = validateEmailAddress(email);
+
+    if (!isValid) {
+      return res.status(400).json({
+        success: false,
+        error: emailError
+      });
+    }
 
     const user = await User.findOne({
       email: normalizedEmail,
@@ -307,12 +329,19 @@ router.get('/verify-email', async (req, res) => {
 router.post('/resend-verification', rateLimit({ keyPrefix: 'auth-resend', windowMs: 15 * 60 * 1000, max: 8 }), async (req, res) => {
   try {
     const { email } = req.body;
-    const normalizedEmail = String(email || '').toLowerCase().trim();
+    const { isValid, normalizedEmail, error: emailError } = validateEmailAddress(email);
 
     if (!normalizedEmail) {
       return res.status(400).json({
         success: false,
         error: 'Email requerido'
+      });
+    }
+
+    if (!isValid) {
+      return res.status(400).json({
+        success: false,
+        error: emailError
       });
     }
 
@@ -358,12 +387,21 @@ router.post(
   rateLimit({ keyPrefix: 'auth-test-email', windowMs: 10 * 60 * 1000, max: 6 }),
   async (req, res) => {
     try {
-      const targetEmail = String(req.body?.email || req.user?.email || '').trim().toLowerCase();
+      const { isValid, normalizedEmail: targetEmail, error: emailError } = validateEmailAddress(
+        req.body?.email || req.user?.email
+      );
 
       if (!targetEmail) {
         return res.status(400).json({
           success: false,
           error: 'Debes indicar un email destino para la prueba'
+        });
+      }
+
+      if (!isValid) {
+        return res.status(400).json({
+          success: false,
+          error: emailError
         });
       }
 

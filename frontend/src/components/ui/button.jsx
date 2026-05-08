@@ -17,6 +17,6 @@ export function Button({ className = "", variant = "default", size = "default", 
     icon: "h-9 w-9"
   }[size] || "h-9 px-4";
 
-  return <button className={cn("inline-flex items-center justify-center rounded-md text-sm font-medium transition", variantClass, sizeClass, className)} {...props} />;
+  return <button className={cn("inline-flex items-center justify-center rounded-md text-sm font-medium transition-all duration-150 active:scale-[0.98]", variantClass, sizeClass, className)} {...props} />;
 }
 

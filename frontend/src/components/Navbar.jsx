@@ -55,8 +55,8 @@ export function Navbar() {
   const linkIdleClasses = hasScrolled ? 'text-pink-accent/90 hover:text-pink-accent' : 'text-white/90 hover:text-white';
 
   const loginButtonClasses = hasScrolled
-    ? 'text-pink-accent hover:text-pink-accent hover:bg-pink-accent/10'
-    : 'text-white hover:text-white hover:bg-white/10';
+    ? 'text-pink-accent hover:text-pink-accent hover:bg-pink-accent/10 active:bg-pink-accent/15'
+    : 'text-white hover:text-white hover:bg-white/10 active:bg-white/15';
 
   const registerButtonClasses = 'hover:!opacity-100';
 

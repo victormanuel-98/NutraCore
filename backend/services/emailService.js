@@ -16,22 +16,22 @@ const mapSmtpError = (error) => {
   const code = String(error?.code || '').toUpperCase();
 
   if (raw.includes('self-signed certificate') || raw.includes('certificate chain') || code === 'SELF_SIGNED_CERT_IN_CHAIN') {
-    return new Error('No se pudo enviar el correo de verificacion por un certificado SSL del servidor de correo.');
+    return new Error('No se pudo enviar el correo por un certificado SSL del servidor de correo.');
   }
 
   if (raw.includes('certificate has expired') || code === 'CERT_HAS_EXPIRED') {
-    return new Error('No se pudo enviar el correo de verificacion porque el certificado SSL del correo ha expirado.');
+    return new Error('No se pudo enviar el correo porque el certificado SSL del correo ha expirado.');
   }
 
   if (raw.includes('invalid login') || raw.includes('auth') || code === 'EAUTH') {
-    return new Error('No se pudo enviar el correo de verificacion. Revisa las credenciales SMTP.');
+    return new Error('No se pudo enviar el correo. Revisa las credenciales SMTP.');
   }
 
   if (raw.includes('getaddrinfo') || code === 'ENOTFOUND') {
     return new Error('No se pudo conectar al servidor de correo. Revisa la configuracion SMTP.');
   }
 
-  return new Error('No se pudo enviar el correo de verificacion en este momento.');
+  return new Error('No se pudo enviar el correo en este momento.');
 };
 
 const mapMailjetError = (error) => {
@@ -39,15 +39,15 @@ const mapMailjetError = (error) => {
 
   if (raw.includes('unauthorized') || raw.includes('authentication') || raw.includes('forbidden')) {
     return new Error(
-      'No se pudo enviar el correo de verificacion. Revisa credenciales Mailjet (MJ_APIKEY_PUBLIC/MJ_APIKEY_PRIVATE o MAILJET_API_KEY/MAILJET_API_SECRET).'
+      'No se pudo enviar el correo. Revisa credenciales Mailjet (MJ_APIKEY_PUBLIC/MJ_APIKEY_PRIVATE o MAILJET_API_KEY/MAILJET_API_SECRET).'
     );
   }
 
   if (raw.includes('sender') || raw.includes('from') || raw.includes('domain')) {
-    return new Error('No se pudo enviar el correo de verificacion. Revisa MAIL_FROM o SENDER_EMAIL y el dominio en Mailjet.');
+    return new Error('No se pudo enviar el correo. Revisa MAIL_FROM o SENDER_EMAIL y el dominio en Mailjet.');
   }
 
-  return new Error(`No se pudo enviar el correo de verificacion con Mailjet (${error?.message || 'error desconocido'}).`);
+  return new Error(`No se pudo enviar el correo con Mailjet (${error?.message || 'error desconocido'}).`);
 };
 
 const mailjetPublicKey = () => envAny('MJ_APIKEY_PUBLIC', 'MAILJET_API_KEY');
@@ -126,7 +126,73 @@ const parseFromAddress = () => {
   };
 };
 
-const buildEmailBodies = ({ userName, verifyUrl }) => {
+const sendViaMailjet = async ({ toEmail, toName, subject, html, text }) => {
+  const client = getMailjetClient();
+  const from = parseFromAddress();
+
+  const response = await client
+    .post('send', { version: 'v3.1' })
+    .request({
+      Messages: [
+        {
+          From: {
+            Email: from.email,
+            Name: from.name
+          },
+          To: [{ Email: toEmail, Name: toName || toEmail }],
+          Subject: subject,
+          TextPart: text,
+          HTMLPart: html
+        }
+      ]
+    });
+
+  const status = response?.response?.status;
+  if (status && status >= 400) {
+    throw new Error(`Mailjet devolvio status ${status}`);
+  }
+};
+
+const sendViaSmtpOrEthereal = async ({ toEmail, subject, html, text }) => {
+  const { transporter, mode } = await getTransporter();
+  const fromAddress = mode === 'real' ? env('SMTP_FROM') : '"NutraCore" <noreply@nutracore.dev>';
+
+  const info = await transporter.sendMail({
+    from: fromAddress,
+    to: toEmail,
+    subject,
+    text,
+    html
+  });
+
+  if (mode === 'ethereal') {
+    const previewUrl = nodemailer.getTestMessageUrl(info);
+    if (previewUrl) {
+      console.log(`Vista previa del correo (Ethereal): ${previewUrl}`);
+    }
+  }
+};
+
+const sendEmail = async ({ toEmail, toName, subject, html, text }) => {
+  if (hasMailjetConfig()) {
+    try {
+      await sendViaMailjet({ toEmail, toName, subject, html, text });
+      return;
+    } catch (error) {
+      console.error('Error Mailjet al enviar correo:', error);
+      throw mapMailjetError(error);
+    }
+  }
+
+  try {
+    await sendViaSmtpOrEthereal({ toEmail, subject, html, text });
+  } catch (error) {
+    console.error('Error SMTP al enviar correo:', error);
+    throw mapSmtpError(error);
+  }
+};
+
+const buildVerificationEmailBodies = ({ userName, verifyUrl }) => {
   const html = `
     <div style="font-family: Arial, sans-serif; line-height: 1.5; color: #111827;">
       <h2>Verifica tu cuenta de NutraCore :)</h2>
@@ -147,74 +213,47 @@ const buildEmailBodies = ({ userName, verifyUrl }) => {
   return { html, text };
 };
 
-const sendViaMailjet = async ({ toEmail, userName, verifyUrl }) => {
-  const client = getMailjetClient();
-  const { html, text } = buildEmailBodies({ userName, verifyUrl });
-  const from = parseFromAddress();
+const buildNewsletterSubscriptionBodies = ({ email }) => {
+  const html = `
+    <div style="font-family: Arial, sans-serif; line-height: 1.5; color: #111827;">
+      <h2>Suscripcion confirmada</h2>
+      <p>Hola,</p>
+      <p>Hemos recibido tu solicitud de suscripcion al boletin de NutraCore con el correo <strong>${email}</strong>.</p>
+      <p>A partir de ahora podras recibir novedades, articulos y consejos de nutricion.</p>
+      <p>Si no realizaste esta solicitud, puedes ignorar este mensaje.</p>
+    </div>
+  `;
 
-  const response = await client
-    .post('send', { version: 'v3.1' })
-    .request({
-      Messages: [
-        {
-          From: {
-            Email: from.email,
-            Name: from.name
-          },
-          To: [{ Email: toEmail, Name: userName || toEmail }],
-          Subject: 'Verifica tu cuenta de NutraCore',
-          TextPart: text,
-          HTMLPart: html
-        }
-      ]
-    });
+  const text = `Hemos recibido tu solicitud de suscripcion al boletin de NutraCore con el correo ${email}.`;
 
-  const status = response?.response?.status;
-  if (status && status >= 400) {
-    throw new Error(`Mailjet devolvio status ${status}`);
-  }
-};
-
-const sendViaSmtpOrEthereal = async ({ toEmail, userName, verifyUrl }) => {
-  const { transporter, mode } = await getTransporter();
-  const { html, text } = buildEmailBodies({ userName, verifyUrl });
-  const fromAddress = mode === 'real' ? env('SMTP_FROM') : '"NutraCore" <noreply@nutracore.dev>';
-
-  const info = await transporter.sendMail({
-    from: fromAddress,
-    to: toEmail,
-    subject: 'Verifica tu cuenta de NutraCore',
-    text,
-    html
-  });
-
-  if (mode === 'ethereal') {
-    const previewUrl = nodemailer.getTestMessageUrl(info);
-    if (previewUrl) {
-      console.log(`Vista previa del correo (Ethereal): ${previewUrl}`);
-    }
-  }
+  return { html, text };
 };
 
 const sendVerificationEmail = async ({ toEmail, userName, verifyUrl }) => {
-  if (hasMailjetConfig()) {
-    try {
-      await sendViaMailjet({ toEmail, userName, verifyUrl });
-      return;
-    } catch (error) {
-      console.error('Error Mailjet al enviar verificacion:', error);
-      throw mapMailjetError(error);
-    }
-  }
+  const { html, text } = buildVerificationEmailBodies({ userName, verifyUrl });
 
-  try {
-    await sendViaSmtpOrEthereal({ toEmail, userName, verifyUrl });
-  } catch (error) {
-    console.error('Error SMTP al enviar verificacion:', error);
-    throw mapSmtpError(error);
-  }
+  await sendEmail({
+    toEmail,
+    toName: userName,
+    subject: 'Verifica tu cuenta de NutraCore',
+    html,
+    text
+  });
+};
+
+const sendNewsletterSubscriptionEmail = async ({ toEmail }) => {
+  const { html, text } = buildNewsletterSubscriptionBodies({ email: toEmail });
+
+  await sendEmail({
+    toEmail,
+    toName: toEmail,
+    subject: 'Suscripcion al boletin de NutraCore',
+    html,
+    text
+  });
 };
 
 module.exports = {
-  sendVerificationEmail
+  sendVerificationEmail,
+  sendNewsletterSubscriptionEmail
 };

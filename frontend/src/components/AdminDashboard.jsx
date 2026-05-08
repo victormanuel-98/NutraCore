@@ -302,7 +302,7 @@ export function AdminDashboard() {
                     selectedUser.favoriteRecipes.map((recipe) => (
                       <div key={recipe._id} className="border border-gray-200 p-2">
                         <p className="text-sm font-semibold text-gray-900">{recipe.title}</p>
-                        <p className="text-xs text-gray-600">{recipe.category} Â· {recipe.prepTime || 0} min</p>
+                        <p className="text-xs text-gray-600">{recipe.category} · {recipe.prepTime || 0} min</p>
                       </div>
                     ))
                   )}

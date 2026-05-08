@@ -19,8 +19,13 @@ jest.mock('../../models/User', () => ({
   findById: jest.fn()
 }));
 
+jest.mock('../../services/emailService', () => ({
+  sendNewsletterSubscriptionEmail: jest.fn()
+}));
+
 const News = require('../../models/News');
 const User = require('../../models/User');
+const { sendNewsletterSubscriptionEmail } = require('../../services/emailService');
 const newsRoutes = require('../../routes/news');
 
 describe('news routes', () => {
@@ -42,6 +47,25 @@ describe('news routes', () => {
     app.use('/api/news', newsRoutes);
     const res = await request(app).get('/api/news/featured');
     expect(res.status).toBe(200);
+  });
+
+  test('POST /newsletter/subscribe sends confirmation email', async () => {
+    const app = express();
+    app.use(express.json());
+    app.use('/api/news', newsRoutes);
+    const res = await request(app).post('/api/news/newsletter/subscribe').send({ email: 'reader@gmail.com' });
+    expect(res.status).toBe(200);
+    expect(sendNewsletterSubscriptionEmail).toHaveBeenCalledWith({ toEmail: 'reader@gmail.com' });
+  });
+
+  test('POST /newsletter/subscribe rejects long local part', async () => {
+    const app = express();
+    app.use(express.json());
+    app.use('/api/news', newsRoutes);
+    const res = await request(app)
+      .post('/api/news/newsletter/subscribe')
+      .send({ email: `${'a'.repeat(31)}@gmail.com` });
+    expect(res.status).toBe(400);
   });
 
   test('GET /:id returns 404 when not found', async () => {

@@ -6,6 +6,7 @@
 
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
+const { EMAIL_REGEX, isEmailLocalPartTooLong } = require('../utils/emailValidation');
 
 const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{7,}$/;
 
@@ -17,16 +18,20 @@ const userSchema = new mongoose.Schema(
       unique: true,
       lowercase: true,
       trim: true,
-      match: [/^\S+@\S+\.\S+$/, 'Email inválido']
+      match: [EMAIL_REGEX, 'Email invalido'],
+      validate: {
+        validator: (value) => !isEmailLocalPartTooLong(value),
+        message: 'La parte anterior a @ debe tener como maximo 30 caracteres'
+      }
     },
     password: {
       type: String,
-      required: [true, 'La contraseña es obligatoria'],
-      minlength: [7, 'La contraseña debe tener más de 6 caracteres'],
+      required: [true, 'La contrasena es obligatoria'],
+      minlength: [7, 'La contrasena debe tener mas de 6 caracteres'],
       validate: {
         validator: (value) => strongPasswordRegex.test(value),
         message:
-          'La contraseña debe incluir mayúsculas, minúsculas, números y caracteres especiales'
+          'La contrasena debe incluir mayusculas, minusculas, numeros y caracteres especiales'
       }
     },
 
@@ -42,8 +47,8 @@ const userSchema = new mongoose.Schema(
     },
     age: {
       type: Number,
-      min: [13, 'Debes tener al menos 13 años'],
-      max: [120, 'Edad inválida']
+      min: [13, 'Debes tener al menos 13 anos'],
+      max: [120, 'Edad invalida']
     },
     gender: {
       type: String,
@@ -52,30 +57,30 @@ const userSchema = new mongoose.Schema(
     },
     height: {
       type: Number,
-      min: [50, 'Altura inválida'],
-      max: [300, 'Altura inválida']
+      min: [50, 'Altura invalida'],
+      max: [300, 'Altura invalida']
     },
     weight: {
       type: Number,
-      min: [20, 'Peso inválido'],
-      max: [500, 'Peso inválido']
+      min: [20, 'Peso invalido'],
+      max: [500, 'Peso invalido']
     },
 
     goals: {
       targetWeight: {
         type: Number,
-        min: [20, 'Peso objetivo inválido'],
-        max: [500, 'Peso objetivo inválido']
+        min: [20, 'Peso objetivo invalido'],
+        max: [500, 'Peso objetivo invalido']
       },
       dailyCalories: {
         type: Number,
         default: 0,
-        min: [0, 'Calorías diarias inválidas'],
-        max: [10000, 'Calorías diarias demasiado altas']
+        min: [0, 'Calorias diarias invalidas'],
+        max: [10000, 'Calorias diarias demasiado altas']
       },
-      protein: { type: Number, default: 0, min: [0, 'Proteína inválida'] },
-      carbs: { type: Number, default: 0, min: [0, 'Carbohidratos inválidos'] },
-      fats: { type: Number, default: 0, min: [0, 'Grasas inválidas'] },
+      protein: { type: Number, default: 0, min: [0, 'Proteina invalida'] },
+      carbs: { type: Number, default: 0, min: [0, 'Carbohidratos invalidos'] },
+      fats: { type: Number, default: 0, min: [0, 'Grasas invalidas'] },
       activityLevel: {
         type: String,
         enum: ['sedentary', 'light', 'moderate', 'active', 'very-active'],

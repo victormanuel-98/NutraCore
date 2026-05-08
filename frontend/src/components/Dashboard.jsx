@@ -10,6 +10,7 @@ import { useNotification } from '../context/NotificationContext';
 import { useAuth } from '../context/AuthContext';
 import { getMenuConsumptionState, getUserProfile, getUserStats, saveMenuConsumptionState, updateUserGoals } from '../services/userService';
 import { getFavoriteRecipes, getMyRecipes } from '../services/recipeService';
+import { emitProfileSync, subscribeToProfileSync } from '../utils/profileSync';
 
 const NUTRIENT_KEYS = ['calories', 'protein', 'carbs', 'fats'];
 const MENU_SLOTS_BY_PERIOD = { daily: 4, weekly: 10, monthly: 20 };
@@ -332,6 +333,10 @@ export function Dashboard() {
     loadDashboardData();
   }, [token, refreshTick]);
 
+  useEffect(() => subscribeToProfileSync(() => {
+    setRefreshTick((prev) => prev + 1);
+  }), []);
+
   useEffect(() => {
     if (!token || !menuStateHydrated) return;
     const persist = async () => {
@@ -489,7 +494,7 @@ export function Dashboard() {
     const items = [
       { id: 'profile', label: 'Configura tus objetivos de perfil', done: hasNutritionGoals && hasWeightGoal, to: '/profile', cta: 'Completar perfil' },
       { id: 'recipe', label: 'Crea tu primera receta', done: myRecipes.length > 0, to: '/lab', cta: 'Crear receta' },
-      { id: 'favorite', label: 'Guarda una receta favorita', done: favoriteRecipes.length > 0, to: '/catalog', cta: 'Explorar catalogo' },
+      { id: 'favorite', label: 'Guarda una receta favorita', done: favoriteRecipes.length > 0, to: '/catalog', cta: 'Explorar catálogo' },
       { id: 'news', label: 'Guarda una noticia nutricional', done: numberOrDefault(stats?.totalSavedNews) > 0, to: '/news', cta: 'Ver noticias' }
     ];
     const completed = items.filter((item) => item.done).length;
@@ -588,6 +593,7 @@ export function Dashboard() {
         goal: goalEditor.direction === 'lose' ? 'lose-weight' : 'gain-muscle'
       }, token);
       showNotification('Cambios guardados', 'success');
+      emitProfileSync({ source: 'dashboard' });
       setRefreshTick((prev) => prev + 1);
     } catch (saveError) {
       showNotification(saveError.message || 'No se pudo guardar el objetivo de peso', 'error');
@@ -692,7 +698,7 @@ export function Dashboard() {
                 </Button>
               </div>
               {autoMenuRecipes.length === 0 ? (
-                <p className="text-sm text-gray-500">Necesitas recetas con valores nutricionales en favoritos o en tus recetas para generar el menu.</p>
+                <p className="text-sm text-gray-500">Necesitas recetas con valores nutricionales en favoritos o en tus recetas para generar el menú.</p>
               ) : (
                 <div className="grid sm:grid-cols-2 gap-2">
                   {autoMenuRecipes.map((recipe) => {
@@ -842,7 +848,7 @@ export function Dashboard() {
                   <h3 className="font-semibold text-gray-900">Favoritos</h3>
                   <Link to="/profile" className="text-xs text-pink-accent hover:underline">Ver todos</Link>
                 </div>
-                {favoriteRecipes.length === 0 && <p className="text-sm text-gray-500">Aun no tienes recetas favoritas.</p>}
+                {favoriteRecipes.length === 0 && <p className="text-sm text-gray-500">Aún no tienes recetas favoritas.</p>}
                 <div className="max-h-[185px] overflow-y-auto pr-1 space-y-2">
                   {favoriteRecipes.map((recipe) => <MiniRecipeRow key={`fav-${recipe._id}`} recipe={recipe} />)}
                 </div>
@@ -853,7 +859,7 @@ export function Dashboard() {
                   <h3 className="font-semibold text-gray-900">Tus recetas</h3>
                   <Link to="/profile" className="text-xs text-pink-accent hover:underline">Gestionar</Link>
                 </div>
-                {myRecipes.length === 0 && <p className="text-sm text-gray-500">Todavia no publicaste recetas.</p>}
+                {myRecipes.length === 0 && <p className="text-sm text-gray-500">Todavía no publicaste recetas.</p>}
                 <div className="max-h-[185px] overflow-y-auto pr-1 space-y-2">
                   {myRecipes.map((recipe) => <MiniRecipeRow key={`mine-${recipe._id}`} recipe={recipe} />)}
                 </div>

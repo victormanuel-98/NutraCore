@@ -5,8 +5,9 @@ import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Card } from './ui/card';
 import { Mail, Lock, User, Target, Eye, EyeOff } from 'lucide-react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger } from './ui/select';
 import { useAuth } from '../context/AuthContext';
+import { isEmailLocalPartTooLong, validateEmailAddress } from '../utils/emailValidation';
 
 const goalMap = {
   'weight-loss': 'lose-weight',
@@ -28,6 +29,12 @@ const genderMap = {
   hombre: 'male',
   mujer: 'female',
   otro: 'other'
+};
+
+const genderLabels = {
+  hombre: 'Hombre',
+  mujer: 'Mujer',
+  otro: 'Otro'
 };
 
 export function Register() {
@@ -55,6 +62,12 @@ export function Register() {
       return;
     }
 
+    const { isValid, normalizedEmail, error: emailError } = validateEmailAddress(formData.email);
+    if (!isValid) {
+      setError(emailError);
+      return;
+    }
+
     const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{7,}$/;
     if (!strongPasswordRegex.test(formData.password)) {
       setError('La contraseña debe tener mayúsculas, minúsculas, números, caracteres especiales y más de 6 caracteres');
@@ -68,7 +81,7 @@ export function Register() {
 
     try {
       const response = await register({
-        email: formData.email,
+        email: normalizedEmail,
         password: formData.password,
         gender: genderMap[formData.gender] || 'other',
         goals: {
@@ -89,6 +102,10 @@ export function Register() {
   };
 
   const handleChange = (field, value) => {
+    if (field === 'email' && isEmailLocalPartTooLong(value)) {
+      return;
+    }
+
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
@@ -117,6 +134,7 @@ export function Register() {
                     required
                   />
                 </div>
+                <p className="text-xs text-gray-500">Máximo 30 caracteres antes de @.</p>
               </div>
 
               <div className="space-y-2">
@@ -135,13 +153,13 @@ export function Register() {
                   <button
                     type="button"
                     onClick={() => setShowPassword((prev) => !prev)}
-                    className="absolute right-3 top-2.5 p-1 rounded-sm"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-sm transition-colors hover:bg-pink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-200"
                     aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
                   >
                     {showPassword ? (
-                      <EyeOff className="w-5 h-5 pixel-icon text-pink-accent" strokeWidth={2.7} />
+                      <Eye className="w-5 h-5 pixel-icon text-pink-accent" strokeWidth={2.7} />
                     ) : (
-                      <Eye className="w-5 h-5 pixel-icon text-gray-400" strokeWidth={2.7} />
+                      <EyeOff className="w-5 h-5 pixel-icon text-gray-400" strokeWidth={2.7} />
                     )}
                   </button>
                 </div>
@@ -163,13 +181,13 @@ export function Register() {
                   <button
                     type="button"
                     onClick={() => setShowConfirmPassword((prev) => !prev)}
-                    className="absolute right-3 top-2.5 p-1 rounded-sm"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-sm transition-colors hover:bg-pink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-200"
                     aria-label={showConfirmPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
                   >
                     {showConfirmPassword ? (
-                      <EyeOff className="w-5 h-5 pixel-icon text-pink-accent" strokeWidth={2.7} />
+                      <Eye className="w-5 h-5 pixel-icon text-pink-accent" strokeWidth={2.7} />
                     ) : (
-                      <Eye className="w-5 h-5 pixel-icon text-gray-400" strokeWidth={2.7} />
+                      <EyeOff className="w-5 h-5 pixel-icon text-gray-400" strokeWidth={2.7} />
                     )}
                   </button>
                 </div>
@@ -181,7 +199,7 @@ export function Register() {
                   <User className="absolute left-3 top-3 w-5 h-5 text-gray-400 z-10" />
                   <Select value={formData.gender} onValueChange={(value) => handleChange('gender', value)}>
                     <SelectTrigger className="pl-10 border-2 border-gray-300 rounded-none hover:border-pink-accent">
-                      <SelectValue placeholder="Selecciona tu género" />
+                      <span className="ml-1">{formData.gender ? genderLabels[formData.gender] : 'Selecciona tu género'}</span>
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="hombre">Hombre</SelectItem>

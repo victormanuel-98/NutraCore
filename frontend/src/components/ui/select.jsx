@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { ChevronDown } from "lucide-react";
 import { cn } from "./utils";
 
 const SelectCtx = createContext(null);
@@ -49,7 +50,8 @@ export function SelectTrigger({ className = "", children, ...props }) {
       onClick={() => ctx.setOpen(!ctx.open)}
       {...props}
     >
-      {children}
+      <span className="min-w-0 flex-1 text-left">{children}</span>
+      <ChevronDown className={cn("ml-3 h-4 w-4 shrink-0 transition-transform", ctx.open && "rotate-180")} />
     </button>
   );
 }

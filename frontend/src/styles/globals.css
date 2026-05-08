@@ -329,6 +329,70 @@ html.theme-dark .catalog-pagination-btn:not(:disabled):hover {
   border-color: transparent !important;
 }
 
+html:not(.theme-dark) .news-category-badge {
+  background-color: #111827 !important;
+  color: #ffffff !important;
+  border-color: #111827 !important;
+}
+
+html:not(.theme-dark) .news-category-badge:hover {
+  background-color: #ffe2ef !important;
+  color: var(--pink-accent) !important;
+  border-color: var(--pink-accent) !important;
+}
+
+html:not(.theme-dark) .news-category-badge[data-state="active"],
+html:not(.theme-dark) .news-category-badge.bg-pink-accent {
+  background-color: var(--pink-accent) !important;
+  color: #ffffff !important;
+  border-color: var(--pink-accent) !important;
+}
+
+html:not(.theme-dark) .news-category-badge.bg-pink-accent:hover {
+  background-color: #d60a56 !important;
+  color: #ffffff !important;
+  border-color: #d60a56 !important;
+}
+
+html.theme-dark .news-category-badge {
+  background-color: #111827 !important;
+  color: #f3f4f6 !important;
+  border-color: #374151 !important;
+}
+
+html.theme-dark .news-category-badge:hover {
+  background-color: rgba(255, 10, 96, 0.16) !important;
+  color: #f9a8d4 !important;
+  border-color: #f472b6 !important;
+}
+
+html.theme-dark .news-category-badge[data-state="active"],
+html.theme-dark .news-category-badge.bg-pink-accent {
+  background-color: #f472b6 !important;
+  color: #111827 !important;
+  border-color: #f472b6 !important;
+}
+
+html.theme-dark .news-category-badge.bg-pink-accent:hover {
+  background-color: #f9a8d4 !important;
+  color: #111827 !important;
+  border-color: #f9a8d4 !important;
+}
+
+html.theme-dark .news-category-badge.news-category-badge-all,
+html.theme-dark .news-category-badge.news-category-badge-all.bg-pink-accent {
+  background-color: var(--pink-accent) !important;
+  color: #ffffff !important;
+  border-color: var(--pink-accent) !important;
+}
+
+html.theme-dark .news-category-badge.news-category-badge-all:hover,
+html.theme-dark .news-category-badge.news-category-badge-all.bg-pink-accent:hover {
+  background-color: #d60a56 !important;
+  color: #ffffff !important;
+  border-color: #d60a56 !important;
+}
+
 html.theme-dark .news-ghost-btn {
   color: #f9a8d4 !important;
 }
@@ -958,12 +1022,18 @@ svg.lucide,
 .gaius-chatbox {
   position: fixed;
   right: 1rem;
-  bottom: 1rem;
+  bottom: calc(2.5rem + var(--gaius-footer-offset, 0px));
   z-index: 110;
   display: flex;
   flex-direction: column;
   align-items: flex-end;
   gap: 0.6rem;
+}
+
+@media (max-width: 640px) {
+  .gaius-chatbox {
+    bottom: calc(1.5rem + var(--gaius-footer-offset, 0px));
+  }
 }
 
 .gaius-trigger {
@@ -977,6 +1047,13 @@ svg.lucide,
   box-shadow: 4px 4px 0 0 #111827;
 }
 
+.gaius-trigger-hero-contrast {
+  background: #ffffff;
+  color: var(--pink-accent);
+  border-color: #111827;
+  box-shadow: 4px 4px 0 0 #111827;
+}
+
 .gaius-window {
   width: min(92vw, 360px);
   height: min(68vh, 490px);
@@ -986,6 +1063,7 @@ svg.lucide,
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  overscroll-behavior: contain;
 }
 
 .gaius-header {
@@ -1081,6 +1159,9 @@ svg.lucide,
 .gaius-messages {
   flex: 1;
   overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
   padding: 0.75rem;
   display: flex;
   flex-direction: column;
@@ -1088,11 +1169,28 @@ svg.lucide,
   background: #fff;
 }
 
+.gaius-message {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  max-width: 100%;
+}
+
+.gaius-message-bot {
+  align-items: flex-start;
+}
+
+.gaius-message-user {
+  align-items: flex-end;
+}
+
 .gaius-bubble {
   max-width: 90%;
   padding: 0.55rem 0.65rem;
   border: 1px solid #e5e7eb;
   white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
   line-height: 1.35;
   font-size: 0.88rem;
 }
@@ -1108,6 +1206,30 @@ svg.lucide,
   background: #ff0a60;
   color: #fff;
   border-color: #ff0a60;
+}
+
+.gaius-bubble-loading {
+  font-style: italic;
+  opacity: 0.85;
+}
+
+.gaius-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  max-width: 90%;
+}
+
+.gaius-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border: 1px solid #111827;
+  background: #fff1f7;
+  color: #be185d;
+  padding: 0.42rem 0.6rem;
+  font-size: 0.76rem;
+  line-height: 1.1;
 }
 
 .gaius-lock-hint {
@@ -1140,6 +1262,13 @@ svg.lucide,
   border: 1px solid #d1d5db;
   padding: 0.5rem 0.6rem;
   font-size: 0.86rem;
+  resize: none;
+  min-height: 2.2rem;
+  max-height: 5.4rem;
+  overflow-y: auto;
+  overflow-x: hidden;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }
 
 .gaius-send {
@@ -1205,6 +1334,12 @@ html.theme-dark .gaius-input-row {
 }
 
 html.theme-dark .gaius-scroll-bottom {
+  background: #1f2937;
+  color: #fbcfe8;
+  border-color: #f472b6;
+}
+
+html.theme-dark .gaius-action-btn {
   background: #1f2937;
   color: #fbcfe8;
   border-color: #f472b6;

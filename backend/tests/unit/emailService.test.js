@@ -75,5 +75,22 @@ describe('emailService', () => {
     expect(mockSendMail).toHaveBeenCalled();
     expect(mockGetTestMessageUrl).toHaveBeenCalled();
   });
+
+  test('sends newsletter subscription email', async () => {
+    process.env.SMTP_HOST = 'smtp.example.com';
+    process.env.SMTP_PORT = '587';
+    process.env.SMTP_USER = 'user@example.com';
+    process.env.SMTP_PASS = 'secret';
+    process.env.SMTP_FROM = 'Nutra <no-reply@example.com>';
+
+    const { sendNewsletterSubscriptionEmail } = require('../../services/emailService');
+    await sendNewsletterSubscriptionEmail({ toEmail: 'reader@gmail.com' });
+    expect(mockSendMail).toHaveBeenCalledWith(
+      expect.objectContaining({
+        to: 'reader@gmail.com',
+        subject: 'Suscripcion al boletin de NutraCore'
+      })
+    );
+  });
 });
 

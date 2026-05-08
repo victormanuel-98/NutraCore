@@ -10,11 +10,7 @@ const PixelX = ({ size = 20, className }) => (
 
 export function LogoutModal({ isOpen, onClose, onConfirm }) {
   useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'unset';
-    }
+    document.body.style.overflow = isOpen ? 'hidden' : 'unset';
     return () => {
       document.body.style.overflow = 'unset';
     };
@@ -24,58 +20,51 @@ export function LogoutModal({ isOpen, onClose, onConfirm }) {
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
-      {/* Backdrop */}
-      <div 
-        className="absolute inset-0 bg-black/40 modal-overlay-enter"
-        onClick={onClose}
-      />
-      
-      {/* Modal Card */}
+      <div className="absolute inset-0 recipe-modal-overlay modal-overlay-enter" onClick={onClose} />
+
       <div className="relative w-full max-w-sm bg-white border-2 border-pink-accent shadow-[8px_8px_0px_0px_#ff0a60] modal-content-enter">
-        {/* Header Decor */}
-        <div className="absolute top-0 left-0 w-full h-1 bg-pink-accent overflow-hidden">
-          <div className="w-1/2 h-full bg-white/40 animate-pulse" />
+        <div className="absolute top-0 left-0 h-1 w-full overflow-hidden bg-pink-accent">
+          <div className="h-full w-1/2 animate-pulse bg-white/40" />
         </div>
 
-        <button 
+        <button
+          type="button"
           onClick={onClose}
-          className="absolute top-3 right-3 hover:scale-110 transition-transform p-2 group"
+          className="absolute top-3 right-3 p-2 transition-transform hover:scale-110 group"
+          aria-label="Cerrar ventana"
         >
           <PixelX size={16} className="text-pink-accent group-hover:text-pink-accent/80" />
         </button>
 
         <div className="p-8 text-center">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-pink-accent/10 mb-6 relative group">
-             {/* Hexagon background */}
-             <div 
-              className="absolute inset-0 bg-pink-accent/40 transition-transform duration-500 group-hover:rotate-90" 
+          <div className="relative mb-6 inline-flex h-16 w-16 items-center justify-center bg-pink-accent/10 group">
+            <div
+              className="absolute inset-0 bg-pink-accent/40 transition-transform duration-500 group-hover:rotate-90"
               style={{ clipPath: 'polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%)' }}
-             />
-             <div 
-              className="absolute inset-0 border-2 border-pink-accent/60 animate-ping opacity-60" 
-              style={{ clipPath: 'polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%)', animationDuration: '3s' }} 
-             />
-             <LogOut className="w-7 h-7 text-pink-accent relative z-10 transition-transform group-hover:scale-110" />
+            />
+            <div
+              className="absolute inset-0 animate-ping border-2 border-pink-accent/60 opacity-60"
+              style={{ clipPath: 'polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%)', animationDuration: '3s' }}
+            />
+            <LogOut className="relative z-10 h-7 w-7 text-pink-accent transition-transform group-hover:scale-110" />
           </div>
 
-          <h3 className="font-logo text-3xl text-pink-accent mb-3 tracking-tight">
-            ¿Ya te vas?
-          </h3>
-          
-          <p className="font-slogan text-lg text-gray-600 mb-8 leading-relaxed">
+          <h3 className="mb-3 font-logo text-3xl tracking-tight text-pink-accent">¿Ya te vas?</h3>
+
+          <p className="mb-8 font-slogan text-lg leading-relaxed text-gray-600">
             Tu progreso de hoy está a salvo. ¡Esperamos volver a verte pronto!
           </p>
 
           <div className="flex flex-col gap-3">
-            <Button 
-              className="bg-pink-accent hover:bg-pink-accent/90 text-white font-logo text-lg py-6 h-auto shadow-[4px_4px_0px_0px_#00000010] transition-all hover:-translate-y-1 hover:shadow-[6px_6px_0px_0px_#00000015] active:translate-y-0"
+            <Button
+              className="h-auto bg-pink-accent py-6 text-lg text-white font-logo shadow-[4px_4px_0px_0px_#00000010] transition-all hover:-translate-y-1 hover:bg-[#d60a56] hover:shadow-[6px_6px_0px_0px_#00000015] active:translate-y-0"
               onClick={onConfirm}
             >
-              Cerrar Sesión
+              Cerrar sesión
             </Button>
-            <Button 
-              variant="ghost" 
-              className="text-pink-accent hover:bg-pink-accent/5 font-logo text-lg py-6 h-auto transition-all hover:scale-105 active:scale-95"
+            <Button
+              variant="ghost"
+              className="h-auto py-6 text-lg text-pink-accent font-logo transition-all hover:scale-105 hover:bg-pink-accent/5 active:scale-95"
               onClick={onClose}
             >
               Cancelar
@@ -83,9 +72,8 @@ export function LogoutModal({ isOpen, onClose, onConfirm }) {
           </div>
         </div>
 
-        {/* Footer Glitch Decor */}
-        <div className="absolute bottom-0 right-0 w-12 h-1 bg-pink-accent" />
-        <div className="absolute bottom-0 right-0 w-1 h-8 bg-pink-accent" />
+        <div className="absolute bottom-0 right-0 h-1 w-12 bg-pink-accent" />
+        <div className="absolute bottom-0 right-0 h-8 w-1 bg-pink-accent" />
       </div>
     </div>
   );
