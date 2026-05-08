@@ -68,11 +68,11 @@ export function Navbar() {
 
   return (
     <nav className={navClasses}>
-      <div className="w-full px-4 sm:px-8 lg:px-12">
-        <div className="grid grid-cols-[1fr_auto_1fr] items-center h-20 gap-4">
+      <div className="w-full px-3 sm:px-6 lg:px-12">
+        <div className="grid grid-cols-[minmax(0,1fr)_auto] md:grid-cols-[1fr_auto_1fr] items-center min-h-20 gap-3 sm:gap-4">
           <div className="flex justify-start">
-            <Link to="/" className="flex items-center leading-none">
-              <span className="font-logo text-3xl md:text-[2.7rem] tracking-tight whitespace-nowrap">NutraCore!</span>
+            <Link to="/" className="flex min-w-0 items-center leading-none">
+              <span className="font-logo text-[2rem] sm:text-[2.35rem] md:text-[2.7rem] tracking-tight whitespace-nowrap">NutraCore!</span>
             </Link>
           </div>
 
@@ -90,7 +90,7 @@ export function Navbar() {
             </div>
           </div>
 
-          <div className="flex justify-end items-center">
+          <div className="flex justify-end items-center min-w-0">
             <div className="hidden md:flex items-center space-x-6 whitespace-nowrap">
               {!isAuthenticated ? (
                 <>
@@ -136,7 +136,7 @@ export function Navbar() {
             </Button>
 
             <div className="md:hidden flex items-center">
-              <button className="p-2 mr-1" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+              <button className="p-2 mr-1 shrink-0" onClick={() => setMobileMenuOpen(!mobileMenuOpen)} aria-label={mobileMenuOpen ? 'Cerrar menú' : 'Abrir menú'}>
                 {mobileMenuOpen ? <X className={`w-6 h-6 ${mobileIconColor}`} /> : <Menu className={`w-6 h-6 ${mobileIconColor}`} />}
               </button>
               <Button
@@ -160,7 +160,7 @@ export function Navbar() {
               <Link
                 key={link.href}
                 to={link.href}
-                className={`block py-2 font-navbar text-base ${
+                className={`block break-words py-2 font-navbar text-base ${
                   location.pathname === link.href
                     ? hasScrolled
                       ? 'text-pink-accent font-semibold'

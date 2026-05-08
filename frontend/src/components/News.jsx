@@ -712,24 +712,24 @@ export function News() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark-pink-fields">
-      <div className="pt-24 pb-16 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto space-y-6">
-          <Card className="p-6 md:p-8 bg-white border-2 border-pink-accent shadow-[8px_8px_0px_0px_#ff0a60] rounded-none">
-            <h1 className="text-4xl text-gray-900 mb-3">Noticias y Artículos</h1>
+      <div className="pt-24 pb-10 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6">
+          <Card className="p-4 sm:p-6 md:p-8 bg-white border-2 border-pink-accent shadow-[8px_8px_0px_0px_#ff0a60] rounded-none">
+            <h1 className="mb-2 text-2xl text-gray-900 sm:text-3xl lg:text-4xl">Noticias y Artículos</h1>
             <p className="text-gray-600">
               Las últimas novedades sobre nutrición, fitness y bienestar respaldadas por evidencia científica.
             </p>
           </Card>
 
-          <Card className="p-5 bg-white border-2 border-pink-accent shadow-[6px_6px_0px_0px_#ff0a60] rounded-none space-y-4">
-            <div className="relative max-w-xl">
+          <Card className="p-4 sm:p-5 bg-white border-2 border-pink-accent shadow-[6px_6px_0px_0px_#ff0a60] rounded-none space-y-3 sm:space-y-4">
+            <div className="relative w-full max-w-xl">
               <Search className="absolute left-3 top-3.5 w-5 h-5 text-gray-400" />
               <Input
                 type="text"
                 placeholder="Buscar artículos..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 h-12 border-2 border-gray-300 rounded-none focus-visible:border-pink-accent bg-white"
+                className="pl-10 h-10 sm:h-12 text-sm border-2 border-gray-300 rounded-none focus-visible:border-pink-accent bg-white"
               />
             </div>
 
@@ -738,7 +738,7 @@ export function News() {
                 <Badge
                   key={category}
                   variant={selectedCategory === category ? "default" : "outline"}
-                  className={`news-category-badge ${category === "Todos" ? "news-category-badge-all" : ""} cursor-pointer px-4 py-2 text-sm transition-colors rounded-none border-2 ${
+                  className={`news-category-badge ${category === "Todos" ? "news-category-badge-all" : ""} cursor-pointer px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm transition-colors rounded-none border-2 ${
                     selectedCategory === category
                       ? "bg-pink-accent border-pink-accent text-white"
                       : "border-gray-900 text-gray-900"
@@ -752,13 +752,13 @@ export function News() {
           </Card>
 
           {featuredArticles.length > 0 && (
-            <div className="mb-12">
-              <div className="flex items-center gap-2 mb-6">
-                <TrendingUp className="w-5 h-5 text-pink-accent" />
-                <h2 className="text-2xl font-bold text-gray-900">Artículos destacados</h2>
+            <div className="mb-8 sm:mb-12">
+              <div className="mb-4 sm:mb-6 flex items-center gap-2">
+                <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-pink-accent" />
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Artículos destacados</h2>
               </div>
 
-              <div className="grid md:grid-cols-2 gap-5">
+              <div className="grid gap-3 sm:gap-4 md:grid-cols-2">
                 {featuredArticles.map((article) => (
                   <Card
                     key={article.id}
@@ -782,15 +782,15 @@ export function News() {
                       </Badge>
                     </div>
 
-                    <div className="flex flex-1 flex-col p-5 space-y-4">
-                      <h3 className="text-xl font-bold text-gray-900 group-hover:text-pink-accent transition-colors line-clamp-3 min-h-[5.4rem]">
+                    <div className="flex flex-1 flex-col p-3 sm:p-4 lg:p-5 space-y-3">
+                      <h3 className="text-base sm:text-lg lg:text-xl font-bold text-gray-900 group-hover:text-pink-accent transition-colors line-clamp-3 min-h-[4.2rem] sm:min-h-[5.4rem]">
                         {article.title}
                       </h3>
 
-                      <p className="text-sm text-gray-600 leading-relaxed line-clamp-4 min-h-[6.4rem]">{article.excerpt}</p>
+                      <p className="text-xs sm:text-sm text-gray-600 leading-relaxed line-clamp-4 min-h-[5.2rem] sm:min-h-[6.4rem]">{article.excerpt}</p>
 
-                      <div className="mt-auto flex items-center justify-between pt-4 border-t border-gray-100">
-                        <div className="flex items-center gap-4 text-sm text-gray-500">
+                      <div className="mt-auto flex flex-col gap-3 border-t border-gray-100 pt-4 min-[480px]:flex-row min-[480px]:items-center min-[480px]:justify-between">
+                        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-gray-500">
                           <div className="flex items-center gap-1">
                             <Calendar className="w-4 h-4" />
                             <span>{article.date}</span>
@@ -822,12 +822,12 @@ export function News() {
 
           {regularArticles.length > 0 && (
             <div>
-              <div className="flex items-center gap-2 mb-6">
-                <BookOpen className="w-5 h-5 text-pink-accent" />
-                <h2 className="text-2xl font-bold text-gray-900">Todas las noticias</h2>
+              <div className="mb-4 sm:mb-6 flex items-center gap-2">
+                <BookOpen className="w-4 h-4 sm:w-5 sm:h-5 text-pink-accent" />
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Todas las noticias</h2>
               </div>
 
-              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              <div className="grid gap-3 sm:gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {regularArticles.map((article) => (
                   <Card
                     key={article.id}
@@ -850,15 +850,15 @@ export function News() {
                       </Badge>
                     </div>
 
-                    <div className="flex flex-1 flex-col p-4 space-y-3">
-                      <h3 className="text-base font-bold text-gray-900 group-hover:text-pink-accent transition-colors line-clamp-3 min-h-[4.7rem]">
+                    <div className="flex flex-1 flex-col p-3 sm:p-4 space-y-2.5">
+                      <h3 className="text-sm sm:text-base font-bold text-gray-900 group-hover:text-pink-accent transition-colors line-clamp-3 min-h-[3.8rem] sm:min-h-[4.7rem]">
                         {article.title}
                       </h3>
 
-                      <p className="text-sm text-gray-600 leading-relaxed line-clamp-4 min-h-[6rem]">{article.excerpt}</p>
+                      <p className="text-xs sm:text-sm text-gray-600 leading-relaxed line-clamp-4 min-h-[4.8rem] sm:min-h-[6rem]">{article.excerpt}</p>
 
-                      <div className="mt-auto flex items-center justify-between pt-3 border-t border-gray-100">
-                        <div className="flex items-center gap-3 text-xs text-gray-500">
+                      <div className="mt-auto flex flex-col gap-3 border-t border-gray-100 pt-3 min-[480px]:flex-row min-[480px]:items-center min-[480px]:justify-between">
+                        <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-xs text-gray-500">
                           <div className="flex items-center gap-1">
                             <Calendar className="w-3 h-3" />
                             <span>{article.date}</span>
@@ -908,9 +908,9 @@ export function News() {
             </Card>
           )}
 
-          <Card className="mt-16 p-8 bg-white border-2 border-pink-accent shadow-[8px_8px_0px_0px_#ff0a60] rounded-none">
+          <Card className="mt-10 sm:mt-16 p-5 sm:p-8 bg-white border-2 border-pink-accent shadow-[8px_8px_0px_0px_#ff0a60] rounded-none">
             <div className="max-w-2xl mx-auto text-center">
-              <h3 className="text-2xl font-bold text-gray-900 mb-3">Suscríbete a nuestro boletín</h3>
+              <h3 className="mb-3 text-xl sm:text-2xl font-bold text-gray-900">Suscríbete a nuestro boletín</h3>
               <p className="text-gray-600 mb-6">
                 Recibe los últimos artículos, recetas y consejos de nutrición directamente en tu correo.
               </p>
@@ -926,7 +926,7 @@ export function News() {
                   type="button"
                   onClick={handleNewsletterSubscribe}
                   disabled={newsletterLoading}
-                  className="news-subscribe-btn rounded-none bg-pink-accent text-white hover:bg-pink-accent/90 active:scale-[0.98] dark:bg-pink-300 dark:text-slate-950 dark:hover:bg-pink-200"
+                  className="news-subscribe-btn w-full rounded-none bg-pink-accent text-white hover:bg-pink-accent/90 active:scale-[0.98] sm:w-auto dark:bg-pink-300 dark:text-slate-950 dark:hover:bg-pink-200"
                 >
                   {newsletterLoading ? "Enviando..." : "Suscribirse"}
                 </Button>
@@ -959,7 +959,7 @@ export function News() {
                   </button>
                 </div>
 
-                <div className="p-6 md:p-8 space-y-6">
+                <div className="space-y-6 p-4 sm:p-6 md:p-8">
                   <div className="flex flex-wrap items-center gap-2">
                     <Badge className="bg-pink-accent text-white rounded-none">{selectedArticle.category}</Badge>
                     <span className="text-sm text-gray-500 inline-flex items-center gap-1">
@@ -972,7 +972,7 @@ export function News() {
                     </span>
                   </div>
 
-                  <h3 className="text-2xl md:text-3xl font-bold text-gray-900 leading-tight">{selectedArticle.title}</h3>
+                  <h3 className="text-2xl font-bold leading-tight text-gray-900 md:text-3xl">{selectedArticle.title}</h3>
 
                   <div className="space-y-5 text-gray-700 leading-relaxed">
                     <p className="text-base md:text-lg text-gray-800">{renderFormattedText(selectedArticle.excerpt)}</p>

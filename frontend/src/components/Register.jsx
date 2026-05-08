@@ -111,16 +111,16 @@ export function Register() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark-pink-fields">
-      <div className="pt-24 pb-16 px-4 sm:px-6 lg:px-8">
+      <div className="pt-24 pb-10 px-4 sm:px-6 lg:px-8">
         <div className="max-w-md mx-auto">
-          <Card className="text-center mb-6 p-6 md:p-8 bg-white border-2 border-pink-accent shadow-[8px_8px_0px_0px_#ff0a60] rounded-none">
-            <h1 className="text-4xl text-gray-900 mb-2">Únete a NutraCore!</h1>
+          <Card className="text-center mb-4 sm:mb-6 p-4 sm:p-6 md:p-8 bg-white border-2 border-pink-accent shadow-[8px_8px_0px_0px_#ff0a60] rounded-none">
+            <h1 className="mb-2 text-2xl text-gray-900 sm:text-4xl">Únete a NutraCore!</h1>
             <p className="text-gray-600">Crea tu cuenta y comienza tu transformación nutricional.</p>
             <p className="text-sm text-gray-500 mt-2">Tu alias se asignará automáticamente como NutraUser####.</p>
           </Card>
 
-          <Card className="p-6 md:p-8 bg-white border-2 border-pink-accent shadow-[8px_8px_0px_0px_#ff0a60] rounded-none">
-            <form onSubmit={handleSubmit} className="space-y-6">
+          <Card className="p-4 sm:p-6 md:p-8 bg-white border-2 border-pink-accent shadow-[8px_8px_0px_0px_#ff0a60] rounded-none">
+            <form onSubmit={handleSubmit} className="space-y-5 sm:space-y-6">
               <div className="space-y-2">
                 <Label htmlFor="email">Correo electrónico</Label>
                 <div className="relative">

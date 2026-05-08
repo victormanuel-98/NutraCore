@@ -603,29 +603,29 @@ export function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 pt-24 pb-16 px-4 sm:px-6 lg:px-8 dark-pink-fields">
-      <div className="max-w-7xl mx-auto space-y-6">
-        <Card className="p-6 md:p-8 bg-white border-2 border-pink-accent shadow-[8px_8px_0px_0px_#ff0a60] rounded-none">
+    <div className="min-h-screen bg-gray-50 pt-24 pb-10 px-4 sm:px-6 lg:px-8 dark-pink-fields">
+      <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6">
+        <Card className="p-4 sm:p-6 md:p-8 bg-white border-2 border-pink-accent shadow-[8px_8px_0px_0px_#ff0a60] rounded-none">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
             <div className="space-y-2">
               <p className="inline-flex items-center gap-2 text-xs uppercase tracking-wider text-gray-500">
                 <CalendarDays className="w-4 h-4" />
                 {todayLabel}
               </p>
-              <h1 className="text-4xl text-gray-900">
+              <h1 className="text-2xl text-gray-900 sm:text-3xl lg:text-4xl">
                 Hola, <span className="text-pink-accent">{profileUser?.name || user?.name || 'NutraUser'}</span>
               </h1>
               <p className="text-gray-600">Tu panel personal de progreso, recetas y objetivos diarios.</p>
             </div>
 
-            <div className="flex flex-wrap gap-2">
-              <Link to="/profile">
+            <div className="grid grid-cols-1 gap-2 sm:flex sm:flex-wrap">
+              <Link to="/profile" className="w-full sm:w-auto">
                 <Button variant="outline" className="border-2 border-gray-900 rounded-none transition-all duration-150 hover:-translate-y-0.5 hover:bg-pink-50 hover:border-pink-accent hover:text-pink-accent hover:shadow-[4px_4px_0px_0px_rgba(255,10,96,0.18)] dark:hover:bg-pink-500/12 dark:hover:border-pink-300 dark:hover:text-pink-200">
                   <UserCircle2 className="w-4 h-4 mr-2" />
                   Perfil
                 </Button>
               </Link>
-              <Link to="/lab">
+              <Link to="/lab" className="w-full sm:w-auto">
                 <Button className="bg-pink-accent text-white rounded-none transition-all duration-150 hover:-translate-y-0.5 hover:bg-pink-accent/90 hover:shadow-[4px_4px_0px_0px_rgba(255,10,96,0.24)] dark:hover:bg-pink-400">
                   <PlusSquare className="w-4 h-4 mr-2" />
                   Nueva receta
@@ -647,21 +647,21 @@ export function Dashboard() {
           </Card>
         )}
 
-        <div className="grid sm:grid-cols-2 xl:grid-cols-4 gap-4">
+        <div className="grid gap-3 sm:gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <KpiCard label="IMC" value={stats?.bmi ?? 'N/D'} icon={<Activity className="w-4 h-4 text-pink-accent" />} />
           <KpiCard label="Favoritos" value={stats?.totalFavorites ?? 0} icon={<Heart className="w-4 h-4 text-pink-accent" />} />
           <KpiCard label="Recetas creadas" value={stats?.totalRecipes ?? 0} icon={<BookOpen className="w-4 h-4 text-pink-accent" />} />
           <KpiCard label="Noticias guardadas" value={stats?.totalSavedNews ?? 0} icon={<TrendingUp className="w-4 h-4 text-pink-accent" />} />
         </div>
 
-        <div className="grid xl:grid-cols-3 gap-6 items-start">
-          <Card className="xl:col-span-2 p-6 bg-white border-2 border-pink-accent shadow-[8px_8px_0px_0px_#ff0a60] rounded-none space-y-5">
+        <div className="grid gap-6 xl:grid-cols-3 items-start">
+          <Card className="xl:col-span-2 p-4 sm:p-6 bg-white border-2 border-pink-accent shadow-[8px_8px_0px_0px_#ff0a60] rounded-none space-y-4 sm:space-y-5">
             <div className="flex items-center gap-2">
               <Target className="w-5 h-5 text-pink-accent" />
-              <h2 className="text-2xl font-bold text-gray-900">Objetivos {periodTitle}</h2>
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Objetivos {periodTitle}</h2>
             </div>
 
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <Tabs value={goalPeriod} onValueChange={setGoalPeriod}>
                 <TabsList className="rounded-none bg-gray-100">
                   <TabsTrigger value="daily" className="rounded-none">Diario</TabsTrigger>
@@ -669,31 +669,33 @@ export function Dashboard() {
                   <TabsTrigger value="monthly" className="rounded-none">Mensual</TabsTrigger>
                 </TabsList>
               </Tabs>
-              <p className="text-xs text-gray-600">En semanal y mensual, el objetivo no supera la ingesta recomendada acumulada.</p>
-              <p className="text-xs text-gray-500">Ritmo del periodo: {periodElapsedPercent}%</p>
+              <div className="space-y-1 lg:text-right">
+                <p className="text-xs text-gray-600">En semanal y mensual, el objetivo no supera la ingesta recomendada acumulada.</p>
+                <p className="text-xs text-gray-500">Ritmo del periodo: {periodElapsedPercent}%</p>
+              </div>
             </div>
 
-            <div className="grid sm:grid-cols-2 gap-4">
+            <div className="grid gap-3 sm:gap-4 sm:grid-cols-2">
               <GoalBar label="Calorias" value={`${Math.round(consumedTotals.calories)} / ${Math.round(periodGoals.calories)} kcal`} percent={chartPercents.calories} icon={<Flame className="w-4 h-4 text-pink-accent" />} tone="pink" />
               <GoalBar label="Proteina" value={`${Math.round(consumedTotals.protein)} / ${Math.round(periodGoals.protein)} g`} percent={chartPercents.protein} icon={<Activity className="w-4 h-4 text-blue-600" />} tone="blue" />
               <GoalBar label="Carbohidratos" value={`${Math.round(consumedTotals.carbs)} / ${Math.round(periodGoals.carbs)} g`} percent={chartPercents.carbs} icon={<Activity className="w-4 h-4 text-green-600" />} tone="green" />
               <GoalBar label="Grasas" value={`${Math.round(consumedTotals.fats)} / ${Math.round(periodGoals.fats)} g`} percent={chartPercents.fats} icon={<Activity className="w-4 h-4 text-yellow-600" />} tone="yellow" />
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 gap-2 sm:gap-3 sm:grid-cols-4">
               <GoalDonut label="Kcal" percent={chartPercents.calories} tone="pink" />
               <GoalDonut label="Prot" percent={chartPercents.protein} tone="blue" />
               <GoalDonut label="Carb" percent={chartPercents.carbs} tone="green" />
               <GoalDonut label="Grasa" percent={chartPercents.fats} tone="yellow" />
             </div>
 
-            <div className="border-2 border-gray-200 p-4 bg-white space-y-3">
+            <div className="border-2 border-gray-200 p-3 sm:p-4 bg-white space-y-3">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                 <div>
                   <p className="text-sm font-semibold text-gray-900">Menu automatizado ({goalPeriod})</p>
                   <p className="text-xs text-gray-600">Basado en tus recetas creadas y favoritas para completar macros.</p>
                 </div>
-                <Button variant="outline" className="border-2 border-gray-900 rounded-none" onClick={regenerateAutoMenu}>
+                <Button variant="outline" className="w-full border-2 border-gray-900 rounded-none sm:w-auto" onClick={regenerateAutoMenu}>
                   Regenerar menu
                 </Button>
               </div>
@@ -710,7 +712,7 @@ export function Dashboard() {
                         onClick={() => toggleConsumedRecipe(recipe._id)}
                         className={`text-left border p-3 transition-colors ${isConsumed ? 'border-green-500 bg-green-50' : 'border-gray-200 bg-gray-50 hover:border-pink-accent'}`}
                       >
-                        <div className="flex items-center justify-between gap-2">
+                        <div className="flex flex-col items-start justify-between gap-2 min-[420px]:flex-row min-[420px]:items-center">
                           <p className="font-semibold text-sm text-gray-900 truncate">{recipe.title}</p>
                           <Badge className={`rounded-none border ${isConsumed ? 'border-black bg-black text-white' : 'border-gray-300 bg-slate-500 text-white'}`}>
                             {isConsumed ? 'Consumida' : 'Pendiente'}
@@ -730,7 +732,7 @@ export function Dashboard() {
               <p className="text-sm font-semibold text-gray-800 mb-2">Progreso hacia peso objetivo</p>
               {Number.isFinite(currentWeight) && currentWeight > 0 ? (
                 <div className="space-y-4">
-                  <div className="grid gap-4 lg:grid-cols-[minmax(0,1.2fr)_320px]">
+                  <div className="grid gap-4 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,320px)]">
                     <div className="space-y-4">
                       <div>
                         <p className="text-xs uppercase tracking-wide text-gray-500 mb-2">Tipo de objetivo</p>
@@ -764,7 +766,7 @@ export function Dashboard() {
                         </div>
                       </div>
 
-                      <div className="max-w-xs">
+                      <div className="w-full max-w-xs">
                         <Label>Cantidad (kg)</Label>
                         <input
                           type="text"
@@ -839,8 +841,8 @@ export function Dashboard() {
             </div>
           </Card>
 
-          <Card className="p-6 bg-white border-2 border-pink-accent shadow-[8px_8px_0px_0px_#ff0a60] rounded-none h-[560px] flex flex-col">
-            <h2 className="text-xl font-bold text-gray-900">Actividad reciente</h2>
+          <Card className="flex min-h-[360px] xl:min-h-[420px] flex-col p-4 sm:p-6 bg-white border-2 border-pink-accent shadow-[8px_8px_0px_0px_#ff0a60] rounded-none xl:h-[560px]">
+            <h2 className="text-lg sm:text-xl font-bold text-gray-900">Actividad reciente</h2>
 
             <div className="flex-1 min-h-0 space-y-4">
               <div className="space-y-2">
@@ -868,9 +870,9 @@ export function Dashboard() {
           </Card>
         </div>
 
-        <Card className="p-6 bg-white border-2 border-pink-accent shadow-[8px_8px_0px_0px_#ff0a60] rounded-none">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">Acciones rapidas</h2>
-          <div className="grid sm:grid-cols-3 gap-3">
+        <Card className="p-4 sm:p-6 bg-white border-2 border-pink-accent shadow-[8px_8px_0px_0px_#ff0a60] rounded-none">
+          <h2 className="mb-3 sm:mb-4 text-lg sm:text-xl font-bold text-gray-900">Acciones rapidas</h2>
+          <div className="grid gap-3 sm:grid-cols-3">
             <Link to="/lab"><Button variant="outline" className="w-full justify-start border-2 border-gray-900 rounded-none transition-all duration-150 hover:-translate-y-0.5 hover:bg-pink-50 hover:border-pink-accent hover:text-pink-accent hover:shadow-[4px_4px_0px_0px_rgba(255,10,96,0.18)] dark:hover:bg-pink-500/12 dark:hover:border-pink-300 dark:hover:text-pink-200"><Zap className="w-4 h-4 mr-2" />NutraCore Lab</Button></Link>
             <Link to="/catalog"><Button variant="outline" className="w-full justify-start border-2 border-gray-900 rounded-none transition-all duration-150 hover:-translate-y-0.5 hover:bg-pink-50 hover:border-pink-accent hover:text-pink-accent hover:shadow-[4px_4px_0px_0px_rgba(255,10,96,0.18)] dark:hover:bg-pink-500/12 dark:hover:border-pink-300 dark:hover:text-pink-200"><BookOpen className="w-4 h-4 mr-2" />Explorar recetas</Button></Link>
             <Link to="/news"><Button variant="outline" className="w-full justify-start border-2 border-gray-900 rounded-none transition-all duration-150 hover:-translate-y-0.5 hover:bg-pink-50 hover:border-pink-accent hover:text-pink-accent hover:shadow-[4px_4px_0px_0px_rgba(255,10,96,0.18)] dark:hover:bg-pink-500/12 dark:hover:border-pink-300 dark:hover:text-pink-200"><TrendingUp className="w-4 h-4 mr-2" />Ver noticias</Button></Link>
@@ -883,12 +885,12 @@ export function Dashboard() {
 
 function KpiCard({ label, value, icon }) {
   return (
-    <Card className="p-4 bg-white border-2 border-pink-accent shadow-[6px_6px_0px_0px_#ff0a60] rounded-none">
+    <Card className="p-3 sm:p-4 bg-white border-2 border-pink-accent shadow-[6px_6px_0px_0px_#ff0a60] rounded-none">
       <div className="flex items-center gap-2 mb-1">
         {icon}
-        <span className="text-sm text-gray-600">{label}</span>
+        <span className="text-xs sm:text-sm text-gray-600">{label}</span>
       </div>
-      <Badge className="kpi-value-badge rounded-none border-0 !text-4xl font-bold leading-none px-3 py-2">{value}</Badge>
+      <Badge className="kpi-value-badge rounded-none border-0 !text-2xl sm:!text-4xl font-bold leading-none px-2.5 sm:px-3 py-1.5 sm:py-2">{value}</Badge>
     </Card>
   );
 }
@@ -904,14 +906,14 @@ function GoalBar({ label, value, percent, icon, tone = 'pink' }) {
   const gradient = gradientByTone[tone] || gradientByTone.pink;
 
   return (
-    <div className="border-2 border-gray-200 p-3 bg-gray-50 relative overflow-hidden group">
+    <div className="border-2 border-gray-200 p-2.5 sm:p-3 bg-gray-50 relative overflow-hidden group">
       <div className="absolute inset-y-0 left-0 w-1 bg-pink-accent/30 group-hover:bg-pink-accent transition-colors" />
-      <div className="flex items-center justify-between mb-2">
+      <div className="mb-2 flex flex-col gap-2 min-[420px]:flex-row min-[420px]:items-center min-[420px]:justify-between">
         <div className="inline-flex items-center gap-2">
           {icon}
-          <span className="text-sm font-semibold text-gray-700">{label}</span>
+          <span className="text-xs sm:text-sm font-semibold text-gray-700">{label}</span>
         </div>
-        <span className="text-sm font-bold text-gray-900">{value}</span>
+        <span className="text-xs sm:text-sm font-bold text-gray-900">{value}</span>
       </div>
       <div className="relative h-3 rounded-full bg-gray-200 overflow-hidden">
         <div className={`absolute inset-y-0 left-0 bg-gradient-to-r ${gradient} transition-all duration-700 ease-out`} style={{ width: `${safePercent}%` }} />
@@ -933,7 +935,7 @@ function GoalDonut({ label, percent, tone = 'pink' }) {
   const dashOffset = circumference * (1 - safePercent / 100);
 
   return (
-    <div className="border border-gray-200 bg-white p-3 flex items-center gap-3">
+    <div className="flex items-center gap-2.5 sm:gap-3 border border-gray-200 bg-white p-2.5 sm:p-3">
       <div className="relative w-12 h-12">
         <svg className="w-12 h-12 -rotate-90" viewBox={`0 0 ${size} ${size}`}>
           <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke="#e5e7eb" strokeWidth={stroke} />

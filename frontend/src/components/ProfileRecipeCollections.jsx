@@ -253,16 +253,16 @@ export function ProfileRecipeCollections({ token, onDataChanged }) {
 
   return (
     <>
-      <Card className="p-6 bg-white border-2 border-pink-accent shadow-[8px_8px_0px_0px_#ff0a60] rounded-none">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
+      <Card className="rounded-none border-2 border-pink-accent bg-white p-4 shadow-[8px_8px_0px_0px_#ff0a60] sm:p-6">
+        <div className="mb-4 flex flex-col justify-between gap-3 sm:mb-5 sm:flex-row sm:items-center">
           <div>
-            <h3 className="text-3xl font-logo text-gray-900">
+            <h3 className="text-2xl font-logo text-gray-900 sm:text-3xl">
               RECETAS <span className="text-pink-accent">GUARDADAS Y PUBLICADAS</span>
             </h3>
-            <p className="text-sm text-gray-600">Consulta, edita o elimina tus recetas. Todo se actualiza en la base de datos.</p>
+            <p className="text-xs text-gray-600 sm:text-sm">Consulta, edita o elimina tus recetas. Todo se actualiza en la base de datos.</p>
           </div>
-          <Button type="button" variant="outline" onClick={() => loadCollections()} className="border-2 border-gray-900">
-            <RefreshCw className="w-4 h-4 mr-2" />
+          <Button type="button" variant="outline" onClick={() => loadCollections()} className="h-9 border-2 border-gray-900 px-3 text-xs sm:h-10 sm:text-sm">
+            <RefreshCw className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
             Actualizar
           </Button>
         </div>
@@ -272,7 +272,7 @@ export function ProfileRecipeCollections({ token, onDataChanged }) {
         {!loading && !error && !hasCollections && <p className="text-gray-500">Aún no tienes recetas en favoritos ni recetas propias.</p>}
 
         {!loading && !error && hasCollections && (
-          <div className="grid xl:grid-cols-2 gap-6">
+          <div className="grid gap-5 xl:grid-cols-2 xl:gap-6">
             <section className="space-y-3">
               <h4 className="text-lg font-bold text-gray-900">Favoritos</h4>
               {favoriteRecipes.length === 0 && <p className="text-sm text-gray-500">No tienes favoritos guardados.</p>}
@@ -289,9 +289,9 @@ export function ProfileRecipeCollections({ token, onDataChanged }) {
                         event.stopPropagation();
                         requestRemoveFavorite(recipe);
                       }}
-                      className="border-2 border-gray-900 px-2 h-8"
+                      className="h-8 border-2 border-gray-900 px-2 text-[11px] sm:text-xs"
                     >
-                      <Heart className="w-4 h-4 mr-1 fill-pink-accent text-pink-accent" />
+                      <Heart className="mr-1 h-3.5 w-3.5 fill-pink-accent text-pink-accent" />
                       Quitar
                     </Button>
                   }
@@ -308,7 +308,7 @@ export function ProfileRecipeCollections({ token, onDataChanged }) {
                   recipe={recipe}
                   onOpen={() => openRecipeDetail(recipe)}
                   actions={
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                       <Button
                         type="button"
                         variant="outline"
@@ -316,9 +316,9 @@ export function ProfileRecipeCollections({ token, onDataChanged }) {
                           event.stopPropagation();
                           openEditModal(recipe);
                         }}
-                        className="border-2 border-gray-900 px-2 h-8"
+                        className="h-8 border-2 border-gray-900 px-2 text-[11px] sm:text-xs"
                       >
-                        <Pencil className="w-4 h-4 mr-1" />
+                        <Pencil className="mr-1 h-3.5 w-3.5" />
                         Editar
                       </Button>
                       <Button
@@ -328,9 +328,9 @@ export function ProfileRecipeCollections({ token, onDataChanged }) {
                           event.stopPropagation();
                           requestDeleteRecipe(recipe);
                         }}
-                        className="border-2 border-gray-900 px-2 h-8 hover:bg-red-600 hover:text-white hover:border-red-600"
+                        className="h-8 border-2 border-gray-900 px-2 text-[11px] hover:border-red-600 hover:bg-red-600 hover:text-white sm:text-xs"
                       >
-                        <Trash2 className="w-4 h-4 mr-1" />
+                        <Trash2 className="mr-1 h-3.5 w-3.5" />
                         Eliminar
                       </Button>
                     </div>
@@ -344,9 +344,9 @@ export function ProfileRecipeCollections({ token, onDataChanged }) {
 
       {editingRecipe && (
         <div className="fixed inset-0 z-[70] bg-black/50 flex items-center justify-center p-4" onClick={closeEditModal}>
-          <Card className="w-full max-w-3xl max-h-[90vh] overflow-y-auto p-6 border-2 border-pink-accent rounded-none" onClick={(event) => event.stopPropagation()}>
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-2xl font-bold text-gray-900">Editar receta</h3>
+          <Card className="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-none border-2 border-pink-accent p-4 sm:p-6" onClick={(event) => event.stopPropagation()}>
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="text-xl font-bold text-gray-900 sm:text-2xl">Editar receta</h3>
               <button type="button" onClick={closeEditModal} className="p-1 text-gray-500 hover:text-gray-900">
                 <PixelX size={16} className="text-pink-accent" />
               </button>

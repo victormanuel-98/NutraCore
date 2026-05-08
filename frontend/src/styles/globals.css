@@ -42,6 +42,12 @@ html.theme-dark {
   box-sizing: border-box;
 }
 
+img,
+video,
+svg {
+  max-width: 100%;
+}
+
 html,
 body,
 #root {
@@ -53,6 +59,7 @@ body {
   font-family: 'Bitcount Single', monospace;
   color: var(--text-color);
   background: var(--bg-color);
+  overflow-x: hidden;
   transition: background-color 220ms ease, color 220ms ease;
 }
 
@@ -776,6 +783,7 @@ svg.lucide,
 .app-shell {
   min-height: 100%;
   transition: opacity 420ms ease;
+  overflow-x: clip;
 }
 
 .app-shell-hidden {

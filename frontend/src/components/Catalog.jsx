@@ -358,14 +358,14 @@ export function Catalog() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark-pink-fields">
-      <div className="pt-24 pb-16 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto space-y-6">
-          <Card className="p-6 md:p-8 bg-white border-2 border-pink-accent shadow-[8px_8px_0px_0px_#ff0a60] rounded-none">
-            <h1 className="text-4xl text-gray-900 mb-3">Catálogo de Recetas</h1>
+      <div className="pt-24 pb-10 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6">
+          <Card className="p-4 sm:p-6 md:p-8 bg-white border-2 border-pink-accent shadow-[8px_8px_0px_0px_#ff0a60] rounded-none">
+            <h1 className="mb-2 text-2xl text-gray-900 sm:text-3xl lg:text-4xl">Catálogo de Recetas</h1>
             <p className="text-gray-600">Explora recetas del catálogo y publicaciones de la comunidad.</p>
           </Card>
 
-          <Card className="relative z-30 overflow-visible p-5 bg-white border-2 border-pink-accent shadow-[6px_6px_0px_0px_#ff0a60] rounded-none space-y-4">
+          <Card className="relative z-30 overflow-visible p-4 sm:p-5 bg-white border-2 border-pink-accent shadow-[6px_6px_0px_0px_#ff0a60] rounded-none space-y-3 sm:space-y-4">
             <div className="flex flex-col lg:flex-row gap-3 lg:items-center">
               <div className="flex-1 relative">
                 <Search className="absolute left-3 top-3.5 w-5 h-5 text-gray-400 pixel-icon" />
@@ -374,13 +374,13 @@ export function Catalog() {
                   placeholder="Buscar por nombre o etiqueta..."
                   value={searchTerm}
                   onChange={(event) => setSearchTerm(event.target.value)}
-                  className="pl-10 h-11 border-2 border-gray-300 rounded-none focus-visible:border-pink-accent bg-white"
+                  className="pl-10 h-10 sm:h-11 border-2 border-gray-300 rounded-none focus-visible:border-pink-accent bg-white"
                 />
               </div>
 
-              <div className="flex flex-wrap gap-2">
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:flex lg:flex-wrap">
                 <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                  <SelectTrigger className="w-44 h-10 text-sm border-2 border-gray-900 rounded-none hover:border-pink-accent">
+                  <SelectTrigger className="h-9 sm:h-10 w-full text-xs sm:text-sm border-2 border-gray-900 rounded-none hover:border-pink-accent sm:w-44">
                     <Filter className="w-4 h-4 mr-2 pixel-icon" />
                     <span className="ml-1">{selectedCategory === "all" ? "Todos" : categoryLabels[selectedCategory] || selectedCategory}</span>
                   </SelectTrigger>
@@ -394,7 +394,7 @@ export function Catalog() {
                 </Select>
 
                 <Select value={selectedDifficulty} onValueChange={setSelectedDifficulty}>
-                  <SelectTrigger className="w-40 h-10 text-sm border-2 border-gray-900 rounded-none hover:border-pink-accent">
+                  <SelectTrigger className="h-9 sm:h-10 w-full text-xs sm:text-sm border-2 border-gray-900 rounded-none hover:border-pink-accent sm:w-40">
                     <SlidersHorizontal className="w-4 h-4 mr-2 pixel-icon" />
                     <span className="ml-1">{selectedDifficulty === "all" ? "Todos" : getDifficultyLabel(selectedDifficulty)}</span>
                   </SelectTrigger>
@@ -409,7 +409,7 @@ export function Catalog() {
 
                 <Button
                   variant="outline"
-                  className="h-10 px-3 text-sm border-2 border-gray-900 rounded-none hover:bg-pink-accent hover:text-white hover:border-pink-accent"
+                  className="h-9 sm:h-10 w-full px-3 text-xs sm:text-sm border-2 border-gray-900 rounded-none hover:bg-pink-accent hover:text-white hover:border-pink-accent sm:col-span-2 lg:w-auto"
                   onClick={clearFilters}
                 >
                   Limpiar filtros
@@ -425,7 +425,7 @@ export function Catalog() {
                   placeholder="Kcal min"
                   value={minCalories}
                   onChange={(event) => setMinCalories(event.target.value)}
-                  className="h-10 border-2 border-gray-300 rounded-none focus-visible:border-pink-accent bg-white"
+                  className="h-9 sm:h-10 text-xs sm:text-sm border-2 border-gray-300 rounded-none focus-visible:border-pink-accent bg-white"
                 />
                 <Input
                   type="number"
@@ -433,7 +433,7 @@ export function Catalog() {
                   placeholder="Kcal max"
                   value={maxCalories}
                   onChange={(event) => setMaxCalories(event.target.value)}
-                  className="h-10 border-2 border-gray-300 rounded-none focus-visible:border-pink-accent bg-white"
+                  className="h-9 sm:h-10 text-xs sm:text-sm border-2 border-gray-300 rounded-none focus-visible:border-pink-accent bg-white"
                 />
               </div>
 
@@ -506,10 +506,10 @@ export function Catalog() {
               placeholder="Excluir alérgenos (coma separada): gluten, lactosa, huevo, frutos_secos, soja, marisco, pescado, sesamo"
               value={excludedAllergensInput}
               onChange={(event) => setExcludedAllergensInput(event.target.value)}
-              className="h-10 border-2 border-gray-300 rounded-none focus-visible:border-pink-accent bg-white"
+              className="h-9 sm:h-10 text-xs sm:text-sm border-2 border-gray-300 rounded-none focus-visible:border-pink-accent bg-white"
             />
 
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
               <p className="text-gray-700">Mostrando {filteredRecipes.length} recetas (total: {totalRecipes})</p>
               <p className="text-sm text-gray-500">Página {currentPage} de {totalPages}</p>
             </div>
@@ -518,7 +518,7 @@ export function Catalog() {
             {error && <p className="text-red-600">{error}</p>}
           </Card>
 
-          <div className="relative z-0 grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="relative z-0 grid gap-3 sm:gap-4 lg:gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {filteredRecipes.map((recipe) => {
               const isFavorite = (recipe.favoritedBy || []).some(
                 (entry) => String(entry) === String(user?._id)
@@ -529,12 +529,12 @@ export function Catalog() {
                   key={recipe.id}
                   className="overflow-hidden group h-full flex flex-col bg-white border-2 border-gray-200 rounded-none shadow-[4px_4px_0px_0px_#d1d5db] hover:shadow-[8px_8px_0px_0px_#ff0a60] hover:border-pink-accent transition-all"
                 >
-                  <div className="relative h-48 overflow-hidden bg-gray-100">
+                  <div className="relative h-36 sm:h-44 lg:h-48 overflow-hidden bg-gray-100">
                     <CatalogImage src={recipe.image} alt={recipe.title} />
                     <button
                       onClick={() => handleToggleFavorite(recipe)}
                       disabled={String(recipe.authorId) === String(user?._id)}
-                      className={`absolute top-4 right-4 p-2 rounded-full shadow-lg transition-all border ${
+                      className={`absolute top-3 right-3 p-1.5 sm:p-2 rounded-full shadow-lg transition-all border ${
                         isFavorite
                           ? 'bg-pink-accent border-pink-accent text-white hover:bg-pink-accent/90'
                           : 'bg-white border-gray-200 text-gray-600 hover:bg-pink-50 hover:border-pink-accent hover:text-pink-accent'
@@ -543,23 +543,23 @@ export function Catalog() {
                     >
                       <Heart className={`w-5 h-5 pixel-icon ${isFavorite ? "fill-current text-current" : "text-current"}`} />
                     </button>
-                    <Badge className="absolute top-4 left-4 bg-white text-gray-900 border border-gray-300 hover:bg-white">
+                    <Badge className="absolute top-3 left-3 bg-white text-[10px] sm:text-xs text-gray-900 border border-gray-300 hover:bg-white">
                       {categoryLabels[recipe.category] || recipe.category}
                     </Badge>
                   </div>
 
-                  <div className="p-6 space-y-4 flex-1 flex flex-col">
-                    <div className="min-h-[5.5rem]">
-                      <h3 className="text-xl font-bold text-gray-900 mb-2 min-h-[3.5rem]">{recipe.title}</h3>
+                  <div className="p-3 sm:p-5 lg:p-6 space-y-3 sm:space-y-4 flex-1 flex flex-col">
+                    <div className="min-h-[4.5rem] sm:min-h-[5.5rem]">
+                      <h3 className="mb-1.5 min-h-[2.8rem] sm:min-h-[3.5rem] text-base sm:text-lg lg:text-xl font-bold text-gray-900">{recipe.title}</h3>
 
-                      <div className="flex items-center gap-2 mb-3">
-                        <StarRating rating={recipe.averageRating} size={16} />
+                      <div className="mb-2 flex items-center gap-2">
+                        <StarRating rating={recipe.averageRating} size={14} />
                         <span className="text-xs text-gray-400 font-medium">
                           ({recipe.reviewsCount})
                         </span>
                       </div>
 
-                      <div className="flex items-center gap-4 text-sm text-gray-600 min-h-[1.5rem]">
+                      <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[11px] sm:text-sm text-gray-600 min-h-[1.5rem]">
                         <div className="flex items-center gap-1">
                           <Clock className="w-4 h-4 pixel-icon" />
                           <span>{recipe.prepTime} min</span>
@@ -577,31 +577,31 @@ export function Catalog() {
 
                     <RecipeAuthor name={recipe.authorName} avatar={recipe.authorAvatar} />
 
-                    <div className="grid grid-cols-3 gap-2 text-center py-3 bg-gray-50 min-h-[84px] border border-gray-200">
+                    <div className="grid grid-cols-3 gap-1.5 sm:gap-2 border border-gray-200 bg-gray-50 py-2.5 sm:py-3 text-center min-[420px]:min-h-[84px]">
                       <div>
-                        <p className="text-sm text-gray-600">Proteína</p>
-                        <p className="font-bold text-gray-900">{recipe.protein}g</p>
+                        <p className="text-[10px] sm:text-sm text-gray-600">Proteína</p>
+                        <p className="text-xs sm:text-sm font-bold text-gray-900">{recipe.protein}g</p>
                       </div>
                       <div>
-                        <p className="text-sm text-gray-600">Carbs</p>
-                        <p className="font-bold text-gray-900">{recipe.carbs}g</p>
+                        <p className="text-[10px] sm:text-sm text-gray-600">Carbs</p>
+                        <p className="text-xs sm:text-sm font-bold text-gray-900">{recipe.carbs}g</p>
                       </div>
                       <div>
-                        <p className="text-sm text-gray-600">Grasas</p>
-                        <p className="font-bold text-gray-900">{recipe.fats}g</p>
+                        <p className="text-[10px] sm:text-sm text-gray-600">Grasas</p>
+                        <p className="text-xs sm:text-sm font-bold text-gray-900">{recipe.fats}g</p>
                       </div>
                     </div>
 
                     <div className="flex flex-wrap gap-2 min-h-[56px] content-start">
                       {recipe.tags.slice(0, 3).map((tag, index) => (
-                        <Badge key={`${recipe.id}-tag-${index}`} className="text-xs bg-white text-gray-900 border border-gray-300 hover:bg-white">
+                        <Badge key={`${recipe.id}-tag-${index}`} className="text-[10px] sm:text-xs bg-white text-gray-900 border border-gray-300 hover:bg-white">
                           {tag}
                         </Badge>
                       ))}
                     </div>
 
                     <Button 
-                      className="w-full bg-pink-accent hover:bg-pink-accent/90 text-white mt-auto rounded-none"
+                      className="mt-auto h-9 sm:h-10 w-full bg-pink-accent hover:bg-pink-accent/90 text-xs sm:text-sm text-white rounded-none"
                       onClick={() => setSelectedRecipe(recipe)}
                     >
                       Ver Receta
@@ -629,7 +629,7 @@ export function Catalog() {
             </Card>
           )}
 
-          <div className="flex items-center justify-center gap-3">
+          <div className="flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center">
             <Button
               variant="outline"
               className="catalog-pagination-btn h-10 px-4 border-2 border-gray-900 rounded-none disabled:opacity-45 disabled:cursor-not-allowed"

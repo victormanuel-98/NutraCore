@@ -128,20 +128,20 @@ export function AdminDashboard() {
   const formatTargetType = (code) => targetTypeLabelByCode[code] || code || 'N/D';
 
   return (
-    <div className="min-h-screen bg-gray-50 pt-24 pb-16 px-4 sm:px-6 lg:px-8 dark-pink-fields">
-      <div className="max-w-7xl mx-auto space-y-6">
-        <Card className="p-6 md:p-8 bg-white border-2 border-pink-accent shadow-[8px_8px_0px_0px_#ff0a60] rounded-none">
-          <div className="flex items-start justify-between gap-3">
+    <div className="min-h-screen bg-gray-50 pt-24 pb-10 px-4 sm:px-6 lg:px-8 dark-pink-fields">
+      <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6">
+        <Card className="p-4 sm:p-6 md:p-8 bg-white border-2 border-pink-accent shadow-[8px_8px_0px_0px_#ff0a60] rounded-none">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div className="flex items-start gap-3">
               <Shield className="w-7 h-7 text-pink-accent" />
               <div>
-                <h1 className="text-4xl text-gray-900">Panel de Administracion</h1>
+                <h1 className="text-2xl text-gray-900 sm:text-4xl">Panel de Administracion</h1>
                 <p className="text-gray-600 mt-2">
                   Gestion de cuentas, moderacion y auditoria de acciones administrativas.
                 </p>
               </div>
             </div>
-            <Button variant="outline" className="border-2 border-gray-900" onClick={loadData}>
+            <Button variant="outline" className="w-full border-2 border-gray-900 sm:w-auto" onClick={loadData}>
               <RefreshCw className="w-4 h-4 mr-2" />
               Actualizar
             </Button>
@@ -151,14 +151,14 @@ export function AdminDashboard() {
         {error ? <Card className="p-4 border-2 border-red-400 text-red-700">{error}</Card> : null}
         {loading ? <Card className="p-4">Cargando...</Card> : null}
 
-        <Card className="p-5 border-2 border-pink-accent rounded-none">
+        <Card className="p-4 sm:p-5 border-2 border-pink-accent rounded-none">
           <div className="flex items-center gap-2 mb-4">
             <Users className="w-5 h-5 text-pink-accent" />
             <h2 className="font-bold text-gray-900 text-xl">Usuarios</h2>
           </div>
 
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="min-w-[760px] w-full text-sm">
               <thead>
                 <tr className="text-center border-b border-gray-200">
                   <th className="py-3 px-2">Alias</th>
@@ -235,7 +235,7 @@ export function AdminDashboard() {
 
         {loadingUserDetail ? <Card className="p-4 border-2 border-pink-accent rounded-none">Cargando detalle de usuario...</Card> : null}
 
-        <Card className="p-5 border-2 border-pink-accent rounded-none">
+        <Card className="p-4 sm:p-5 border-2 border-pink-accent rounded-none">
           <div className="flex items-center gap-2 mb-4">
             <History className="w-5 h-5 text-pink-accent" />
             <h2 className="font-bold text-gray-900 text-xl">Auditoría</h2>
@@ -264,11 +264,11 @@ export function AdminDashboard() {
       {selectedUser ? (
         <div className="fixed inset-0 z-[90] flex items-center justify-center p-4 bg-black/40 modal-overlay-enter" onClick={() => setSelectedUser(null)}>
           <Card
-            className="w-full max-w-4xl max-h-[88vh] overflow-y-auto p-6 md:p-8 border-2 border-pink-accent shadow-[8px_8px_0px_0px_#ff0a60] rounded-none modal-content-enter bg-white"
+            className="w-full max-w-4xl max-h-[88vh] overflow-y-auto p-4 sm:p-6 md:p-8 border-2 border-pink-accent shadow-[8px_8px_0px_0px_#ff0a60] rounded-none modal-content-enter bg-white"
             onClick={(event) => event.stopPropagation()}
           >
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-3xl text-gray-900">
+            <div className="mb-6 flex items-center justify-between gap-3">
+              <h3 className="text-2xl text-gray-900 sm:text-3xl">
                 Perfil de <span className="text-pink-accent">{selectedUser.name}</span>
               </h3>
               <Button variant="ghost" size="icon" onClick={() => setSelectedUser(null)}>

@@ -85,8 +85,8 @@ const getOptionLabel = (options, value, fallback = 'Selecciona') => {
 };
 
 const fieldInputClass =
-  'h-12 w-full border-2 border-gray-900 bg-white px-3 text-gray-900 rounded-none transition-all duration-150 hover:border-pink-accent focus:border-pink-accent focus:outline-none focus:ring-0';
-const fieldInputDisabledClass = 'h-12 w-full border-2 border-gray-200 bg-gray-50 px-3 text-gray-600 rounded-none';
+  'h-10 sm:h-12 w-full border-2 border-gray-900 bg-white px-3 text-sm sm:text-base text-gray-900 rounded-none transition-all duration-150 hover:border-pink-accent focus:border-pink-accent focus:outline-none focus:ring-0';
+const fieldInputDisabledClass = 'h-10 sm:h-12 w-full border-2 border-gray-200 bg-gray-50 px-3 text-sm sm:text-base text-gray-600 rounded-none';
 const panelClass = 'bg-white border-2 border-pink-accent shadow-[8px_8px_0px_0px_#ff0a60] rounded-none';
 
 export function Profile() {
@@ -369,13 +369,13 @@ export function Profile() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 pt-24 pb-16 px-4 sm:px-6 lg:px-8 dark-pink-fields">
-      <div className="max-w-6xl mx-auto space-y-6">
-        <Card className={`${panelClass} p-6 md:p-8 overflow-hidden`}>
-          <div className="grid gap-6 lg:grid-cols-[320px_1fr] items-start">
-            <div className="space-y-5">
+    <div className="min-h-screen bg-gray-50 pt-24 pb-10 px-4 sm:px-6 lg:px-8 dark-pink-fields">
+      <div className="max-w-6xl mx-auto space-y-4 sm:space-y-6">
+        <Card className={`${panelClass} p-4 sm:p-6 md:p-8 overflow-hidden`}>
+          <div className="grid gap-6 lg:grid-cols-[280px_1fr] xl:grid-cols-[320px_1fr] items-start">
+            <div className="space-y-4 sm:space-y-5">
               <div className="relative inline-flex">
-                <div className="h-36 w-36 rounded-full border-4 border-gray-900 bg-pink-accent/12 shadow-[6px_6px_0px_0px_rgba(17,24,39,0.18)] overflow-hidden flex items-center justify-center">
+                <div className="flex h-24 w-24 items-center justify-center overflow-hidden rounded-full border-4 border-gray-900 bg-pink-accent/12 shadow-[6px_6px_0px_0px_rgba(17,24,39,0.18)] sm:h-36 sm:w-36">
                   {profileData.avatar ? (
                     <img src={profileData.avatar} alt="Avatar" className="h-full w-full object-cover" />
                   ) : (
@@ -393,8 +393,8 @@ export function Profile() {
               </div>
 
               <div>
-                <h1 className="text-3xl text-gray-900 leading-none">{profileData.name || user?.name || 'Usuario'}</h1>
-                <p className="text-sm text-gray-600 mt-2 break-all">{profileData.email}</p>
+                <h1 className="text-xl leading-none text-gray-900 sm:text-3xl">{profileData.name || user?.name || 'Usuario'}</h1>
+                <p className="mt-1.5 text-xs sm:text-sm text-gray-600 break-all">{profileData.email}</p>
               </div>
 
               <div className="space-y-2">
@@ -408,7 +408,7 @@ export function Profile() {
               <StatTile label="IMC" value={bmi || 'N/D'} />
               <StatTile label="Favoritos" value={stats?.totalFavorites ?? 0} />
               <StatTile label="Recetas" value={stats?.totalRecipes ?? 0} />
-              <div className="sm:col-span-3 border-2 border-gray-200 bg-gray-50 p-4">
+              <div className="sm:col-span-3 border-2 border-gray-200 bg-gray-50 p-3 sm:p-4">
                 <p className="text-xs uppercase tracking-wide text-gray-500 mb-1">Estado del objetivo</p>
                 <p className="text-sm text-gray-700">{goalProgressText}</p>
               </div>
@@ -416,10 +416,10 @@ export function Profile() {
           </div>
         </Card>
 
-        <div className="grid gap-6 lg:grid-cols-[1fr_360px] items-start">
-          <Card className={`${panelClass} p-6 space-y-8`}>
+        <div className="grid gap-6 xl:grid-cols-[1fr_340px] items-start">
+          <Card className={`${panelClass} p-4 sm:p-6 space-y-6 sm:space-y-8`}>
             <section className="space-y-4">
-              <h3 className="text-lg font-bold text-gray-900">Identidad y cuerpo</h3>
+              <h3 className="text-base sm:text-lg font-bold text-gray-900">Identidad y cuerpo</h3>
               <div className="grid gap-4 sm:grid-cols-2">
                 <Field label="Alias (fijo)"><input value={profileData.name} disabled className={fieldInputDisabledClass} /></Field>
                 <Field label="Email"><input value={profileData.email} disabled className={fieldInputDisabledClass} /></Field>
@@ -450,7 +450,7 @@ export function Profile() {
             </section>
 
             <section ref={nutritionSectionRef} className="space-y-4">
-              <h3 className="text-lg font-bold text-gray-900">Estrategia nutricional</h3>
+              <h3 className="text-base sm:text-lg font-bold text-gray-900">Estrategia nutricional</h3>
               <div className="grid gap-4 sm:grid-cols-2">
                 <Field label="Objetivo">
                   <Select value={profileData.goal} onValueChange={(value) => handleChange('goal', value)}>
@@ -500,7 +500,7 @@ export function Profile() {
             </section>
 
             <section ref={securitySectionRef} className="space-y-4">
-              <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+              <h3 className="text-base sm:text-lg font-bold text-gray-900 flex items-center gap-2">
                 <Lock className="h-4 w-4" />
                 Seguridad de cuenta
               </h3>
@@ -540,11 +540,11 @@ export function Profile() {
               </Button>
             </section>
 
-            <div className="flex justify-end">
+            <div className="flex justify-stretch sm:justify-end">
               <Button
                 onClick={handleSave}
                 disabled={saving}
-                className="rounded-none bg-pink-accent text-white hover:-translate-y-0.5 hover:bg-pink-accent/90 hover:shadow-[4px_4px_0px_0px_rgba(255,10,96,0.24)]"
+                className="w-full rounded-none bg-pink-accent text-white hover:-translate-y-0.5 hover:bg-pink-accent/90 hover:shadow-[4px_4px_0px_0px_rgba(255,10,96,0.24)] sm:w-auto"
               >
                 <Save className="mr-2 h-4 w-4" />
                 {saving ? 'Guardando...' : 'Guardar cambios'}
@@ -552,8 +552,8 @@ export function Profile() {
             </div>
           </Card>
 
-          <Card className={`${panelClass} p-6 space-y-4`}>
-            <h3 className="text-lg font-bold text-gray-900">Panel rápido</h3>
+          <Card className={`${panelClass} p-4 sm:p-6 space-y-3 sm:space-y-4`}>
+            <h3 className="text-base sm:text-lg font-bold text-gray-900">Panel rápido</h3>
             {quickActions.map((action) => (
               <QuickTip key={action.title} title={action.title} text={action.text} onClick={action.onClick} />
             ))}
@@ -612,9 +612,9 @@ function PasswordField({ inputRef, inputKey, placeholder, defaultValue, showPass
 
 function StatTile({ label, value }) {
   return (
-    <div className="border-2 border-gray-200 bg-gray-50 p-4 transition-all duration-150 hover:-translate-y-0.5 hover:border-pink-accent hover:shadow-[4px_4px_0px_0px_rgba(255,10,96,0.14)]">
+    <div className="border-2 border-gray-200 bg-gray-50 p-3 sm:p-4 transition-all duration-150 hover:-translate-y-0.5 hover:border-pink-accent hover:shadow-[4px_4px_0px_0px_rgba(255,10,96,0.14)]">
       <p className="text-xs uppercase tracking-wide text-gray-500">{label}</p>
-      <p className="text-2xl font-bold text-gray-900">{value}</p>
+      <p className="text-xl sm:text-2xl font-bold text-gray-900">{value}</p>
     </div>
   );
 }
@@ -624,7 +624,7 @@ function QuickTip({ title, text, onClick }) {
     <button
       type="button"
       onClick={onClick}
-      className="w-full text-left border-2 border-gray-200 bg-white p-4 transition-all duration-150 hover:-translate-y-0.5 hover:border-pink-accent hover:bg-pink-50/40 active:scale-[0.99]"
+      className="w-full text-left border-2 border-gray-200 bg-white p-3 sm:p-4 transition-all duration-150 hover:-translate-y-0.5 hover:border-pink-accent hover:bg-pink-50/40 active:scale-[0.99]"
     >
       <p className="text-sm font-semibold text-gray-900">{title}</p>
       <p className="text-xs text-gray-600 mt-1">{text}</p>
