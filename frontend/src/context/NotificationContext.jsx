@@ -33,15 +33,21 @@ export function NotificationProvider({ children }) {
 
 function Toast({ message, type, onClose }) {
   const icons = {
-    success: <CheckCircle className="text-pink-accent" size={24} />,
+    success: <CheckCircle className="text-green-600" size={24} />,
     error: <AlertCircle className="text-red-500" size={24} />,
     info: <Info className="text-blue-500" size={24} />
   };
 
   const styles = {
-    success: 'border-pink-accent shadow-[6px_6px_0px_0px_#ff0a60]',
+    success: 'border-green-600 shadow-[6px_6px_0px_0px_#16a34a]',
     error: 'border-red-500 shadow-[6px_6px_0px_0px_#ef4444]',
     info: 'border-blue-500 shadow-[6px_6px_0px_0px_#3b82f6]'
+  };
+
+  const closeStyles = {
+    success: 'hover:text-green-600',
+    error: 'hover:text-red-500',
+    info: 'hover:text-blue-500'
   };
 
   return (
@@ -56,7 +62,7 @@ function Toast({ message, type, onClose }) {
       </div>
       <button 
         onClick={onClose}
-        className="text-gray-400 hover:text-pink-accent transition-colors p-1"
+        className={`text-gray-400 transition-colors p-1 ${closeStyles[type] || closeStyles.info}`}
       >
         <X size={18} />
       </button>

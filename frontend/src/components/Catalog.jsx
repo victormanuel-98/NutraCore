@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Search, Filter, Heart, Clock, Flame, ChefHat, SlidersHorizontal } from "lucide-react";
+import { Search, Filter, Heart, Clock, Flame, ChefHat, SlidersHorizontal, User } from "lucide-react";
 import { Card } from "./ui/card";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
@@ -112,6 +112,8 @@ const recipeContainsExcludedAllergen = (recipe, excludedAllergens = []) => {
 const mapApiRecipe = (recipe) => ({
   id: recipe._id,
   authorId: recipe.author?._id || recipe.author || null,
+  authorName: recipe.author?.name || recipe.authorName || 'Usuario',
+  authorAvatar: recipe.author?.avatar || recipe.authorAvatar || '',
   title: recipe.title,
   image: recipe.images?.[0] || null,
   calories: recipe.nutrition?.calories || 0,
@@ -130,6 +132,28 @@ const mapApiRecipe = (recipe) => ({
   ingredients: recipe.ingredients || [],
   steps: recipe.steps || []
 });
+
+function RecipeAuthor({ name, avatar }) {
+  return (
+    <div className="flex items-center gap-2">
+      {avatar ? (
+        <img
+          src={avatar}
+          alt={`Avatar de ${name}`}
+          className="h-9 w-9 rounded-full border border-gray-200 bg-white object-cover"
+        />
+      ) : (
+        <div className="h-9 w-9 rounded-full border border-gray-200 bg-white flex items-center justify-center text-gray-500">
+          <User size={18} />
+        </div>
+      )}
+      <div className="min-w-0">
+        <p className="text-[10px] uppercase tracking-[0.18em] text-gray-500">Creada por</p>
+        <p className="truncate text-sm font-semibold text-gray-900">{name || 'Usuario'}</p>
+      </div>
+    </div>
+  );
+}
 
 function CatalogImage({ src, alt }) {
   const [imageError, setImageError] = useState(false);
@@ -219,7 +243,7 @@ export function Catalog() {
   }, [token, currentPage, searchTerm, selectedCategory, selectedDifficulty]);
 
   const categories = useMemo(() => ["all", ...Object.keys(categoryLabels)], []);
-  const difficulties = useMemo(() => ["all", "fácil", "media", "difícil", "facil", "dificil"], []);
+  const difficulties = useMemo(() => ["all", "fácil", "media", "difícil"], []);
 
   const filteredRecipes = useMemo(() => {
     const minCals = safeNumber(minCalories);
@@ -341,7 +365,7 @@ export function Catalog() {
             <p className="text-gray-600">Explora recetas del catálogo y publicaciones de la comunidad.</p>
           </Card>
 
-          <Card className="p-5 bg-white border-2 border-pink-accent shadow-[6px_6px_0px_0px_#ff0a60] rounded-none space-y-4">
+          <Card className="relative z-30 overflow-visible p-5 bg-white border-2 border-pink-accent shadow-[6px_6px_0px_0px_#ff0a60] rounded-none space-y-4">
             <div className="flex flex-col lg:flex-row gap-3 lg:items-center">
               <div className="flex-1 relative">
                 <Search className="absolute left-3 top-3.5 w-5 h-5 text-gray-400 pixel-icon" />
@@ -360,7 +384,7 @@ export function Catalog() {
                     <Filter className="w-4 h-4 mr-2 pixel-icon" />
                     <span className="ml-1">{selectedCategory === "all" ? "Todos" : categoryLabels[selectedCategory] || selectedCategory}</span>
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="z-[220]">
                     {categories.map((category) => (
                       <SelectItem key={category} value={category}>
                         {category === "all" ? "Todos" : categoryLabels[category] || category}
@@ -374,7 +398,7 @@ export function Catalog() {
                     <SlidersHorizontal className="w-4 h-4 mr-2 pixel-icon" />
                     <span className="ml-1">{selectedDifficulty === "all" ? "Todos" : getDifficultyLabel(selectedDifficulty)}</span>
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="z-[220]">
                     {difficulties.map((difficulty) => (
                       <SelectItem key={difficulty} value={difficulty}>
                         {difficulty === "all" ? "Todos" : getDifficultyLabel(difficulty)}
@@ -494,7 +518,7 @@ export function Catalog() {
             {error && <p className="text-red-600">{error}</p>}
           </Card>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="relative z-0 grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredRecipes.map((recipe) => {
               const isFavorite = (recipe.favoritedBy || []).some(
                 (entry) => String(entry) === String(user?._id)
@@ -510,12 +534,16 @@ export function Catalog() {
                     <button
                       onClick={() => handleToggleFavorite(recipe)}
                       disabled={String(recipe.authorId) === String(user?._id)}
-                      className="absolute top-4 right-4 bg-white p-2 rounded-full shadow-lg hover:bg-pink-50 transition-colors border border-gray-200"
+                      className={`absolute top-4 right-4 p-2 rounded-full shadow-lg transition-all border ${
+                        isFavorite
+                          ? 'bg-pink-accent border-pink-accent text-white hover:bg-pink-accent/90'
+                          : 'bg-white border-gray-200 text-gray-600 hover:bg-pink-50 hover:border-pink-accent hover:text-pink-accent'
+                      }`}
                       aria-label="Añadir o quitar favorito"
                     >
-                      <Heart className={`w-5 h-5 pixel-icon ${isFavorite ? "fill-pink-accent text-pink-accent" : "text-gray-600"}`} />
+                      <Heart className={`w-5 h-5 pixel-icon ${isFavorite ? "fill-current text-current" : "text-current"}`} />
                     </button>
-                    <Badge className="absolute top-4 left-4 bg-white text-pink-accent border border-pink-accent/30 hover:bg-white">
+                    <Badge className="absolute top-4 left-4 bg-white text-gray-900 border border-gray-300 hover:bg-white">
                       {categoryLabels[recipe.category] || recipe.category}
                     </Badge>
                   </div>
@@ -547,6 +575,8 @@ export function Catalog() {
                       </div>
                     </div>
 
+                    <RecipeAuthor name={recipe.authorName} avatar={recipe.authorAvatar} />
+
                     <div className="grid grid-cols-3 gap-2 text-center py-3 bg-gray-50 min-h-[84px] border border-gray-200">
                       <div>
                         <p className="text-sm text-gray-600">Proteína</p>
@@ -564,7 +594,7 @@ export function Catalog() {
 
                     <div className="flex flex-wrap gap-2 min-h-[56px] content-start">
                       {recipe.tags.slice(0, 3).map((tag, index) => (
-                        <Badge key={`${recipe.id}-tag-${index}`} className="text-xs bg-pink-50 text-pink-accent border border-pink-accent/25 hover:bg-pink-50">
+                        <Badge key={`${recipe.id}-tag-${index}`} className="text-xs bg-white text-gray-900 border border-gray-300 hover:bg-white">
                           {tag}
                         </Badge>
                       ))}

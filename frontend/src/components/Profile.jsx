@@ -58,6 +58,25 @@ const formatNumericValue = (value, allowDecimal = false) => {
   return String(Math.max(0, Math.round(value * 10) / 10)).replace(/\.0$/, '');
 };
 
+const getTargetWeightSummary = (currentWeight, targetWeight, goal) => {
+  const current = Number(currentWeight);
+  const target = Number(targetWeight);
+  if (!Number.isFinite(current) || !Number.isFinite(target) || current <= 0 || target <= 0) return null;
+
+  const amount = Math.abs(target - current);
+  const formattedAmount = formatNumericValue(amount, true);
+
+  if (target < current || goal === 'lose-weight') {
+    return `Objetivo configurado: bajar ${formattedAmount} kg`;
+  }
+
+  if (target > current || goal === 'gain-muscle') {
+    return `Objetivo configurado: subir ${formattedAmount} kg`;
+  }
+
+  return 'Objetivo configurado: mantener el peso actual';
+};
+
 export function Profile() {
   const { token } = useAuth();
   const { showNotification } = useNotification();
@@ -224,7 +243,7 @@ export function Profile() {
       ]);
 
       isEditingRef.current = false;
-      showNotification('Perfil actualizado correctamente', 'success');
+      showNotification('Cambios guardados', 'success');
       refreshStats({ silentErrors: true });
     } catch (error) {
       showNotification(error.message || 'No se pudo guardar el perfil', 'error');
@@ -236,16 +255,16 @@ export function Profile() {
   const handlePasswordChange = async () => {
     if (!token) return;
     if (!passwordState.currentPassword || !passwordState.newPassword) {
-      showNotification('Completa ambas contraseñas', 'info');
+      showNotification('Completa ambas contraseÃ±as', 'info');
       return;
     }
 
     try {
       await changePassword(passwordState, token);
       setPasswordState({ currentPassword: '', newPassword: '' });
-      showNotification('Contraseña actualizada', 'success');
+      showNotification('ContraseÃ±a actualizada', 'success');
     } catch (error) {
-      showNotification(error.message || 'No se pudo actualizar la contraseña', 'error');
+      showNotification(error.message || 'No se pudo actualizar la contraseÃ±a', 'error');
     }
   };
 
@@ -268,6 +287,11 @@ export function Profile() {
     Number(profileData.dailyCalories) > 0
   ];
   const completionPercent = Math.round((completionItems.filter(Boolean).length / completionItems.length) * 100);
+  const targetWeightSummary = getTargetWeightSummary(
+    numericDraftRef.current.weight || profileData.weight,
+    numericDraftRef.current.targetWeight || profileData.targetWeight,
+    profileData.goal
+  );
 
   return (
     <div className="min-h-screen bg-gray-50 pt-24 pb-16 px-4 sm:px-6 lg:px-8 dark-pink-fields">
@@ -302,7 +326,7 @@ export function Profile() {
               <StatTile label="Recetas" value={stats?.totalRecipes ?? 0} />
               <div className="sm:col-span-3 border-2 border-gray-200 p-3 bg-gray-50">
                 <p className="text-xs uppercase tracking-wide text-gray-500 mb-1">Estado del objetivo</p>
-                <p className="text-sm text-gray-700">{stats?.goalProgress ? `Actual ${stats.goalProgress.current} kg · Objetivo ${stats.goalProgress.target} kg` : 'Configura peso actual y objetivo para activar seguimiento.'}</p>
+                <p className="text-sm text-gray-700">{stats?.goalProgress ? `Actual ${stats.goalProgress.current} kg Â· Objetivo ${stats.goalProgress.target} kg` : 'Configura peso actual y objetivo para activar seguimiento.'}</p>
               </div>
             </div>
           </div>
@@ -342,7 +366,10 @@ export function Profile() {
                     <SelectContent className="border-2 border-gray-900 rounded-none p-0">{activityOptions.map((o) => <SelectItem key={o.value} value={o.value} className="rounded-none px-5 py-2.5 text-base hover:bg-pink-accent hover:text-white">{o.label}</SelectItem>)}</SelectContent>
                   </Select>
                 </Field>
-                <Field label="Peso objetivo (kg)"><input type="text" inputMode="decimal" defaultValue={numericDraftRef.current.targetWeight} onChange={handleNumericChange('targetWeight', true)} onKeyDown={handleNumericArrow('targetWeight', { step: 0.1, allowDecimal: true })} className="h-10 w-full border-2 border-gray-900 px-3" /></Field>
+                <Field label="Peso objetivo (kg)">
+                  <input type="text" inputMode="decimal" defaultValue={numericDraftRef.current.targetWeight} onChange={handleNumericChange('targetWeight', true)} onKeyDown={handleNumericArrow('targetWeight', { step: 0.1, allowDecimal: true })} className="h-10 w-full border-2 border-gray-900 px-3" />
+                  {targetWeightSummary && <p className="text-xs text-gray-600">{targetWeightSummary}</p>}
+                </Field>
                 <Field label="Calorias diarias"><input type="text" inputMode="numeric" defaultValue={numericDraftRef.current.dailyCalories} onChange={handleNumericChange('dailyCalories')} onKeyDown={handleNumericArrow('dailyCalories')} className="h-10 w-full border-2 border-gray-900 px-3" /></Field>
                 <Field label="Proteina (g)"><input type="text" inputMode="numeric" defaultValue={numericDraftRef.current.protein} onChange={handleNumericChange('protein')} onKeyDown={handleNumericArrow('protein')} className="h-10 w-full border-2 border-gray-900 px-3" /></Field>
                 <Field label="Carbohidratos (g)"><input type="text" inputMode="numeric" defaultValue={numericDraftRef.current.carbs} onChange={handleNumericChange('carbs')} onKeyDown={handleNumericArrow('carbs')} className="h-10 w-full border-2 border-gray-900 px-3" /></Field>
@@ -354,15 +381,15 @@ export function Profile() {
               <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2"><Lock className="w-4 h-4" />Seguridad de cuenta</h3>
               <div className="grid sm:grid-cols-2 gap-4">
                 <div className="relative">
-                  <input type={showCurrentPassword ? 'text' : 'password'} placeholder="Contraseña actual" value={passwordState.currentPassword} onChange={(e) => setPasswordState((prev) => ({ ...prev, currentPassword: e.target.value }))} className="h-10 w-full border-2 border-gray-900 px-3 pr-10" />
+                  <input type={showCurrentPassword ? 'text' : 'password'} placeholder="ContraseÃ±a actual" value={passwordState.currentPassword} onChange={(e) => setPasswordState((prev) => ({ ...prev, currentPassword: e.target.value }))} className="h-10 w-full border-2 border-gray-900 px-3 pr-10" />
                   <button type="button" onClick={() => setShowCurrentPassword((p) => !p)} className={`absolute right-2 top-2 p-1 ${showCurrentPassword ? 'text-pink-accent' : 'text-gray-600 hover:text-pink-accent'}`}><Eye className="w-5 h-5" /></button>
                 </div>
                 <div className="relative">
-                  <input type={showNewPassword ? 'text' : 'password'} placeholder="Nueva contraseña" value={passwordState.newPassword} onChange={(e) => setPasswordState((prev) => ({ ...prev, newPassword: e.target.value }))} className="h-10 w-full border-2 border-gray-900 px-3 pr-10" />
+                  <input type={showNewPassword ? 'text' : 'password'} placeholder="Nueva contraseÃ±a" value={passwordState.newPassword} onChange={(e) => setPasswordState((prev) => ({ ...prev, newPassword: e.target.value }))} className="h-10 w-full border-2 border-gray-900 px-3 pr-10" />
                   <button type="button" onClick={() => setShowNewPassword((p) => !p)} className={`absolute right-2 top-2 p-1 ${showNewPassword ? 'text-pink-accent' : 'text-gray-600 hover:text-pink-accent'}`}><Eye className="w-5 h-5" /></button>
                 </div>
               </div>
-              <Button type="button" variant="outline" onClick={handlePasswordChange}>Actualizar contraseña</Button>
+              <Button type="button" variant="outline" onClick={handlePasswordChange}>Actualizar contraseÃ±a</Button>
             </section>
 
             <div className="flex justify-end">
@@ -380,7 +407,7 @@ export function Profile() {
             <QuickTip title="Conecta con Dashboard" text="Despues de guardar, revisa el menu automatico para validar cobertura nutricional." />
             <div className="border-2 border-gray-200 p-3 bg-gray-50">
               <p className="text-xs uppercase tracking-wide text-gray-500 mb-1">Recordatorio</p>
-              <p className="text-sm text-gray-700">Guardar cambios sincroniza tus objetivos con el resto de módulos.</p>
+              <p className="text-sm text-gray-700">Guardar cambios sincroniza tus objetivos con el resto de mÃ³dulos.</p>
             </div>
           </Card>
         </div>

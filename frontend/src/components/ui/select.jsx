@@ -64,7 +64,7 @@ export function SelectContent({ className = "", children }) {
   if (!ctx.open) return null;
 
   return (
-    <div className={cn("absolute z-[140] mt-1 w-full rounded-md border border-gray-200 bg-white p-1 shadow-xl", className)}>
+    <div className={cn("absolute z-[220] mt-1 w-full rounded-md border border-gray-200 bg-white p-1 shadow-xl", className)}>
       {children}
     </div>
   );

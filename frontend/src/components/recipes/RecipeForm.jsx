@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Plus, Trash2, Upload, ChevronDown, X } from 'lucide-react';
+import { createPortal } from 'react-dom';
+import { Plus, Trash2, ChevronDown } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
-import { CloudinaryUploadWidget } from '../ui/CloudinaryUploadWidget';
+import { RecipeImageManager } from './RecipeImageManager';
 import { getIngredientNutritionProfile, searchIngredients } from '../../services/ingredientService';
 import { getAvailableRecipeTags } from '../../services/recipeService';
 
@@ -19,6 +20,7 @@ const ingredientUnits = [
   { value: 'cucharadita', label: 'cdta' },
   { value: 'unidad', label: 'unidad' }
 ];
+
 const unitToGrams = {
   g: 1,
   kg: 1000,
@@ -28,24 +30,22 @@ const unitToGrams = {
   cucharadita: 5,
   unidad: 100
 };
+
 const defaultIngredientPortion = {
   quantity: '100',
   unit: 'g'
 };
 
-const initialForm = {
-  title: '',
-  description: '',
-  ingredients: [''],
-  steps: [''],
-  category: 'desayuno',
-  prepTime: 20,
-  difficulty: 'fácil',
-  tags: [],
-  images: []
-};
-
 const MAX_RECIPE_TAGS = 3;
+const MAX_RECIPE_IMAGES = 5;
+const MAX_INGREDIENTS = 20;
+const MAX_STEPS = 20;
+const MAX_PREP_TIME = 999;
+const MAX_STEP_WORDS = 80;
+const MAX_DESCRIPTION_CHARS = 1200;
+
+const BAD_WORDS = ['puto', 'puta', 'mierda', 'cabron', 'cabrona', 'joder', 'fuck', 'shit', 'asshole', 'idiota', 'estupido', 'estupida', 'coño', 'pendejo', 'pendeja'];
+
 const FALLBACK_RECIPE_TAGS = [
   'alta-proteina',
   'bajo-en-calorias',
@@ -65,17 +65,56 @@ const FALLBACK_RECIPE_TAGS = [
   'saciante'
 ];
 
+const initialForm = {
+  title: '',
+  description: '',
+  ingredients: [''],
+  steps: [''],
+  category: 'desayuno',
+  prepTime: 20,
+  difficulty: 'fácil',
+  tags: [],
+  images: []
+};
+
+const fieldLabelClass = 'uppercase font-bold text-xs tracking-widest text-gray-700';
+const baseFieldClass = 'w-full border-2 border-gray-900 rounded-none bg-white px-3 text-sm text-gray-900 outline-none transition-all duration-150 hover:border-pink-accent hover:bg-pink-50/40 focus:border-pink-accent dark:hover:border-pink-300 dark:hover:bg-pink-500/8';
+const textareaFieldClass = `${baseFieldClass} p-3 resize-none overflow-y-auto`;
+
 const toPositiveNumber = (value) => {
   const parsed = Number(value);
   if (!Number.isFinite(parsed) || parsed < 0) return 0;
   return parsed;
 };
+
+const filterBadWords = (text = '') => {
+  let filtered = String(text || '');
+  BAD_WORDS.forEach((word) => {
+    const regex = new RegExp(`\\b${word}\\b`, 'gi');
+    filtered = filtered.replace(regex, '*'.repeat(word.length));
+  });
+  return filtered;
+};
+
+const clampNumberInput = (value, { min = 0, max = Number.MAX_SAFE_INTEGER } = {}) => {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) return String(min);
+  return String(Math.max(min, Math.min(max, parsed)));
+};
+
+const trimWords = (value, maxWords) => {
+  const normalized = String(value || '').replace(/\s+/g, ' ').trim();
+  if (!normalized) return '';
+  const words = normalized.split(' ');
+  return words.length <= maxWords ? normalized : words.slice(0, maxWords).join(' ');
+};
+
 const normalizeForSubmit = (form, ingredientPortions, nutrition) => ({
-  title: form.title.trim(),
-  description: form.description.trim(),
+  title: filterBadWords(form.title.trim()),
+  description: filterBadWords(form.description.trim()),
   ingredients: form.ingredients
     .map((item, index) => {
-      const ingredientName = item.trim();
+      const ingredientName = filterBadWords(item.trim());
       if (!ingredientName) return '';
 
       const portion = ingredientPortions[index] || defaultIngredientPortion;
@@ -85,12 +124,13 @@ const normalizeForSubmit = (form, ingredientPortions, nutrition) => ({
       if (!quantity) return ingredientName;
       return `${ingredientName} (${quantity} ${unitLabel})`;
     })
-    .filter(Boolean),
-  steps: form.steps.map((item) => item.trim()).filter(Boolean),
+    .filter(Boolean)
+    .slice(0, MAX_INGREDIENTS),
+  steps: form.steps.map((item) => filterBadWords(trimWords(item, MAX_STEP_WORDS))).filter(Boolean).slice(0, MAX_STEPS),
   category: form.category,
-  prepTime: Number(form.prepTime),
+  prepTime: Number(clampNumberInput(form.prepTime, { min: 1, max: MAX_PREP_TIME })),
   difficulty: form.difficulty,
-  images: form.images,
+  images: Array.isArray(form.images) ? form.images.slice(0, MAX_RECIPE_IMAGES) : [],
   nutrition: {
     calories: toPositiveNumber(nutrition.calories),
     protein: toPositiveNumber(nutrition.protein),
@@ -100,36 +140,77 @@ const normalizeForSubmit = (form, ingredientPortions, nutrition) => ({
   tags: Array.isArray(form.tags) ? form.tags.slice(0, MAX_RECIPE_TAGS) : []
 });
 
-function CustomSelect({ value, onChange, options, placeholder, className = "" }) {
+function CustomSelect({ value, onChange, options, placeholder, className = '' }) {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef(null);
+  const triggerRef = useRef(null);
+  const menuRef = useRef(null);
+  const [menuStyle, setMenuStyle] = useState(null);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (containerRef.current && !containerRef.current.contains(event.target)) {
+      const clickedTrigger = containerRef.current?.contains(event.target);
+      const clickedMenu = menuRef.current?.contains(event.target);
+      if (!clickedTrigger && !clickedMenu) {
         setIsOpen(false);
       }
     };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const selectedOption = options.find(opt => (opt.value || opt) === value);
+  useEffect(() => {
+    if (!isOpen) return undefined;
+
+    const updateMenuPosition = () => {
+      const trigger = triggerRef.current;
+      if (!trigger) return;
+
+      const rect = trigger.getBoundingClientRect();
+      const estimatedHeight = Math.min(options.length * 40, 240);
+      const shouldOpenUp = window.innerHeight - rect.bottom < estimatedHeight + 16 && rect.top > estimatedHeight + 16;
+
+      setMenuStyle({
+        position: 'fixed',
+        left: rect.left,
+        top: shouldOpenUp ? Math.max(8, rect.top - estimatedHeight - 4) : rect.bottom + 4,
+        width: rect.width,
+        maxHeight: estimatedHeight,
+        zIndex: 140
+      });
+    };
+
+    updateMenuPosition();
+    window.addEventListener('resize', updateMenuPosition);
+    window.addEventListener('scroll', updateMenuPosition, true);
+
+    return () => {
+      window.removeEventListener('resize', updateMenuPosition);
+      window.removeEventListener('scroll', updateMenuPosition, true);
+    };
+  }, [isOpen, options.length]);
+
+  const selectedOption = options.find((opt) => (opt.value || opt) === value);
   const displayLabel = selectedOption ? (selectedOption.label || selectedOption) : placeholder;
 
   return (
     <div className={`relative ${className}`} ref={containerRef}>
       <button
         type="button"
-        onClick={() => setIsOpen(!isOpen)}
-        className="lab-select-trigger h-10 w-full border-2 border-gray-900 rounded-none px-3 text-sm font-sans font-medium flex items-center justify-between bg-white hover:bg-gray-50 transition-colors uppercase"
+        ref={triggerRef}
+        onClick={() => setIsOpen((prev) => !prev)}
+        className="lab-select-trigger font-slogan h-11 w-full border-2 border-gray-900 rounded-none px-3 text-sm font-medium flex items-center justify-between bg-white hover:bg-pink-50/40 hover:border-pink-accent transition-colors dark:hover:bg-pink-500/8 dark:hover:border-pink-300"
       >
         <span>{displayLabel}</span>
         <ChevronDown className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
-      
-      {isOpen && (
-        <div className="lab-select-menu absolute z-50 mt-1 w-full border-2 border-gray-900 bg-white shadow-[4px_4px_0px_0px_#ff0a60] max-h-60 overflow-auto">
+
+      {isOpen && menuStyle && createPortal(
+        <div
+          ref={menuRef}
+          style={menuStyle}
+          className="lab-select-menu font-slogan overflow-auto border-2 border-gray-900 bg-white shadow-[4px_4px_0px_0px_#ff0a60]"
+        >
           {options.map((opt) => {
             const val = opt.value || opt;
             const label = opt.label || opt;
@@ -140,15 +221,16 @@ function CustomSelect({ value, onChange, options, placeholder, className = "" })
                   onChange(val);
                   setIsOpen(false);
                 }}
-                className={`lab-select-item px-3 py-2 text-sm font-sans cursor-pointer transition-colors uppercase
-                  ${value === val ? 'bg-pink-accent text-white' : 'hover:bg-pink-50 text-gray-900'}
-                `}
+                className={`lab-select-item px-3 py-2 text-sm cursor-pointer transition-colors ${
+                  value === val ? 'bg-pink-accent text-white' : 'hover:bg-pink-50 text-gray-900 dark:hover:bg-pink-500/10'
+                }`}
               >
                 {label}
               </div>
             );
           })}
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
@@ -180,9 +262,9 @@ function TagSelector({ availableTags, selectedTags, onAddTag, onRemoveTag, loadi
           type="button"
           onClick={() => setIsOpen((prev) => !prev)}
           disabled={loading || !canAddMore}
-          className="lab-select-trigger h-10 w-full border-2 border-gray-900 rounded-none px-3 text-sm font-sans font-medium flex items-center justify-between bg-white hover:bg-gray-50 transition-colors uppercase disabled:opacity-60 disabled:cursor-not-allowed"
+          className="lab-select-trigger font-slogan h-11 w-full border-2 border-gray-900 rounded-none px-3 text-sm font-medium flex items-center justify-between bg-white hover:bg-pink-50/40 hover:border-pink-accent transition-colors uppercase disabled:opacity-60 disabled:cursor-not-allowed dark:hover:bg-pink-500/8 dark:hover:border-pink-300"
         >
-          <span>{loading ? 'Cargando tags...' : 'AÑADIR TAG'}</span>
+          <span>{loading ? 'Cargando tags...' : 'Añadir tag'}</span>
           <ChevronDown className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
         </button>
 
@@ -199,7 +281,7 @@ function TagSelector({ availableTags, selectedTags, onAddTag, onRemoveTag, loadi
                     onAddTag(tag);
                     setIsOpen(false);
                   }}
-                  className="lab-select-item w-full text-left px-3 py-2 text-sm font-sans uppercase text-gray-900 hover:bg-pink-50 transition-colors"
+                  className="lab-select-item font-slogan w-full text-left px-3 py-2 text-sm uppercase text-gray-900 hover:bg-pink-50 transition-colors dark:hover:bg-pink-500/10"
                 >
                   {formatTagLabel(tag)}
                 </button>
@@ -209,20 +291,15 @@ function TagSelector({ availableTags, selectedTags, onAddTag, onRemoveTag, loadi
         )}
       </div>
 
-      <div className="lab-tag-field flex flex-wrap gap-2 min-h-[2.5rem] border-2 border-gray-900 rounded-none p-2 bg-white">
+      <div className="lab-tag-field flex flex-wrap gap-2 min-h-[2.75rem] max-h-28 overflow-y-auto border-2 border-gray-900 rounded-none p-2 bg-white">
         {selectedTags.length === 0 ? (
           <span className="text-xs text-gray-500 uppercase">Sin tags seleccionados</span>
         ) : (
           selectedTags.map((tag) => (
             <span key={tag} className="inline-flex items-center gap-1 px-2 py-1 bg-pink-50 border border-pink-accent text-pink-accent text-xs font-bold uppercase">
               {formatTagLabel(tag)}
-              <button
-                type="button"
-                onClick={() => onRemoveTag(tag)}
-                className="hover:text-pink-700"
-                aria-label={`Quitar tag ${tag}`}
-              >
-                <X className="w-3 h-3" />
+              <button type="button" onClick={() => onRemoveTag(tag)} className="hover:text-pink-700" aria-label={`Quitar tag ${tag}`}>
+                <Trash2 className="w-3 h-3" />
               </button>
             </span>
           ))
@@ -239,7 +316,6 @@ function TagSelector({ availableTags, selectedTags, onAddTag, onRemoveTag, loadi
 export function RecipeForm({ onSubmit, isSubmitting = false }) {
   const [form, setForm] = useState(initialForm);
   const [formError, setFormError] = useState('');
-  const [uploadingImages, setUploadingImages] = useState(false);
   const [ingredientSuggestions, setIngredientSuggestions] = useState({});
   const [activeIngredientIndex, setActiveIngredientIndex] = useState(null);
   const [loadingIngredientIndex, setLoadingIngredientIndex] = useState(null);
@@ -247,7 +323,6 @@ export function RecipeForm({ onSubmit, isSubmitting = false }) {
   const [loadingProfileIndex, setLoadingProfileIndex] = useState(null);
   const [profileCache, setProfileCache] = useState({});
   const [ingredientPortions, setIngredientPortions] = useState({ 0: defaultIngredientPortion });
-  const [localDescription, setLocalDescription] = useState(form.description);
   const [availableTags, setAvailableTags] = useState(FALLBACK_RECIPE_TAGS);
   const [loadingTags, setLoadingTags] = useState(true);
   const titleRef = useRef(null);
@@ -255,12 +330,7 @@ export function RecipeForm({ onSubmit, isSubmitting = false }) {
   const pendingStepFocusRef = useRef(null);
 
   const computedNutrition = useMemo(() => {
-    const totals = {
-      calories: 0,
-      protein: 0,
-      carbs: 0,
-      fats: 0
-    };
+    const totals = { calories: 0, protein: 0, carbs: 0, fats: 0 };
 
     Object.entries(ingredientProfiles).forEach(([index, profile]) => {
       const macros = profile?.averageMacros;
@@ -270,10 +340,9 @@ export function RecipeForm({ onSubmit, isSubmitting = false }) {
       const quantity = toPositiveNumber(portion.quantity);
       const gramsFactor = unitToGrams[portion.unit] || 0;
       const grams = quantity * gramsFactor;
-
       if (!grams) return;
-      const multiplier = grams / 100;
 
+      const multiplier = grams / 100;
       totals.calories += Number(macros.calories || 0) * multiplier;
       totals.protein += Number(macros.proteins || 0) * multiplier;
       totals.carbs += Number(macros.carbs || 0) * multiplier;
@@ -297,7 +366,6 @@ export function RecipeForm({ onSubmit, isSubmitting = false }) {
         const response = await getAvailableRecipeTags();
         const tagsFromApi = Array.isArray(response?.data) ? response.data : [];
         if (!isMounted) return;
-
         setAvailableTags(tagsFromApi.length > 0 ? tagsFromApi : FALLBACK_RECIPE_TAGS);
       } catch {
         if (isMounted) setAvailableTags(FALLBACK_RECIPE_TAGS);
@@ -330,10 +398,7 @@ export function RecipeForm({ onSubmit, isSubmitting = false }) {
         const response = await searchIngredients(query, 8);
         const suggestions = Array.isArray(response?.data) ? response.data : [];
 
-        setIngredientSuggestions((prev) => ({
-          ...prev,
-          [activeIngredientIndex]: suggestions
-        }));
+        setIngredientSuggestions((prev) => ({ ...prev, [activeIngredientIndex]: suggestions }));
 
         if (suggestions.length > 0) {
           const typedValue = (form.ingredients[activeIngredientIndex] || '').trim().toLowerCase();
@@ -348,18 +413,14 @@ export function RecipeForm({ onSubmit, isSubmitting = false }) {
       } finally {
         setLoadingIngredientIndex(null);
       }
-    }, 350);
+    }, 280);
 
     return () => clearTimeout(timeoutId);
   }, [activeIngredientIndex, form.ingredients]);
 
-  // Remove the useEffect that synced computedNutrition to form.nutrition
-  // and just use computedNutrition directly in the UI and submit handler.
-
   const getSuggestionMatch = useCallback((index, value) => {
     const normalized = String(value || '').trim().toLowerCase();
     if (!normalized) return null;
-
     const candidates = ingredientSuggestions[index] || [];
     return candidates.find((item) => String(item.name || '').trim().toLowerCase() === normalized) || null;
   }, [ingredientSuggestions]);
@@ -404,7 +465,7 @@ export function RecipeForm({ onSubmit, isSubmitting = false }) {
     } finally {
       setLoadingProfileIndex(null);
     }
-  }, [profileCache, clearIngredientProfile]);
+  }, [clearIngredientProfile, profileCache]);
 
   const syncIngredientProfile = useCallback(async (index, rawValue) => {
     const safeValue = String(rawValue || '').trim();
@@ -416,9 +477,7 @@ export function RecipeForm({ onSubmit, isSubmitting = false }) {
     let suggestion = getSuggestionMatch(index, rawValue);
     if (!suggestion) {
       const suggestions = ingredientSuggestions[index] || [];
-      if (suggestions.length > 0) {
-        suggestion = suggestions[0];
-      }
+      if (suggestions.length > 0) suggestion = suggestions[0];
     }
 
     if (!suggestion) {
@@ -430,7 +489,7 @@ export function RecipeForm({ onSubmit, isSubmitting = false }) {
           suggestion = fallbackSuggestions[0];
         }
       } catch {
-        // Ignoramos error de lookup puntual y dejamos limpieza abajo.
+        // lookup best-effort
       }
     }
 
@@ -496,6 +555,7 @@ export function RecipeForm({ onSubmit, isSubmitting = false }) {
   }, []);
 
   const addArrayItem = useCallback((field) => {
+    if (field === 'ingredients' && form.ingredients.length >= MAX_INGREDIENTS) return;
     if (field === 'ingredients') {
       setForm((prev) => {
         const nextIndex = prev.ingredients.length;
@@ -508,53 +568,52 @@ export function RecipeForm({ onSubmit, isSubmitting = false }) {
       return;
     }
 
+    if (field === 'steps' && form.steps.length >= MAX_STEPS) return;
     setForm((prev) => ({ ...prev, [field]: [...prev[field], ''] }));
-  }, []);
+  }, [form.ingredients.length, form.steps.length]);
 
   const addStep = useCallback(({ afterIndex = null, shouldFocus = true } = {}) => {
     setForm((prev) => {
+      if (prev.steps.length >= MAX_STEPS) return prev;
       const nextSteps = [...prev.steps];
-      const insertAt =
-        Number.isInteger(afterIndex) && afterIndex >= 0 && afterIndex < nextSteps.length
-          ? afterIndex + 1
-          : nextSteps.length;
-
+      const insertAt = Number.isInteger(afterIndex) && afterIndex >= 0 && afterIndex < nextSteps.length ? afterIndex + 1 : nextSteps.length;
       nextSteps.splice(insertAt, 0, '');
-
       if (shouldFocus) pendingStepFocusRef.current = insertAt;
       return { ...prev, steps: nextSteps };
     });
   }, []);
 
   const handleStepChange = useCallback((index, value) => {
-    if (!value.includes('\n')) {
-      updateArrayItem('steps', index, value);
+    const cleanValue = filterBadWords(value);
+    const normalizedValue = trimWords(String(cleanValue || '').replace(/\s{2,}/g, ' '), MAX_STEP_WORDS);
+
+    if (!cleanValue.includes('\n')) {
+      updateArrayItem('steps', index, normalizedValue);
       return;
     }
 
-    const paragraphs = value
+    const paragraphs = cleanValue
       .split(/\r?\n/)
       .map((item) => item.trim())
       .filter(Boolean);
 
     if (paragraphs.length <= 1) {
-      updateArrayItem('steps', index, value.replace(/\r?\n/g, ' '));
+      updateArrayItem('steps', index, trimWords(cleanValue.replace(/\r?\n/g, ' '), MAX_STEP_WORDS));
       return;
     }
 
     setForm((prev) => {
       const nextSteps = [...prev.steps];
-      nextSteps[index] = paragraphs[0];
-      nextSteps.splice(index + 1, 0, ...paragraphs.slice(1));
-      return { ...prev, steps: nextSteps };
+      nextSteps[index] = trimWords(paragraphs[0], MAX_STEP_WORDS);
+      nextSteps.splice(index + 1, 0, ...paragraphs.slice(1).map((item) => trimWords(item, MAX_STEP_WORDS)));
+      return { ...prev, steps: nextSteps.slice(0, MAX_STEPS) };
     });
 
-    pendingStepFocusRef.current = index + paragraphs.length - 1;
+    pendingStepFocusRef.current = Math.min(index + paragraphs.length - 1, MAX_STEPS - 1);
   }, [updateArrayItem]);
 
   const handleStepKeyDown = useCallback((index) => (event) => {
     if (event.key !== 'Enter' || event.shiftKey) return;
-
     event.preventDefault();
 
     const currentStep = String(form.steps[index] || '').trim();
@@ -596,28 +655,7 @@ export function RecipeForm({ onSubmit, isSubmitting = false }) {
     });
 
     return () => window.cancelAnimationFrame(rafId);
-  }, [form.steps, focusStepInput]);
-
-  const handleImageUploadSuccess = useCallback((url) => {
-    // Simulación de validación IA para asegurar que es un plato de comida
-    setUploadingImages(true);
-    
-    // En una implementación real, aquí llamaríamos a un servicio de IA o filtraríamos por tags de Cloudinary
-    setTimeout(() => {
-      setForm((prev) => {
-        const nextImages = [...prev.images, url].slice(0, 5);
-        return { ...prev, images: nextImages };
-      });
-      setUploadingImages(false);
-    }, 800); // Pequeño delay para feedback de "escaneado"
-  }, []);
-
-  const removeImage = useCallback((index) => {
-    setForm((prev) => ({
-      ...prev,
-      images: prev.images.filter((_, i) => i !== index)
-    }));
-  }, []);
+  }, [focusStepInput, form.steps]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -629,12 +667,18 @@ export function RecipeForm({ onSubmit, isSubmitting = false }) {
       setFormError('Debes completar título y descripción');
       return;
     }
-
     if (payload.ingredients.length === 0 || payload.steps.length === 0) {
       setFormError('Debes añadir al menos un ingrediente y un paso');
       return;
     }
-
+    if (payload.ingredients.length > MAX_INGREDIENTS) {
+      setFormError(`Máximo ${MAX_INGREDIENTS} ingredientes.`);
+      return;
+    }
+    if (payload.steps.length > MAX_STEPS) {
+      setFormError(`Máximo ${MAX_STEPS} pasos.`);
+      return;
+    }
     if (payload.tags.length > MAX_RECIPE_TAGS) {
       setFormError('Solo puedes seleccionar hasta 3 tags.');
       return;
@@ -651,8 +695,8 @@ export function RecipeForm({ onSubmit, isSubmitting = false }) {
       return;
     }
 
-    if (!payload.prepTime || payload.prepTime < 1) {
-      setFormError('El tiempo de preparación debe ser mayor que 0');
+    if (!payload.prepTime || payload.prepTime < 1 || payload.prepTime > MAX_PREP_TIME) {
+      setFormError(`El tiempo de preparación debe estar entre 1 y ${MAX_PREP_TIME} minutos`);
       return;
     }
 
@@ -677,72 +721,58 @@ export function RecipeForm({ onSubmit, isSubmitting = false }) {
       <form className="space-y-6 lab-recipe-form" onSubmit={handleSubmit}>
         <div className="grid md:grid-cols-2 gap-4">
           <div className="space-y-2 md:col-span-2">
-            <Label htmlFor="title">Título</Label>
+            <Label htmlFor="title" className={fieldLabelClass}>Título</Label>
             <input
               id="title"
               ref={titleRef}
-              defaultValue={form.title}
-              onChange={(event) => {
-                const val = event.target.value;
-                setForm((prev) => ({ ...prev, title: val }));
-              }}
-              placeholder="EJ: BOWL ENERGÉTICO DE QUINOA"
-              className="h-10 w-full border-2 border-gray-900 rounded-none px-3 text-sm font-bold uppercase outline-none focus:border-pink-accent transition-colors"
+              value={form.title}
+              onChange={(event) => setForm((prev) => ({ ...prev, title: filterBadWords(event.target.value).slice(0, 120) }))}
+              placeholder="Ej: Bowl energético de quinoa"
+              className={`${baseFieldClass} h-11`}
               required
             />
           </div>
 
           <div className="space-y-2 md:col-span-2">
-            <Label htmlFor="description" className="uppercase font-bold text-xs tracking-widest">Descripción</Label>
+            <Label htmlFor="description" className={fieldLabelClass}>Descripción</Label>
             <textarea
               id="description"
-              value={localDescription}
-              onChange={(event) => {
-                const val = event.target.value;
-                setLocalDescription(val);
-                setForm((prev) => ({ ...prev, description: val }));
-              }}
-              placeholder="DESCRIBE TU CREACIÓN..."
-              className="min-h-24 w-full border-2 border-gray-900 rounded-none p-3 text-sm outline-none focus:border-pink-accent transition-colors"
+              value={form.description}
+              onChange={(event) => setForm((prev) => ({ ...prev, description: filterBadWords(event.target.value).slice(0, MAX_DESCRIPTION_CHARS) }))}
+              placeholder="Describe tu creación..."
+              className={`${textareaFieldClass} h-32`}
               required
             />
+            <p className="text-xs text-gray-500">{form.description.length}/{MAX_DESCRIPTION_CHARS} caracteres</p>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="category" className="uppercase font-bold text-xs tracking-widest">Categoría</Label>
-            <CustomSelect
-              value={form.category}
-              onChange={(val) => setForm((prev) => ({ ...prev, category: val }))}
-              options={categories}
-              placeholder="Seleccionar..."
-            />
+            <Label htmlFor="category" className={fieldLabelClass}>Categoría</Label>
+            <CustomSelect value={form.category} onChange={(val) => setForm((prev) => ({ ...prev, category: val }))} options={categories} placeholder="Seleccionar..." />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="difficulty" className="uppercase font-bold text-xs tracking-widest">Dificultad</Label>
-            <CustomSelect
-              value={form.difficulty}
-              onChange={(val) => setForm((prev) => ({ ...prev, difficulty: val }))}
-              options={difficulties}
-              placeholder="Seleccionar..."
-            />
+            <Label htmlFor="difficulty" className={fieldLabelClass}>Dificultad</Label>
+            <CustomSelect value={form.difficulty} onChange={(val) => setForm((prev) => ({ ...prev, difficulty: val }))} options={difficulties} placeholder="Seleccionar..." />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="prepTime" className="uppercase font-bold text-xs tracking-widest">Tiempo (MIN)</Label>
+            <Label htmlFor="prepTime" className={fieldLabelClass}>Tiempo (min)</Label>
             <input
               id="prepTime"
               type="number"
               min="1"
+              max={MAX_PREP_TIME}
               value={form.prepTime}
-              onChange={(event) => setForm((prev) => ({ ...prev, prepTime: event.target.value }))}
-              className="h-10 w-full border-2 border-gray-900 rounded-none px-3 text-sm font-bold outline-none focus:border-pink-accent transition-colors"
+              onChange={(event) => setForm((prev) => ({ ...prev, prepTime: clampNumberInput(event.target.value, { min: 1, max: MAX_PREP_TIME }) }))}
+              className={`${baseFieldClass} h-11`}
               required
             />
+            <p className="text-xs text-gray-500">Máximo {MAX_PREP_TIME} min.</p>
           </div>
 
           <div className="space-y-2 md:col-span-2">
-            <Label className="uppercase font-bold text-xs tracking-widest">Tags</Label>
+            <Label className={fieldLabelClass}>Tags</Label>
             <TagSelector
               availableTags={availableTags}
               selectedTags={Array.isArray(form.tags) ? form.tags : []}
@@ -756,11 +786,9 @@ export function RecipeForm({ onSubmit, isSubmitting = false }) {
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold text-gray-900">Ingredientes</h3>
-            <Button type="button" variant="outline" onClick={() => addArrayItem('ingredients')}>
-              <Plus className="w-4 h-4 mr-2" />
-              Añadir
-            </Button>
+            <p className="text-xs text-gray-500 uppercase">{form.ingredients.length}/{MAX_INGREDIENTS}</p>
           </div>
+
           <div className="hidden md:grid md:grid-cols-[minmax(0,1fr)_120px_130px_auto] gap-2 text-xs text-gray-500">
             <span>Ingrediente</span>
             <span>Cantidad</span>
@@ -768,108 +796,124 @@ export function RecipeForm({ onSubmit, isSubmitting = false }) {
             <span></span>
           </div>
 
-          {form.ingredients.map((item, index) => (
-            <div key={`ingredient-${index}`} className="grid gap-2 md:grid-cols-[minmax(0,1fr)_120px_130px_auto]">
-              <div className="flex-1 space-y-1">
-                <input
-                  value={item}
-                  list={`ingredient-suggestions-${index}`}
-                  onFocus={() => setActiveIngredientIndex(index)}
-                  onChange={(event) => {
-                    const nextValue = event.target.value;
-                    updateArrayItem('ingredients', index, nextValue);
-                    setActiveIngredientIndex(index);
-                    syncIngredientProfile(index, nextValue);
-                  }}
-                  onBlur={(event) => syncIngredientProfile(index, event.target.value)}
-                  placeholder={`INGREDIENTE ${index + 1}`}
-                  className="h-10 w-full border-2 border-gray-900 rounded-none px-3 text-sm font-bold uppercase outline-none focus:border-pink-accent transition-colors"
-                />
-                <datalist id={`ingredient-suggestions-${index}`}>
-                  {(ingredientSuggestions[index] || []).map((suggestion) => (
-                    <option key={`${suggestion.id}-${suggestion.name}`} value={suggestion.name} />
-                  ))}
-                </datalist>
-                {loadingIngredientIndex === index && (
-                  <p className="text-xs text-gray-500">Buscando ingredientes en Open Food Facts...</p>
-                )}
-                {loadingProfileIndex === index && (
-                  <p className="text-xs text-gray-500">Calculando macros medias del ingrediente...</p>
-                )}
-                {ingredientProfiles[index]?.averageMacros && (
-                  <>
-                    <p className="text-xs text-green-700">
-                      Media (100g): {ingredientProfiles[index].averageMacros.calories} kcal | P{' '}
-                      {ingredientProfiles[index].averageMacros.proteins}g | C {ingredientProfiles[index].averageMacros.carbs}
-                      g | G {ingredientProfiles[index].averageMacros.fats}g
-                    </p>
-                    <p className="text-xs text-gray-600">
-                      Aporte actual: {Math.round(
-                        (Number(ingredientProfiles[index].averageMacros.calories || 0) *
-                          toPositiveNumber(ingredientPortions[index]?.quantity || 0) *
-                          (unitToGrams[ingredientPortions[index]?.unit] || 0)) /
-                          100
-                      )}{' '}
-                      kcal
-                    </p>
-                  </>
-                )}
-              </div>
+          <div className="space-y-3 max-h-[420px] overflow-y-auto pr-1">
+            {form.ingredients.map((item, index) => (
+              <div key={`ingredient-${index}`} className="grid gap-2 md:grid-cols-[minmax(0,1fr)_120px_130px_auto]">
+                <div className="flex-1 space-y-1">
+                  <input
+                    value={item}
+                    list={`ingredient-suggestions-${index}`}
+                    onFocus={() => setActiveIngredientIndex(index)}
+                    onChange={(event) => {
+                      const nextValue = filterBadWords(event.target.value).slice(0, 120);
+                      updateArrayItem('ingredients', index, nextValue);
+                      setActiveIngredientIndex(index);
+                    }}
+                    onBlur={(event) => syncIngredientProfile(index, event.target.value)}
+                    placeholder={`Ingrediente ${index + 1}`}
+                    className={`${baseFieldClass} h-10`}
+                  />
+                  <datalist id={`ingredient-suggestions-${index}`}>
+                    {(ingredientSuggestions[index] || []).map((suggestion) => (
+                      <option key={`${suggestion.id}-${suggestion.name}`} value={suggestion.name} />
+                    ))}
+                  </datalist>
+                  {loadingIngredientIndex === index && <p className="text-xs text-gray-500">Buscando ingredientes en Open Food Facts...</p>}
+                  {loadingProfileIndex === index && <p className="text-xs text-gray-500">Calculando macros medias del ingrediente...</p>}
+                  {ingredientProfiles[index]?.averageMacros && (
+                    <>
+                      <p className="text-xs text-green-700">
+                        Media (100g): {ingredientProfiles[index].averageMacros.calories} kcal | P {ingredientProfiles[index].averageMacros.proteins}g | C {ingredientProfiles[index].averageMacros.carbs}g | G {ingredientProfiles[index].averageMacros.fats}g
+                      </p>
+                      <p className="text-xs text-gray-600">
+                        Aporte actual: {Math.round((Number(ingredientProfiles[index].averageMacros.calories || 0) * toPositiveNumber(ingredientPortions[index]?.quantity || 0) * (unitToGrams[ingredientPortions[index]?.unit] || 0)) / 100)} kcal
+                      </p>
+                    </>
+                  )}
+                </div>
 
-              <div className="space-y-1">
-                <input
-                  type="number"
-                  min="0"
-                  step="0.1"
-                  value={ingredientPortions[index]?.quantity ?? defaultIngredientPortion.quantity}
-                  onChange={(event) => updateIngredientPortion(index, 'quantity', event.target.value)}
-                  placeholder="CANT"
-                  className="h-10 w-full border-2 border-gray-900 rounded-none px-3 text-sm font-bold outline-none focus:border-pink-accent transition-colors"
-                />
-              </div>
+                <div className="space-y-1">
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.1"
+                    value={ingredientPortions[index]?.quantity ?? defaultIngredientPortion.quantity}
+                    onChange={(event) => updateIngredientPortion(index, 'quantity', event.target.value)}
+                    placeholder="Cant"
+                    className={`${baseFieldClass} h-10`}
+                  />
+                </div>
 
-              <div className="space-y-1">
-                <CustomSelect
-                  value={ingredientPortions[index]?.unit ?? defaultIngredientPortion.unit}
-                  onChange={(val) => updateIngredientPortion(index, 'unit', val)}
-                  options={ingredientUnits}
-                  placeholder="UNIDAD"
-                />
-              </div>
+                <div className="space-y-1">
+                  <CustomSelect
+                    value={ingredientPortions[index]?.unit ?? defaultIngredientPortion.unit}
+                    onChange={(val) => updateIngredientPortion(index, 'unit', val)}
+                    options={ingredientUnits}
+                    placeholder="Unidad"
+                  />
+                </div>
 
-              <Button type="button" variant="outline" className="h-10 border-2 border-gray-900 rounded-none hover:bg-red-500 hover:text-white" onClick={() => removeArrayItem('ingredients', index)}>
-                <Trash2 className="w-4 h-4" />
-              </Button>
-            </div>
-          ))}
+                <Button type="button" variant="outline" className="h-10 border-2 border-gray-900 rounded-none hover:bg-red-500 hover:text-white" onClick={() => removeArrayItem('ingredients', index)}>
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              </div>
+            ))}
+          </div>
+
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => addArrayItem('ingredients')}
+            disabled={form.ingredients.length >= MAX_INGREDIENTS}
+            className="w-full rounded-none border-2 border-gray-900 transition-all duration-150 hover:-translate-y-0.5 hover:bg-pink-50 hover:border-pink-accent hover:text-pink-accent disabled:opacity-50"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Añadir ingrediente
+          </Button>
         </div>
 
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold text-gray-900">Pasos</h3>
-            <Button type="button" variant="outline" onClick={() => addStep()}>
-              <Plus className="w-4 h-4 mr-2" />
-              Añadir
-            </Button>
+            <p className="text-xs text-gray-500 uppercase">{form.steps.length}/{MAX_STEPS}</p>
           </div>
 
-          {form.steps.map((item, index) => (
-            <div key={`step-${index}`} className="flex gap-2">
-              <textarea
-                ref={(element) => {
-                  stepRefs.current[index] = element;
-                }}
-                value={item}
-                onChange={(event) => handleStepChange(index, event.target.value)}
-                onKeyDown={handleStepKeyDown(index)}
-                placeholder={`PASO ${index + 1}: EXPLICA EL PROCESO...`}
-                className="min-h-20 flex-1 border-2 border-gray-900 rounded-none p-3 text-sm outline-none focus:border-pink-accent transition-colors"
-              />
-              <Button type="button" variant="outline" className="self-start border-2 border-gray-900 rounded-none h-10 hover:bg-red-500 hover:text-white" onClick={() => removeArrayItem('steps', index)}>
-                <Trash2 className="w-4 h-4" />
-              </Button>
-            </div>
-          ))}
+          <div className="space-y-3 max-h-[520px] overflow-y-auto pr-1">
+            {form.steps.map((item, index) => (
+              <div key={`step-${index}`} className="flex gap-2">
+                <div className="flex-1 space-y-1">
+                  <textarea
+                    ref={(element) => {
+                      stepRefs.current[index] = element;
+                    }}
+                    value={item}
+                    onChange={(event) => handleStepChange(index, event.target.value)}
+                    onKeyDown={handleStepKeyDown(index)}
+                    placeholder={`Paso ${index + 1}: explica el proceso...`}
+                    className={`${textareaFieldClass} h-28`}
+                  />
+                  <p className="text-xs text-gray-500">
+                    {String(item || '').trim() ? String(item || '').trim().split(/\s+/).length : 0}/{MAX_STEP_WORDS} palabras
+                  </p>
+                </div>
+
+                <Button type="button" variant="outline" className="self-start border-2 border-gray-900 rounded-none h-10 hover:bg-red-500 hover:text-white" onClick={() => removeArrayItem('steps', index)}>
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              </div>
+            ))}
+          </div>
+
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => addStep()}
+            disabled={form.steps.length >= MAX_STEPS}
+            className="w-full rounded-none border-2 border-gray-900 transition-all duration-150 hover:-translate-y-0.5 hover:bg-pink-50 hover:border-pink-accent hover:text-pink-accent disabled:opacity-50"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Añadir paso
+          </Button>
         </div>
 
         <div className="space-y-3">
@@ -895,54 +939,17 @@ export function RecipeForm({ onSubmit, isSubmitting = false }) {
           </div>
         </div>
 
-        <div className="space-y-4">
-          <Label>Imágenes de la receta (máximo 5)</Label>
-          <CloudinaryUploadWidget 
-            onUploadSuccess={handleImageUploadSuccess}
-            multiple={true}
-            folder="nutracore/recipes"
-          >
-            <div className="flex items-center justify-center gap-2 border-2 border-dashed border-pink-accent/40 rounded-none p-4 cursor-pointer hover:bg-pink-50/40 transition-colors">
-              <Upload className="w-4 h-4 text-pink-accent" />
-              <span className="text-sm font-bold text-gray-700 uppercase tracking-tight">Añade aquí tus imagenes</span>
-            </div>
-          </CloudinaryUploadWidget>
-
-          {uploadingImages && (
-            <div className="flex items-center gap-3 p-3 bg-pink-50 border-2 border-pink-accent animate-pulse">
-              <div className="w-2 h-2 bg-pink-accent rounded-full"></div>
-              <p className="text-xs font-bold text-pink-accent uppercase tracking-widest">Analizando plato con IA NutraCore...</p>
-            </div>
-          )}
-
-          {form.images.length > 0 && (
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-              {form.images.map((image, index) => (
-                <div key={`preview-${index}`} className="relative group">
-                  <img 
-                    src={image} 
-                    alt={`preview-${index}`} 
-                    className="h-24 w-full rounded-md object-cover border border-gray-200" 
-                  />
-                  <button
-                    type="button"
-                    onClick={() => removeImage(index)}
-                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity shadow-sm"
-                  >
-                    <Trash2 className="w-3 h-3" />
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+        <RecipeImageManager
+          images={form.images}
+          onChange={(nextImages) => setForm((prev) => ({ ...prev, images: nextImages.slice(0, MAX_RECIPE_IMAGES) }))}
+        />
 
         {formError && <p className="text-sm text-red-600">{formError}</p>}
 
         <Button
           type="submit"
           className="w-full bg-pink-accent hover:bg-pink-accent/90 text-white h-12 rounded-none border-b-4 border-r-4 border-pink-900/30 transition-all hover:translate-y-[-2px] active:translate-y-[2px]"
-          disabled={isSubmitting || uploadingImages}
+          disabled={isSubmitting}
         >
           <span className="font-bold tracking-wider">{isSubmitting ? 'PUBLICANDO...' : 'PUBLICAR RECETA'}</span>
         </Button>
@@ -950,4 +957,3 @@ export function RecipeForm({ onSubmit, isSubmitting = false }) {
     </Card>
   );
 }
-

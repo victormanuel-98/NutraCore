@@ -1,27 +1,23 @@
 import { useEffect, useRef } from 'react';
 import { cloudinaryConfig } from '../../config/cloudinaryConfig';
 
-/**
- * Componente que envuelve el Cloudinary Upload Widget.
- * @param {Object} props
- * @param {Function} props.onUploadSuccess - Callback que recibe la URL de la imagen subida.
- * @param {boolean} props.multiple - Si permite subir varias imágenes.
- * @param {string} props.folder - Carpeta donde se guardará en Cloudinary.
- * @param {React.ReactNode} props.children - Elemento que activa el widget al hacer click.
- */
-export function CloudinaryUploadWidget({ onUploadSuccess, multiple = false, folder = 'nutracore', children }) {
-  const cloudinaryRef = useRef();
-  const widgetRef = useRef();
+export function CloudinaryUploadWidget({
+  onUploadSuccess,
+  multiple = false,
+  folder = 'nutracore',
+  maxFiles = 1,
+  allowedFormats = ['png', 'jpg', 'jpeg', 'webp'],
+  children
+}) {
+  const cloudinaryRef = useRef(null);
+  const widgetRef = useRef(null);
 
   useEffect(() => {
-    // Verificar si el script de Cloudinary ya está cargado
     if (!window.cloudinary) {
       const script = document.createElement('script');
       script.src = 'https://upload-widget.cloudinary.com/global/all.js';
       script.async = true;
-      script.onload = () => {
-        initWidget();
-      };
+      script.onload = () => initWidget();
       document.body.appendChild(script);
     } else {
       initWidget();
@@ -33,51 +29,51 @@ export function CloudinaryUploadWidget({ onUploadSuccess, multiple = false, fold
         {
           cloudName: cloudinaryConfig.cloudName,
           uploadPreset: cloudinaryConfig.uploadPreset,
-          multiple: multiple,
-          folder: folder,
-          clientAllowedFormats: ['png', 'jpg', 'jpeg', 'webp'],
-          maxFileSize: 5000000, // 5MB
+          multiple,
+          maxFiles,
+          folder,
+          resourceType: 'image',
+          clientAllowedFormats: allowedFormats,
+          maxFileSize: 5_000_000,
+          sources: ['local', 'camera', 'url'],
+          showAdvancedOptions: false,
+          singleUploadAutoClose: false,
+          showCompletedButton: true,
           styles: {
             palette: {
-              window: '#FFFFFF',
-              windowBorder: '#90A0B3',
-              tabIcon: '#EC4899',
-              menuIcons: '#5A616A',
-              textDark: '#000000',
-              textLight: '#FFFFFF',
-              link: '#EC4899',
-              action: '#EC4899',
-              inactiveTabIcon: '#0E2F5A',
-              error: '#F44235',
-              inProgress: '#0078FF',
-              complete: '#20B832',
-              sourceBg: '#E4EBF1'
+              window: '#fff7fb',
+              windowBorder: '#ff0a60',
+              tabIcon: '#ec4899',
+              menuIcons: '#111827',
+              textDark: '#111827',
+              textLight: '#ffffff',
+              link: '#ec4899',
+              action: '#ec4899',
+              inactiveTabIcon: '#4b5563',
+              error: '#f44235',
+              inProgress: '#0078ff',
+              complete: '#20b832',
+              sourceBg: '#fff1f6'
             },
             fonts: {
               default: null,
-              "'Inter', sans-serif": 'https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap'
+              "'Bitcount Single', monospace": 'https://fonts.googleapis.com/css2?family=Bitcount+Single&display=swap'
             }
           }
         },
         (error, result) => {
-          if (!error && result && result.event === 'success') {
-            onUploadSuccess(result.info.secure_url);
+          if (!error && result?.event === 'success') {
+            onUploadSuccess?.(result.info.secure_url);
           }
         }
       );
     }
-  }, [onUploadSuccess, multiple, folder]);
+  }, [allowedFormats, folder, maxFiles, multiple, onUploadSuccess]);
 
-  const openWidget = (e) => {
-    e.preventDefault();
-    if (widgetRef.current) {
-      widgetRef.current.open();
-    }
+  const openWidget = (event) => {
+    event.preventDefault();
+    widgetRef.current?.open();
   };
 
-  return (
-    <div onClick={openWidget}>
-      {children}
-    </div>
-  );
+  return <div onClick={openWidget}>{children}</div>;
 }

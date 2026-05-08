@@ -1,6 +1,16 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const { Recipe, RECIPE_CATEGORIES, RECIPE_DIFFICULTIES, RECIPE_TAG_OPTIONS } = require('../models/Recipe');
+const {
+  Recipe,
+  RECIPE_CATEGORIES,
+  RECIPE_DIFFICULTIES,
+  RECIPE_TAG_OPTIONS,
+  MAX_RECIPE_IMAGES,
+  MAX_RECIPE_INGREDIENTS,
+  MAX_RECIPE_STEPS,
+  MAX_RECIPE_PREP_TIME,
+  MAX_STEP_WORDS
+} = require('../models/Recipe');
 const User = require('../models/User');
 const { protect, optionalProtect } = require('../config/auth');
 const { searchIngredients, getIngredientNutritionProfile } = require('../services/openFoodFactsService');
@@ -13,6 +23,8 @@ const MAX_LIMIT = 12;
 const MAX_INGREDIENTS_FOR_NUTRITION = 25;
 const RECIPES_CACHE_TTL_MS = Math.max(5_000, Number(process.env.RECIPES_CACHE_TTL_MS) || 60_000);
 const recipesCache = new Map();
+const BAD_WORDS = ['puto', 'puta', 'mierda', 'cabron', 'cabrona', 'joder', 'fuck', 'shit', 'asshole', 'idiota', 'estupido', 'estupida', 'coño', 'pendejo', 'pendeja'];
+const ALLOWED_IMAGE_FORMATS = ['png', 'jpg', 'jpeg', 'webp'];
 const UNIT_TO_GRAMS = {
   g: 1,
   gr: 1,
@@ -44,6 +56,34 @@ const normalizeStringArray = (value) => {
   return value
     .map((item) => (typeof item === 'string' ? item.trim() : ''))
     .filter(Boolean);
+};
+
+const filterBadWords = (text = '') => {
+  let filtered = String(text || '');
+  BAD_WORDS.forEach((word) => {
+    const regex = new RegExp(`\\b${escapeRegex(word)}\\b`, 'gi');
+    filtered = filtered.replace(regex, '*'.repeat(word.length));
+  });
+  return filtered;
+};
+
+const trimWords = (value, maxWords) => {
+  const normalized = String(value || '')
+    .replace(/\s+/g, ' ')
+    .trim();
+  if (!normalized) return '';
+  const words = normalized.split(' ');
+  return words.length <= maxWords ? normalized : words.slice(0, maxWords).join(' ');
+};
+
+const isAllowedImageUrl = (value = '') => {
+  try {
+    const parsed = new URL(String(value || '').trim());
+    const extension = parsed.pathname.split('.').pop()?.toLowerCase();
+    return ALLOWED_IMAGE_FORMATS.includes(extension);
+  } catch {
+    return false;
+  }
 };
 
 const normalizeTag = (value = '') =>
@@ -192,13 +232,19 @@ const normalizeRecipePayload = (payload = {}) => {
   );
 
   return {
-    title: typeof payload.title === 'string' ? payload.title.trim() : '',
-    description: typeof payload.description === 'string' ? payload.description.trim() : '',
-    ingredients: normalizeStringArray(payload.ingredients),
-    steps: normalizeStringArray(payload.steps),
+    title: typeof payload.title === 'string' ? filterBadWords(payload.title.trim()) : '',
+    description: typeof payload.description === 'string' ? filterBadWords(payload.description.trim()).slice(0, 1200) : '',
+    ingredients: normalizeStringArray(payload.ingredients)
+      .map((item) => filterBadWords(item).slice(0, 180))
+      .slice(0, MAX_RECIPE_INGREDIENTS),
+    steps: normalizeStringArray(payload.steps)
+      .map((item) => filterBadWords(trimWords(item, MAX_STEP_WORDS)).slice(0, 500))
+      .slice(0, MAX_RECIPE_STEPS),
     category: typeof payload.category === 'string' ? payload.category.trim().toLowerCase() : '',
-    images: Array.isArray(payload.images) ? payload.images.filter((img) => typeof img === 'string' && img.trim()) : [],
-    prepTime: toNumber(payload.prepTime),
+    images: Array.isArray(payload.images)
+      ? payload.images.filter((img) => typeof img === 'string' && img.trim() && isAllowedImageUrl(img)).slice(0, MAX_RECIPE_IMAGES)
+      : [],
+    prepTime: Math.min(MAX_RECIPE_PREP_TIME, Math.max(0, toNumber(payload.prepTime))),
     difficulty: typeof payload.difficulty === 'string' ? payload.difficulty.trim().toLowerCase() : '',
     nutrition: {
       calories: toNumber(payload.nutrition?.calories),
@@ -225,11 +271,20 @@ const validateRecipePayload = (payload, { partial = false } = {}) => {
     if (!Array.isArray(payload.ingredients) || payload.ingredients.length === 0) {
       errors.push('Debes incluir al menos un ingrediente');
     }
+    if (Array.isArray(payload.ingredients) && payload.ingredients.length > MAX_RECIPE_INGREDIENTS) {
+      errors.push(`Maximo ${MAX_RECIPE_INGREDIENTS} ingredientes`);
+    }
   }
 
   if (!partial || payload.steps !== undefined) {
     if (!Array.isArray(payload.steps) || payload.steps.length === 0) {
       errors.push('Debes incluir al menos un paso');
+    }
+    if (Array.isArray(payload.steps) && payload.steps.length > MAX_RECIPE_STEPS) {
+      errors.push(`Maximo ${MAX_RECIPE_STEPS} pasos`);
+    }
+    if (Array.isArray(payload.steps) && payload.steps.some((step) => String(step || '').trim().split(/\s+/).filter(Boolean).length > MAX_STEP_WORDS)) {
+      errors.push(`Cada paso puede tener un maximo de ${MAX_STEP_WORDS} palabras`);
     }
   }
 
@@ -246,7 +301,7 @@ const validateRecipePayload = (payload, { partial = false } = {}) => {
   }
 
   if (!partial || payload.prepTime !== undefined) {
-    if (!Number.isFinite(payload.prepTime) || payload.prepTime < 1) {
+    if (!Number.isFinite(payload.prepTime) || payload.prepTime < 1 || payload.prepTime > MAX_RECIPE_PREP_TIME) {
       errors.push('El tiempo de preparación debe ser un número mayor que 0');
     }
   }

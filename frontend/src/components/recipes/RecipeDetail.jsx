@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { X, Clock, Flame, ChefHat, Info, MessageSquare, Star as StarIcon } from 'lucide-react';
+import React from 'react';
+import { Clock, Flame, ChefHat, Info, MessageSquare, Star as StarIcon, User } from 'lucide-react';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 import { StarRating } from '../ui/StarRating';
@@ -19,13 +19,21 @@ export function RecipeDetail({ recipe, onClose }) {
 
   return (
     <div 
-      className="fixed inset-0 z-[60] flex items-center justify-center p-4 sm:p-6 bg-black/40 modal-overlay-enter"
+      className="recipe-modal-overlay fixed inset-0 z-[60] flex items-center justify-center p-4 sm:p-6 modal-overlay-enter"
       onClick={onClose}
     >
       <div 
-        className="bg-white w-full max-w-4xl max-h-[90vh] overflow-y-auto border-2 border-pink-accent shadow-[8px_8px_0px_0px_#ff0a60] modal-content-enter relative"
+        className="bg-white w-full max-w-4xl max-h-[90vh] overflow-hidden border-2 border-pink-accent shadow-[8px_8px_0px_0px_#ff0a60] modal-content-enter relative"
         onClick={(e) => e.stopPropagation()}
       >
+        <button 
+          onClick={onClose}
+          className="modal-close-button absolute top-4 right-4 z-30 rounded-full p-2 shadow-lg transition-all hover:scale-110 active:scale-95 group"
+        >
+          <PixelX size={18} className="modal-close-icon transition-colors group-hover:text-pink-accent/80" />
+        </button>
+
+        <div className="max-h-[90vh] overflow-y-auto">
         {/* Header con Imagen */}
         <div className="relative h-64 sm:h-80 w-full overflow-hidden">
           {recipe.image ? (
@@ -39,12 +47,6 @@ export function RecipeDetail({ recipe, onClose }) {
               <ChefHat size={64} className="text-gray-300" />
             </div>
           )}
-          <button 
-            onClick={onClose}
-            className="absolute top-4 right-4 bg-white/90 hover:bg-white p-2 rounded-full shadow-lg transition-all hover:scale-110 active:scale-95 group z-20"
-          >
-            <PixelX size={18} className="text-pink-accent group-hover:text-pink-accent/80 transition-colors" />
-          </button>
           <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-6 sm:p-8">
             <Badge className="mb-3 bg-pink-accent text-white border-none">
               {recipe.category}
@@ -52,6 +54,9 @@ export function RecipeDetail({ recipe, onClose }) {
             <h2 className="text-3xl sm:text-4xl font-bold text-white font-logo leading-tight">
               {recipe.title}
             </h2>
+            <div className="mt-4">
+              <RecipeAuthorInline name={recipe.authorName} avatar={recipe.authorAvatar} onDark />
+            </div>
           </div>
         </div>
 
@@ -126,6 +131,32 @@ export function RecipeDetail({ recipe, onClose }) {
             </div>
           </div>
         </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function RecipeAuthorInline({ name, avatar, onDark = false }) {
+  const textClass = onDark ? 'text-white/75' : 'text-gray-500';
+  const nameClass = onDark ? 'text-white' : 'text-gray-900';
+
+  return (
+    <div className="flex items-center gap-3">
+      {avatar ? (
+        <img
+          src={avatar}
+          alt={`Avatar de ${name}`}
+          className="h-10 w-10 rounded-full border border-white/40 bg-white object-cover"
+        />
+      ) : (
+        <div className="h-10 w-10 rounded-full border border-white/40 bg-white/90 flex items-center justify-center text-gray-600">
+          <User size={18} />
+        </div>
+      )}
+      <div>
+        <p className={`text-[10px] uppercase tracking-[0.18em] ${textClass}`}>Creada por</p>
+        <p className={`text-sm font-semibold ${nameClass}`}>{name || 'Usuario'}</p>
       </div>
     </div>
   );

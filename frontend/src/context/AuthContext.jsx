@@ -33,7 +33,7 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     const syncUser = async () => {
-      if (!authState.token) return;
+      if (!authState.token || authState.user) return;
 
       try {
         const response = await getCurrentUser(authState.token);
@@ -46,7 +46,7 @@ export function AuthProvider({ children }) {
     };
 
     syncUser();
-  }, [authState.token]);
+  }, [authState.token, authState.user]);
 
   const login = async (credentials) => {
     setIsLoading(true);

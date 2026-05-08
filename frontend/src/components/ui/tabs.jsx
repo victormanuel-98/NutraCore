@@ -22,7 +22,18 @@ export function TabsTrigger({ value, className = "", children, ...props }) {
   const ctx = useContext(TabsCtx);
   const active = ctx.current === value;
   return (
-    <button type="button" className={cn("rounded-md px-3 py-1.5 text-sm", active ? "bg-white shadow" : "text-gray-600", className)} onClick={() => ctx.setCurrent(value)} {...props}>
+    <button
+      type="button"
+      className={cn(
+        "rounded-md px-3 py-1.5 text-sm transition-all duration-150",
+        active
+          ? "bg-white text-gray-900 shadow"
+          : "text-gray-600 hover:bg-white hover:text-gray-900 hover:shadow-sm dark:hover:bg-white/10 dark:hover:text-white",
+        className
+      )}
+      onClick={() => ctx.setCurrent(value)}
+      {...props}
+    >
       {children}
     </button>
   );

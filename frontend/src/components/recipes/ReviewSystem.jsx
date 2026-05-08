@@ -166,9 +166,7 @@ export function ReviewSystem({ recipeId, averageRating, reviewsCount: initialCou
               <div key={review._id || idx} className="py-6 animate-in slide-in-from-bottom-2 duration-300" style={{ animationDelay: `${idx * 50}ms` }}>
                 <div className="flex justify-between items-start mb-2">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-pink-100 flex items-center justify-center text-pink-accent font-bold">
-                      <User size={20} />
-                    </div>
+                    <ReviewAvatar reviewUser={review.user} />
                     <div>
                       <div className="font-bold text-gray-900">{review.user?.name || 'Usuario'}</div>
                       <div className="text-xs text-gray-400">
@@ -187,7 +185,7 @@ export function ReviewSystem({ recipeId, averageRating, reviewsCount: initialCou
                   <div className="pl-13 flex items-center gap-2 py-3 bg-gray-50 rounded-lg px-4 border border-dashed border-gray-200">
                     <Lock size={14} className="text-gray-400" />
                     <span className="text-sm text-gray-500 italic">
-                      Inicia sesión para ver los comentarios
+                      Este usuario no dejó comentario escrito.
                     </span>
                   </div>
                 )}
@@ -201,6 +199,24 @@ export function ReviewSystem({ recipeId, averageRating, reviewsCount: initialCou
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+function ReviewAvatar({ reviewUser }) {
+  if (reviewUser?.avatar) {
+    return (
+      <img
+        src={reviewUser.avatar}
+        alt={`Avatar de ${reviewUser.name || 'Usuario'}`}
+        className="w-10 h-10 rounded-full border border-gray-200 object-cover bg-white"
+      />
+    );
+  }
+
+  return (
+    <div className="w-10 h-10 rounded-full border border-gray-200 bg-white flex items-center justify-center text-gray-500">
+      <User size={18} />
     </div>
   );
 }

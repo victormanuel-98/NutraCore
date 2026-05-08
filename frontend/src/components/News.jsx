@@ -5,6 +5,7 @@ import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Clock, TrendingUp, BookOpen, Search, Calendar, ArrowRight, ImageOff } from "lucide-react";
 import { getCloudinaryStaticAsset } from "../config/cloudinaryStaticAssets";
+import { useNotification } from "../context/NotificationContext";
 
 const newsArticles = [
   {
@@ -94,7 +95,7 @@ const newsArticles = [
     excerpt:
       "La primavera trae nuevas frutas de temporada llenas de sabor, vitaminas y nutrientes esenciales. Descubre cuáles son las mejores opciones de abril y qué beneficios aportan a tu salud.",
     category: "Nutrición",
-    image: getCloudinaryStaticAsset("/images/news/news-2.jpg"),
+    image: "/images/news/news-2.jpg",
     date: "8 de mayo de 2026",
     readTime: 4,
     isFeatured: true,
@@ -174,52 +175,427 @@ const newsArticles = [
     sourceUrl: "https://www.aesan.gob.es"
   },
   {
-    id: 3,
-    title: "5 mitos sobre la nutrición que debes dejar de creer",
+    id: 7,
+    title: "La ensalada proteica que ayuda a adelgazar sin pasar hambre",
     excerpt:
-      "Separamos la ciencia de los mitos más comunes en el mundo de la nutrición y la pérdida de peso.",
+      "Una ensalada rica en proteínas y fibra se ha convertido en tendencia por su capacidad para saciar y ayudar a mantener el déficit calórico. Lo mejor es que se prepara en pocos minutos y admite múltiples combinaciones.",
+    category: "Pérdida de peso",
+    image: "/images/news/news-3.jpg",
+    date: "8 de mayo de 2026",
+    readTime: 3,
+    isFeatured: false,
+    intro:
+      "Encontrar recetas saludables, rápidas y realmente saciantes puede parecer complicado al empezar una dieta. Sin embargo, algunos platos consiguen combinar facilidad, sabor y un buen equilibrio nutricional. Es el caso de una ensalada proteica que se ha vuelto popular en redes sociales gracias a su capacidad para ayudar a adelgazar sin pasar hambre.",
+    sections: [
+      {
+        heading: "Un plato viral para perder peso sin hambre",
+        paragraphs: [
+          "El creador de contenido especializado en pérdida de peso @maydesito ha compartido una receta basada en alimentos ricos en proteínas y fibra, diseñada para aumentar la sensación de saciedad y facilitar el mantenimiento del déficit calórico.",
+          "“Comes hasta llenarte y aún así sigues bajando de peso”, asegura el influencer, que apuesta por platos con mucho volumen y pocas calorías."
+        ]
+      },
+      {
+        heading: "Una salsa ligera y fácil de preparar",
+        paragraphs: [
+          "La receta comienza con un aliño sencillo elaborado con yogur griego bajo en grasa. Para prepararlo solo hace falta mezclar:",
+          "El resultado es una salsa cremosa que aporta sabor sin añadir demasiadas calorías."
+        ],
+        bullets: ["Yogur griego ligero", "Mostaza", "Sal", "Orégano"]
+      },
+      {
+        heading: "Ingredientes ricos en fibra y proteína",
+        paragraphs: [
+          "La ensalada incorpora diferentes verduras y alimentos frescos que ayudan a aumentar el volumen del plato y mejorar la saciedad:",
+          "Uno de los trucos de la receta consiste en triturar parte de los ingredientes para conseguir una mezcla más homogénea y fácil de comer.",
+          "Después, se añaden judías cocidas y una fuente de proteína al gusto, como pollo, atún o pavo."
+        ],
+        bullets: ["Huevo", "Cebolla morada", "Pepinillos", "Zanahoria", "Pimientos"]
+      },
+      {
+        heading: "¿Por qué puede ayudar a perder peso?",
+        paragraphs: [
+          "Los expertos en nutrición coinciden en que las comidas ricas en proteína y fibra ayudan a controlar mejor el apetito y reducen la necesidad de picar entre horas.",
+          "Además, las legumbres y verduras aportan gran cantidad de nutrientes con un contenido calórico relativamente bajo, lo que permite crear platos abundantes sin excederse en calorías.",
+          "El resultado es una comida rápida, completa y fácil de adaptar a distintos gustos y objetivos nutricionales."
+        ]
+      }
+    ],
+    sourceLabel: "La Razón",
+    sourceUrl:
+      "https://www.larazon.es/salud/bienestar/ensalada-definitiva-pueden-adelgazar-muchos-kilos-puedes-comerla-llenarte-bajaras-peso-b50m_2026050869fdd886b5b066299608e1a3.html?utm_source=chatgpt.com"
+  },
+  {
+    id: 8,
+    title: "Vacaciones saludables: consejos para mantenerse activo y comer bien",
+    excerpt:
+      "Mantener hábitos saludables durante las vacaciones es posible con pequeños cambios en la rutina. Actividad física, alimentación equilibrada y descanso adecuado son claves para disfrutar más y volver con energía renovada.",
     category: "Bienestar",
-    image: getCloudinaryStaticAsset("/images/news/news-3.jpg"),
-    date: "13 de abril de 2026",
-    readTime: 6,
-    isFeatured: false
-  },
-  {
-    id: 4,
-    title: "Cómo planificar tus comidas para toda la semana",
-    excerpt:
-      "Estrategias prácticas para organizar tu alimentación semanal, ahorrar tiempo y mantener hábitos saludables.",
-    category: "Planificación",
-    image: getCloudinaryStaticAsset("/images/news/news-4.jpg"),
-    date: "12 de abril de 2026",
-    readTime: 7,
-    isFeatured: false
-  },
-  {
-    id: 5,
-    title: "Superalimentos: ¿realmente valen la pena?",
-    excerpt:
-      "Analizamos los llamados superalimentos y su verdadero impacto en tu salud basándonos en evidencia científica.",
-    category: "Nutrición",
-    image: getCloudinaryStaticAsset("/images/news/news-5.jpg"),
-    date: "11 de abril de 2026",
+    image: "/images/news/news-4.jpg",
+    date: "8 de mayo de 2026",
     readTime: 5,
-    isFeatured: false
+    isFeatured: false,
+    intro:
+      "Las vacaciones son el momento ideal para desconectar de la rutina, descansar y disfrutar del tiempo libre. Sin embargo, también suelen venir acompañadas de cambios en los hábitos diarios que pueden afectar a la alimentación, el descanso y la actividad física.",
+    sections: [
+      {
+        heading: "Disfrutar y cuidarse al mismo tiempo",
+        paragraphs: [
+          "Mantener un estilo de vida saludable durante este periodo no significa renunciar al ocio ni seguir normas estrictas. Con pequeños gestos y una planificación sencilla es posible disfrutar plenamente de las vacaciones mientras se cuida la salud y el bienestar."
+        ]
+      },
+      {
+        heading: "¿Por qué es importante cuidarse también en vacaciones?",
+        paragraphs: [
+          "Mantener hábitos saludables durante los días de descanso aporta beneficios tanto físicos como mentales:",
+          "Además, diferentes estudios señalan que las personas que conservan rutinas saludables durante las vacaciones suelen experimentar una mayor sensación de bienestar y satisfacción general."
+        ],
+        bullets: [
+          "Ayuda a evitar el aumento de peso.",
+          "Mejora los niveles de energía.",
+          "Reduce el estrés al volver a la rutina.",
+          "Facilita mantener hábitos positivos a largo plazo."
+        ]
+      },
+      {
+        heading: "Cómo mantenerse activo durante las vacaciones",
+        paragraphs: [
+          "No hace falta seguir entrenamientos intensos para mantenerse en movimiento durante los días libres. La clave está en integrar la actividad física en los planes diarios."
+        ]
+      },
+      {
+        heading: "Aprovecha para caminar más",
+        paragraphs: [
+          "Explorar ciudades, pasear por la playa o recorrer rutas naturales caminando permite mantenerse activo casi sin darse cuenta."
+        ]
+      },
+      {
+        heading: "Practica actividades al aire libre",
+        paragraphs: [
+          "El verano y el buen tiempo son ideales para realizar deportes como:",
+          "El ejercicio al aire libre se relaciona con una mejora del estado de ánimo y una reducción del estrés."
+        ],
+        bullets: ["Natación", "Surf", "Paddle surf", "Senderismo", "Ciclismo"]
+      },
+      {
+        heading: "Utiliza las instalaciones del alojamiento",
+        paragraphs: [
+          "Muchos hoteles cuentan con gimnasio o piscina. Dedicar unos minutos al día a moverse puede marcar la diferencia."
+        ]
+      },
+      {
+        heading: "Consejos para comer de forma saludable",
+        paragraphs: [
+          "Las vacaciones también son una oportunidad para disfrutar de la gastronomía, pero mantener cierto equilibrio ayuda a sentirse mejor durante el viaje."
+        ]
+      },
+      {
+        heading: "Prioriza desayunos completos",
+        paragraphs: [
+          "Incluir proteínas, fruta y alimentos ricos en fibra ayuda a mantener la saciedad durante más tiempo."
+        ]
+      },
+      {
+        heading: "Lleva snacks saludables",
+        paragraphs: [
+          "Frutos secos, fruta fresca o yogures son alternativas sencillas para evitar recurrir constantemente a comida rápida o ultraprocesados."
+        ]
+      },
+      {
+        heading: "Mantente hidratado",
+        paragraphs: [
+          "Beber suficiente agua es especialmente importante en destinos cálidos o durante actividades al aire libre."
+        ]
+      },
+      {
+        heading: "Disfruta de la comida local con moderación",
+        paragraphs: [
+          "Probar platos típicos forma parte de la experiencia de viajar. La recomendación es hacerlo sin excesos y priorizando opciones más ligeras, como preparaciones al horno, plancha o vapor."
+        ]
+      },
+      {
+        heading: "Descanso y bienestar emocional",
+        paragraphs: ["El descanso también forma parte de una vida saludable."]
+      },
+      {
+        heading: "Cuida las horas de sueño",
+        paragraphs: [
+          "Intentar mantener horarios relativamente estables y crear un entorno cómodo para dormir ayuda a mejorar el descanso."
+        ]
+      },
+      {
+        heading: "Dedica tiempo a relajarte",
+        paragraphs: [
+          "Leer, practicar mindfulness o simplemente desconectar del móvil puede contribuir a reducir el estrés y mejorar el bienestar emocional."
+        ]
+      },
+      {
+        heading: "Consejos para viajes largos",
+        paragraphs: [
+          "En trayectos de muchas horas conviene levantarse, caminar y hacer pequeños estiramientos siempre que sea posible. También es recomendable llevar agua y snacks saludables para evitar recurrir constantemente a productos poco saludables."
+        ]
+      },
+      {
+        heading: "La tecnología también puede ayudar",
+        paragraphs: [
+          "Actualmente existen aplicaciones móviles que permiten registrar actividad física, controlar hábitos saludables o practicar meditación guiada, herramientas que pueden ser útiles para mantener una rutina equilibrada incluso durante las vacaciones.",
+          "Mantener hábitos saludables en vacaciones no implica perder libertad ni dejar de disfrutar. Al contrario, encontrar un equilibrio entre descanso, actividad física y buena alimentación puede ayudar a aprovechar mejor el tiempo libre y regresar con más energía."
+        ]
+      }
+    ],
+    sourceLabel: "Clínic Barcelona",
+    sourceUrl: "https://www.clinicbarcelona.org/noticias/vacaciones-saludables-consejos-para-mantenerse-activo-y-comer-bien?utm_source=chatgpt.com"
   },
   {
-    id: 6,
-    title: "Hidratación: la clave olvidada del rendimiento",
+    id: 9,
+    title: "Consejos para elaborar un menú saludable y equilibrado",
     excerpt:
-      "Por qué el agua es esencial para tu salud y rendimiento, y cómo asegurarte de estar correctamente hidratado.",
-    category: "Bienestar",
-    image: getCloudinaryStaticAsset("/images/news/news-6.jpg"),
-    date: "10 de abril de 2026",
-    readTime: 4,
-    isFeatured: false
+      "Planificar las comidas y apostar por alimentos frescos y variados son algunas de las claves para seguir una alimentación saludable. Descubre cómo organizar un menú equilibrado fácil de mantener en el día a día.",
+    category: "Alimentación saludable",
+    image: "/images/news/news-5.jpg",
+    date: "8 de mayo de 2026",
+    readTime: 5,
+    isFeatured: false,
+    intro:
+      "Seguir una alimentación saludable no consiste únicamente en comer menos o evitar determinados alimentos. La clave está en mantener una dieta equilibrada, variada y adaptada a las necesidades de cada persona.",
+    sections: [
+      {
+        heading: "Base de una alimentación saludable",
+        paragraphs: [
+          "Los expertos recuerdan que una buena alimentación puede ayudar a prevenir enfermedades como obesidad, diabetes, hipertensión, problemas cardiovasculares e incluso algunos tipos de cáncer. Sin embargo, organizar un menú saludable no siempre resulta sencillo, especialmente cuando influyen factores como el tiempo, las costumbres o el presupuesto."
+        ]
+      },
+      {
+        heading: "¿Qué debe tener una alimentación saludable?",
+        paragraphs: [
+          "Una dieta equilibrada debe reunir varias características fundamentales para aportar todos los nutrientes necesarios y poder mantenerse en el tiempo."
+        ]
+      },
+      {
+        heading: "Equilibrada",
+        paragraphs: [
+          "Debe aportar proteínas, hidratos de carbono, grasas saludables, vitaminas y minerales en proporciones adecuadas según la edad, el estilo de vida y las necesidades de cada persona."
+        ]
+      },
+      {
+        heading: "Suficiente",
+        paragraphs: [
+          "La cantidad de alimentos debe cubrir las necesidades energéticas diarias sin excesos ni carencias."
+        ]
+      },
+      {
+        heading: "Variada",
+        paragraphs: [
+          "Incluir diferentes grupos de alimentos ayuda a garantizar el aporte completo de nutrientes esenciales."
+        ]
+      },
+      {
+        heading: "Apetitosa",
+        paragraphs: [
+          "La alimentación saludable también debe resultar agradable y sabrosa para favorecer la adherencia a largo plazo."
+        ]
+      },
+      {
+        heading: "Sostenible",
+        paragraphs: [
+          "Elegir productos locales y de temporada ayuda a reducir el impacto ambiental y puede resultar más económico."
+        ]
+      },
+      {
+        heading: "Alimentos clave en un menú saludable",
+        paragraphs: ["Una alimentación equilibrada suele incluir:"],
+        bullets: [
+          "Verduras y hortalizas",
+          "Frutas",
+          "Cereales integrales",
+          "Legumbres",
+          "Frutos secos",
+          "Aceite de oliva virgen extra",
+          "Pescados y mariscos",
+          "Huevos",
+          "Lácteos",
+          "Carnes blancas"
+        ]
+      },
+      {
+        heading: "Más sabor con menos exceso",
+        paragraphs: [
+          "Además, las especias y hierbas aromáticas permiten potenciar el sabor de los platos reduciendo el uso de sal y azúcar."
+        ]
+      },
+      {
+        heading: "Cómo organizar un menú semanal saludable",
+        paragraphs: [
+          "Planificar las comidas es una de las herramientas más eficaces para mejorar la alimentación y evitar improvisaciones."
+        ]
+      },
+      {
+        heading: "Planifica las comidas principales",
+        paragraphs: [
+          "Diseñar un menú semanal facilita la compra y ayuda a mantener una alimentación más equilibrada."
+        ]
+      },
+      {
+        heading: "Mantén horarios regulares",
+        paragraphs: [
+          "Organizar los horarios de desayuno, comida y cena puede ayudar a evitar el picoteo entre horas."
+        ]
+      },
+      {
+        heading: "Ten opciones saludables a mano",
+        paragraphs: [
+          "Fruta, yogures naturales o frutos secos son alternativas sencillas para momentos de hambre inesperados."
+        ]
+      },
+      {
+        heading: "Prioriza el agua",
+        paragraphs: [
+          "El agua debe ser la bebida principal. También puede tomarse con limón, menta o en forma de infusión."
+        ]
+      },
+      {
+        heading: "Comer saludable también puede ser económico",
+        paragraphs: [
+          "Contrariamente a lo que muchas personas creen, comer sano no tiene por qué ser más caro.",
+          "Comprar productos de temporada y proximidad suele abaratar el coste de la cesta de la compra y mejora la calidad de los alimentos. Además, aprovechar las sobras y reutilizar ingredientes ayuda a reducir el desperdicio alimentario."
+        ]
+      },
+      {
+        heading: "Ejemplo de menú saludable diario",
+        paragraphs: [],
+        bullets: [
+          "Desayuno: Café con leche, pan integral con tomate y aceite de oliva virgen extra, naranja.",
+          "Media mañana: Yogur natural.",
+          "Comida: Ensalada verde, paella de pescado, uvas, pan integral opcional.",
+          "Merienda: Nueces.",
+          "Cena: Escalivada, tortilla de patatas, pera, pan integral opcional."
+        ]
+      },
+      {
+        heading: "Una rutina asumible",
+        paragraphs: [
+          "Adoptar hábitos saludables no requiere seguir dietas estrictas, sino aprender a organizar mejor las comidas y priorizar alimentos frescos y nutritivos en el día a día."
+        ]
+      }
+    ],
+    sourceLabel: "Clínic Barcelona",
+    sourceUrl: "https://www.clinicbarcelona.org/noticias/consejos-para-elaborar-un-menu-saludable?utm_source=chatgpt.com"
+  },
+  {
+    id: 10,
+    title: "Estos son los cereales de Mercadona más ricos en proteínas y fibra",
+    excerpt:
+      "Un nutricionista analiza los cereales de Mercadona y desvela cuáles destacan por su contenido en fibra y proteínas, además de señalar las opciones menos recomendables por su exceso de azúcar.",
+    category: "Nutrición",
+    image: "/images/news/news-6.jpg",
+    date: "8 de mayo de 2026",
+    readTime: 5,
+    isFeatured: false,
+    intro:
+      "Elegir unos cereales saludables en el supermercado no siempre es sencillo. Muchos productos que parecen equilibrados esconden altas cantidades de azúcar y pocos nutrientes saciantes. Por eso, cada vez más nutricionistas analizan los productos más populares para ayudar a los consumidores a tomar mejores decisiones.",
+    sections: [
+      {
+        heading: "Qué analiza el nutricionista",
+        paragraphs: [
+          "El nutricionista Yeray Moreno ha revisado varios cereales de Mercadona centrándose especialmente en tres aspectos clave: contenido en proteínas, cantidad de fibra y niveles de azúcar."
+        ]
+      },
+      {
+        heading: "Los cereales menos recomendables",
+        paragraphs: [
+          "Entre los productos que el experto aconseja limitar destacan algunos cereales especialmente populares entre los más pequeños."
+        ]
+      },
+      {
+        heading: "Cereales rellenos",
+        paragraphs: [
+          "Los cereales rellenos contienen alrededor de 37 gramos de azúcar por cada 100 gramos de producto, además de aceites refinados como palma, girasol o nabina.",
+          "Aunque aportan algo de proteína, su bajo contenido en fibra y su elevada cantidad de azúcar hacen que no sean una opción recomendable para el desayuno habitual."
+        ]
+      },
+      {
+        heading: "Cereales de chocolate y avellana",
+        paragraphs: [
+          "Las versiones de chocolate y avellana también aparecen entre las menos saludables debido a su exceso de azúcar y presencia de aditivos."
+        ]
+      },
+      {
+        heading: "Cereales sin gluten de cacao y avellana",
+        paragraphs: [
+          "Según el nutricionista, estos cereales resultan pobres en proteína y fibra, además de poco saciantes."
+        ]
+      },
+      {
+        heading: "Los cereales mejor valorados",
+        paragraphs: [
+          "Tras analizar diferentes productos, Yeray Moreno destaca varias opciones que pueden encajar mejor dentro de una alimentación equilibrada."
+        ]
+      },
+      {
+        heading: "Copos de avena con chocolate",
+        paragraphs: [
+          "Estos cereales destacan por su equilibrio entre proteína y fibra:",
+          "Sin embargo, también contienen más de 10 gramos de azúcar, por lo que conviene consumirlos con moderación."
+        ],
+        bullets: ["10,8 gramos de proteína", "10,8 gramos de fibra"]
+      },
+      {
+        heading: "Muesli Crunchy 0% azúcares añadidos",
+        paragraphs: [
+          "Una de las opciones favoritas del experto gracias a su alto contenido en fibra y bajo nivel de azúcar.",
+          "Aporta:"
+        ],
+        bullets: ["23 gramos de fibra", "8,8 gramos de proteína", "Solo 3,2 gramos de azúcar"]
+      },
+      {
+        heading: "Corn Flakes 0% azúcar",
+        paragraphs: [
+          "Estos cereales destacan por su sencillez en ingredientes y su mínimo contenido en azúcar.",
+          "Están elaborados principalmente con maíz y apenas contienen:"
+        ],
+        bullets: ["0,7 gramos de azúcar", "4,4 gramos de fibra", "6,7 gramos de proteína"]
+      },
+      {
+        heading: "Cereales 0% azúcares",
+        paragraphs: [
+          "Otra alternativa interesante para quienes buscan reducir el consumo de azúcar sin renunciar a un desayuno rápido.",
+          "El nutricionista destaca su buen aporte de proteína y fibra, aunque señala ciertas dudas sobre el etiquetado de ingredientes y porcentajes indicados en el envase."
+        ]
+      },
+      {
+        heading: "Fibra Sticks",
+        paragraphs: [
+          "Los Fibra Sticks son de los productos con mayor contenido en fibra del análisis:"
+        ],
+        bullets: ["33 gramos de fibra", "16 gramos de proteína", "Aunque también contienen unos 10 gramos de azúcar, siguen siendo una de las opciones más saciantes."]
+      },
+      {
+        heading: "Espelta 0% azúcar añadido",
+        paragraphs: [
+          "Los cereales de espelta integral destacan por su composición sencilla y equilibrada.",
+          "Entre sus ingredientes principales figuran:"
+        ],
+        bullets: ["Harina integral de espelta", "Cebada", "Sal", "Además, ofrecen una buena combinación de proteína y fibra con un contenido moderado en azúcar."]
+      },
+      {
+        heading: "Copos de avena: la opción más recomendable",
+        paragraphs: [
+          "Para el nutricionista, los copos de avena son la mejor alternativa del supermercado por su perfil nutricional.",
+          "Aportan:"
+        ],
+        bullets: [
+          "14 gramos de proteína",
+          "10 gramos de fibra",
+          "Solo 0,7 gramos de azúcar",
+          "Además, no contienen aditivos innecesarios y pueden combinarse fácilmente con fruta, yogur o frutos secos para conseguir un desayuno más completo."
+        ]
+      }
+    ],
+    sourceLabel: "The Objective",
+    sourceUrl: "https://theobjective.com/lifestyle/nutricion/2026-04-06/yeray-moreno-nutricionista-estos-son-cereales-mercadona-ricos-proteinas-fibra/"
   }
 ];
 
-const categories = ["Todos", "Alimentación saludable", "Nutrición", "Fitness", "Bienestar", "Planificación"];
+const categories = ["Todos", "Alimentación saludable", "Nutrición", "Fitness", "Bienestar", "Planificación", "Pérdida de peso"];
 
 const PixelX = ({ size = 18, className = "" }) => (
   <svg width={size} height={size} viewBox="0 0 8 8" fill="currentColor" className={className} aria-hidden="true">
@@ -257,6 +633,30 @@ export function News() {
   const [selectedCategory, setSelectedCategory] = useState("Todos");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedArticle, setSelectedArticle] = useState(null);
+  const [newsletterEmail, setNewsletterEmail] = useState("");
+  const [newsletterLoading, setNewsletterLoading] = useState(false);
+  const { showNotification } = useNotification();
+
+  const handleNewsletterSubscribe = async () => {
+    const trimmedEmail = newsletterEmail.trim();
+    const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail);
+
+    if (!trimmedEmail || !isValidEmail) {
+      showNotification("Introduce un correo valido", "error");
+      return;
+    }
+
+    try {
+      setNewsletterLoading(true);
+      await new Promise((resolve) => window.setTimeout(resolve, 450));
+      showNotification("Suscripcion registrada", "success");
+      setNewsletterEmail("");
+    } catch {
+      showNotification("No se pudo registrar la suscripcion", "error");
+    } finally {
+      setNewsletterLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (!selectedArticle) return undefined;
@@ -299,7 +699,7 @@ export function News() {
   });
 
   const featuredArticles = filteredArticles.filter((a) => a.isFeatured);
-  const regularArticles = filteredArticles.filter((a) => !a.isFeatured);
+  const regularArticles = filteredArticles;
 
   return (
     <div className="min-h-screen bg-gray-50 dark-pink-fields">
@@ -349,12 +749,12 @@ export function News() {
                 <h2 className="text-2xl font-bold text-gray-900">Artículos destacados</h2>
               </div>
 
-              <div className="grid md:grid-cols-2 gap-6">
+              <div className="grid md:grid-cols-2 gap-5">
                 {featuredArticles.map((article) => (
                   <Card
                     key={article.id}
                     data-news-card
-                    className="overflow-hidden group bg-white border-2 border-gray-200 rounded-none shadow-[4px_4px_0px_0px_#d1d5db] hover:shadow-[8px_8px_0px_0px_#ff0a60] hover:border-pink-accent transition-all"
+                    className="news-card-large overflow-hidden group flex flex-col bg-white border-2 border-gray-200 rounded-none shadow-[4px_4px_0px_0px_#d1d5db] hover:shadow-[8px_8px_0px_0px_#ff0a60] hover:border-pink-accent transition-all"
                     role="button"
                     tabIndex={0}
                     onClick={() => openArticle(article)}
@@ -365,20 +765,22 @@ export function News() {
                       }
                     }}
                   >
-                    <div className="relative overflow-hidden aspect-[16/10] sm:aspect-[3/2] lg:aspect-[16/9]">
+                    <div className="relative overflow-hidden aspect-[16/9] sm:aspect-[16/10]">
                       <NewsImage src={article.image} alt={article.title} featured />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-                      <Badge className="absolute top-4 left-4 bg-pink-accent text-white rounded-none">{article.category}</Badge>
+                      <Badge className="absolute top-4 left-4 bg-pink-accent text-white rounded-none border border-pink-accent pointer-events-none dark:border-pink-accent">
+                        {article.category}
+                      </Badge>
                     </div>
 
-                    <div className="p-6 space-y-4">
-                      <h3 className="text-2xl font-bold text-gray-900 group-hover:text-pink-accent transition-colors">
+                    <div className="flex flex-1 flex-col p-5 space-y-4">
+                      <h3 className="text-xl font-bold text-gray-900 group-hover:text-pink-accent transition-colors line-clamp-3 min-h-[5.4rem]">
                         {article.title}
                       </h3>
 
-                      <p className="text-gray-600 leading-relaxed">{article.excerpt}</p>
+                      <p className="text-sm text-gray-600 leading-relaxed line-clamp-4 min-h-[6.4rem]">{article.excerpt}</p>
 
-                      <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+                      <div className="mt-auto flex items-center justify-between pt-4 border-t border-gray-100">
                         <div className="flex items-center gap-4 text-sm text-gray-500">
                           <div className="flex items-center gap-1">
                             <Calendar className="w-4 h-4" />
@@ -392,7 +794,7 @@ export function News() {
 
                         <Button
                           variant="ghost"
-                          className="text-pink-accent hover:text-pink-accent/80 hover:bg-pink-50 rounded-none"
+                          className="news-ghost-btn rounded-none text-pink-accent hover:text-pink-accent/80 hover:bg-pink-50 dark:hover:bg-pink-500/12 dark:hover:text-pink-200 active:scale-[0.98]"
                           onClick={(event) => {
                             event.stopPropagation();
                             openArticle(article);
@@ -413,15 +815,15 @@ export function News() {
             <div>
               <div className="flex items-center gap-2 mb-6">
                 <BookOpen className="w-5 h-5 text-pink-accent" />
-                <h2 className="text-2xl font-bold text-gray-900">Todos los artículos</h2>
+                <h2 className="text-2xl font-bold text-gray-900">Todas las noticias</h2>
               </div>
 
-              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
                 {regularArticles.map((article) => (
                   <Card
                     key={article.id}
                     data-news-card
-                    className="overflow-hidden group bg-white border-2 border-gray-200 rounded-none shadow-[4px_4px_0px_0px_#d1d5db] hover:shadow-[8px_8px_0px_0px_#ff0a60] hover:border-pink-accent transition-all"
+                    className="news-card-small overflow-hidden group flex flex-col bg-white border-2 border-gray-200 rounded-none shadow-[4px_4px_0px_0px_#d1d5db] hover:shadow-[8px_8px_0px_0px_#ff0a60] hover:border-pink-accent transition-all"
                     role="button"
                     tabIndex={0}
                     onClick={() => openArticle(article)}
@@ -432,21 +834,21 @@ export function News() {
                       }
                     }}
                   >
-                    <div className="relative overflow-hidden aspect-[4/3] sm:aspect-[3/2] lg:aspect-[16/10]">
+                    <div className="relative overflow-hidden aspect-[16/10]">
                       <NewsImage src={article.image} alt={article.title} />
-                      <Badge className="absolute top-4 left-4 bg-white text-gray-900 hover:bg-white rounded-none border border-gray-200">
+                      <Badge className="absolute top-4 left-4 bg-pink-accent text-white rounded-none border border-pink-accent pointer-events-none">
                         {article.category}
                       </Badge>
                     </div>
 
-                    <div className="p-6 space-y-3">
-                      <h3 className="text-lg font-bold text-gray-900 group-hover:text-pink-accent transition-colors line-clamp-2">
+                    <div className="flex flex-1 flex-col p-4 space-y-3">
+                      <h3 className="text-base font-bold text-gray-900 group-hover:text-pink-accent transition-colors line-clamp-3 min-h-[4.7rem]">
                         {article.title}
                       </h3>
 
-                      <p className="text-sm text-gray-600 leading-relaxed line-clamp-3">{article.excerpt}</p>
+                      <p className="text-sm text-gray-600 leading-relaxed line-clamp-4 min-h-[6rem]">{article.excerpt}</p>
 
-                      <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+                      <div className="mt-auto flex items-center justify-between pt-3 border-t border-gray-100">
                         <div className="flex items-center gap-3 text-xs text-gray-500">
                           <div className="flex items-center gap-1">
                             <Calendar className="w-3 h-3" />
@@ -461,7 +863,7 @@ export function News() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="text-pink-accent hover:text-pink-accent/80 hover:bg-pink-50 rounded-none"
+                          className="news-ghost-btn rounded-none text-pink-accent hover:text-pink-accent/80 hover:bg-pink-50 dark:hover:bg-pink-500/12 dark:hover:text-pink-200 active:scale-[0.98]"
                           onClick={(event) => {
                             event.stopPropagation();
                             openArticle(article);
@@ -507,9 +909,18 @@ export function News() {
                 <Input
                   type="email"
                   placeholder="tu@email.com"
+                  value={newsletterEmail}
+                  onChange={(event) => setNewsletterEmail(event.target.value)}
                   className="flex-1 border-2 border-gray-300 rounded-none focus-visible:border-pink-accent bg-white"
                 />
-                <Button className="bg-pink-accent hover:bg-pink-accent/90 text-white rounded-none">Suscribirse</Button>
+                <Button
+                  type="button"
+                  onClick={handleNewsletterSubscribe}
+                  disabled={newsletterLoading}
+                  className="news-subscribe-btn rounded-none bg-pink-accent text-white hover:bg-pink-accent/90 active:scale-[0.98] dark:bg-pink-300 dark:text-slate-950 dark:hover:bg-pink-200"
+                >
+                  {newsletterLoading ? "Enviando..." : "Suscribirse"}
+                </Button>
               </div>
             </div>
           </Card>

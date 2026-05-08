@@ -87,7 +87,7 @@ router.get('/recipe/:recipeId', validateObjectIdParam('recipeId'), optionalProte
     const isAuthenticated = !!req.user;
 
     const reviews = await Review.find({ recipe: recipeId })
-      .populate('user', 'name')
+      .populate('user', 'name avatar')
       .sort('-createdAt');
 
     // Filter comments if not authenticated
