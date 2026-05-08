@@ -10,6 +10,7 @@ const User = require('../models/User');
 const Recipe = require('../models/Recipe');
 const Review = require('../models/Review');
 const AuditLog = require('../models/AuditLog');
+const MenuConsumption = require('../models/MenuConsumption');
 const { protect, requireAdmin } = require('../config/auth');
 const { isAdmin, canAdminManageUser } = require('../middleware/rbac');
 const { logAuditEvent } = require('../services/auditService');
@@ -578,6 +579,113 @@ router.put('/preferences', protect, async (req, res) => {
     res.status(500).json({
       success: false,
       error: 'Error al actualizar preferencias'
+    });
+  }
+});
+
+/**
+ * @route   GET /api/users/menu-consumption
+ * @desc    Obtener estado persistido del menú automático
+ * @access  Private
+ */
+router.get('/menu-consumption', protect, async (req, res) => {
+  try {
+    const doc = await MenuConsumption.findOne({ user: req.user._id }).lean();
+
+    return res.json({
+      success: true,
+      data: {
+        plannerVersionByPeriod: doc?.plannerVersionByPeriod || { daily: 0, weekly: 0, monthly: 0 },
+        consumedByPeriod: doc?.consumedByPeriod || { daily: {}, weekly: {}, monthly: {} }
+      }
+    });
+  } catch (error) {
+    console.error('Error al obtener consumo de menú:', error);
+    return res.status(500).json({
+      success: false,
+      error: 'Error al obtener consumo de menú'
+    });
+  }
+});
+
+/**
+ * @route   PUT /api/users/menu-consumption
+ * @desc    Persistir estado del menú automático
+ * @access  Private
+ */
+router.put('/menu-consumption', protect, async (req, res) => {
+  try {
+    const plannerVersionByPeriod = req.body?.plannerVersionByPeriod || {};
+    const consumedByPeriod = req.body?.consumedByPeriod || {};
+
+    const normalizePlannerPeriod = (value) => {
+      if (value && typeof value === 'object' && !Array.isArray(value)) {
+        return Object.fromEntries(
+          Object.entries(value).map(([bucket, version]) => [String(bucket), Number(version) || 0])
+        );
+      }
+      const legacyValue = Number(value);
+      return Number.isFinite(legacyValue) && legacyValue > 0 ? { legacy: legacyValue } : {};
+    };
+
+    const normalizedPlanner = {
+      daily: normalizePlannerPeriod(plannerVersionByPeriod.daily),
+      weekly: normalizePlannerPeriod(plannerVersionByPeriod.weekly),
+      monthly: normalizePlannerPeriod(plannerVersionByPeriod.monthly)
+    };
+
+    const normalizeConsumedMap = (value) => {
+      if (!value || typeof value !== 'object' || Array.isArray(value)) return {};
+      const values = Object.values(value);
+      const looksLegacy = values.some((entry) => typeof entry === 'boolean');
+      if (looksLegacy) {
+        return {
+          legacy: Object.fromEntries(
+            Object.entries(value).map(([key, flag]) => [String(key), Boolean(flag)])
+          )
+        };
+      }
+
+      const out = {};
+      Object.entries(value).forEach(([bucketKey, recipeMap]) => {
+        if (!bucketKey || !recipeMap || typeof recipeMap !== 'object' || Array.isArray(recipeMap)) return;
+        out[String(bucketKey)] = Object.fromEntries(
+          Object.entries(recipeMap).map(([recipeId, flag]) => [String(recipeId), Boolean(flag)])
+        );
+      });
+      return out;
+    };
+
+    const normalizedConsumed = {
+      daily: normalizeConsumedMap(consumedByPeriod.daily),
+      weekly: normalizeConsumedMap(consumedByPeriod.weekly),
+      monthly: normalizeConsumedMap(consumedByPeriod.monthly)
+    };
+
+    const doc = await MenuConsumption.findOneAndUpdate(
+      { user: req.user._id },
+      {
+        $set: {
+          plannerVersionByPeriod: normalizedPlanner,
+          consumedByPeriod: normalizedConsumed
+        }
+      },
+      { new: true, upsert: true, setDefaultsOnInsert: true }
+    );
+
+    return res.json({
+      success: true,
+      data: {
+        plannerVersionByPeriod: doc.plannerVersionByPeriod,
+        consumedByPeriod: doc.consumedByPeriod
+      },
+      message: 'Consumo de menú guardado'
+    });
+  } catch (error) {
+    console.error('Error al guardar consumo de menú:', error);
+    return res.status(500).json({
+      success: false,
+      error: 'Error al guardar consumo de menú'
     });
   }
 });

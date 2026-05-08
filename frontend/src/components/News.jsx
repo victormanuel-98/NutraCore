@@ -1,4 +1,4 @@
-﻿import { useEffect, useRef, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { Card } from "./ui/card";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
@@ -90,14 +90,88 @@ const newsArticles = [
   },
   {
     id: 2,
-    title: "Guía completa de macronutrientes: proteínas, carbohidratos y grasas",
+    title: "Estas son las frutas de temporada que han llegado en abril",
     excerpt:
-      "Entiende cómo funcionan los macronutrientes y cómo equilibrarlos según tus objetivos de salud y composición corporal.",
+      "La primavera trae nuevas frutas de temporada llenas de sabor, vitaminas y nutrientes esenciales. Descubre cuáles son las mejores opciones de abril y qué beneficios aportan a tu salud.",
     category: "Nutrición",
     image: getCloudinaryStaticAsset("/images/news/news-2.jpg"),
-    date: "14 de abril de 2026",
-    readTime: 8,
-    isFeatured: true
+    date: "8 de mayo de 2026",
+    readTime: 4,
+    isFeatured: true,
+    intro:
+      "Con la llegada de la primavera, los mercados comienzan a llenarse de nuevas frutas de temporada que destacan por su sabor, frescura y valor nutricional. Elegir frutas propias de cada estación no solo mejora la calidad de la alimentación, también favorece un consumo más sostenible y respetuoso con el medio ambiente.",
+    sections: [
+      {
+        heading: "Contexto y recomendaciones",
+        paragraphs: [
+          "La Agencia Española de Seguridad Alimentaria y Nutrición (Aesan) recuerda que consumir productos de temporada significa apostar por alimentos con mejor sabor, mayor calidad nutricional y menor impacto ambiental.",
+          "Los expertos recomiendan tomar al menos tres piezas de fruta al día y variar las opciones para conseguir una alimentación equilibrada y rica en nutrientes.",
+          "Además, dentro de la dieta mediterránea, la fruta se considera uno de los postres más saludables gracias a su capacidad para aportar saciedad y reducir el deseo de consumir dulces."
+        ]
+      },
+      {
+        heading: "Frutas de temporada en abril",
+        paragraphs: ["Estas son algunas de las frutas protagonistas durante el mes de abril:"],
+        bullets: [
+          "Aguacate",
+          "Frambuesa",
+          "Fresa",
+          "Kiwi",
+          "Limón",
+          "Naranja",
+          "Níspero",
+          "Plátano"
+        ]
+      },
+      {
+        heading: "Aguacate",
+        paragraphs: [
+          "Aunque muchas personas lo consideran una verdura, el aguacate es realmente una fruta. Destaca por su contenido en grasas saludables monoinsaturadas, similares a las del aceite de oliva virgen extra.",
+          "Además, aporta vitamina C, vitamina E, vitamina B6, ácido fólico, fibra y minerales como potasio y magnesio, convirtiéndose en un alimento muy completo para incluir en desayunos, ensaladas o tostadas."
+        ]
+      },
+      {
+        heading: "Frambuesa",
+        paragraphs: [
+          "La frambuesa es una fruta rica en vitamina C y antioxidantes. Una sola porción puede aportar hasta el 80% de la cantidad diaria recomendada de esta vitamina.",
+          "También contiene fibra, folatos y compuestos fenólicos, además de tener un índice glucémico bajo, lo que la convierte en una opción saludable para todo tipo de dietas."
+        ]
+      },
+      {
+        heading: "Fresa",
+        paragraphs: [
+          "Abril es uno de los mejores meses para disfrutar de las fresas en su punto óptimo. A pesar de su pequeño tamaño, destacan por su alto contenido en vitamina C, incluso superior al de algunas naranjas.",
+          "Son bajas en calorías y contienen ácidos orgánicos como el cítrico, málico y oxálico, además de pequeñas cantidades de ácido salicílico."
+        ]
+      },
+      {
+        heading: "Kiwi",
+        paragraphs: [
+          "El kiwi es conocido por favorecer el tránsito intestinal gracias a su contenido en fibra. También destaca por su elevada cantidad de vitamina C y vitamina K.",
+          "Además, los expertos señalan que consumirlo con piel aumenta aún más el aporte de fibra, antioxidantes y polifenoles."
+        ]
+      },
+      {
+        heading: "Níspero",
+        paragraphs: [
+          "El níspero marca el inicio de la temporada de frutas con hueso. Se caracteriza por ser una de las frutas con mayor contenido en fibra y por aportar potasio, un mineral importante para el funcionamiento muscular y nervioso."
+        ]
+      },
+      {
+        heading: "Naranja",
+        paragraphs: [
+          "La naranja encara el final de su temporada, aunque sigue siendo una excelente fuente de vitamina C. También aporta flavonoides, folatos y ácidos orgánicos beneficiosos para el organismo."
+        ]
+      },
+      {
+        heading: "Plátano",
+        paragraphs: [
+          "El plátano sigue siendo una de las frutas más consumidas gracias a su practicidad y valor energético. Contiene potasio, vitamina C, fósforo y triptófano, además de ser rico en hidratos de carbono, lo que lo convierte en una opción ideal para deportistas o para comenzar el día con energía."
+        ]
+      }
+    ],
+    sourceLabel: "AESAN y Fundación Española de Nutrición (FEN)",
+    sourceUrl: "https://www.aesan.gob.es"
   },
   {
     id: 3,
@@ -183,7 +257,6 @@ export function News() {
   const [selectedCategory, setSelectedCategory] = useState("Todos");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedArticle, setSelectedArticle] = useState(null);
-  const modalRef = useRef(null);
 
   useEffect(() => {
     if (!selectedArticle) return undefined;
@@ -198,35 +271,9 @@ export function News() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [selectedArticle]);
 
-  useEffect(() => {
-    if (!selectedArticle) return undefined;
-
-    const scrollY = window.scrollY;
-    const previousBodyOverflow = document.body.style.overflow;
-    const previousBodyPosition = document.body.style.position;
-    const previousBodyTop = document.body.style.top;
-    const previousBodyWidth = document.body.style.width;
-
-    document.body.style.overflow = "hidden";
-    document.body.style.position = "fixed";
-    document.body.style.top = `-${scrollY}px`;
-    document.body.style.width = "100%";
-
-    const focusTimer = window.setTimeout(() => {
-      if (modalRef.current) {
-        modalRef.current.focus({ preventScroll: true });
-      }
-    }, 10);
-
-    return () => {
-      document.body.style.overflow = previousBodyOverflow;
-      document.body.style.position = previousBodyPosition;
-      document.body.style.top = previousBodyTop;
-      document.body.style.width = previousBodyWidth;
-      window.scrollTo(0, scrollY);
-      window.clearTimeout(focusTimer);
-    };
-  }, [selectedArticle]);
+  const openArticle = (article) => {
+    setSelectedArticle(article);
+  };
 
   const renderFormattedText = (text) => {
     if (!text) return null;
@@ -306,14 +353,15 @@ export function News() {
                 {featuredArticles.map((article) => (
                   <Card
                     key={article.id}
+                    data-news-card
                     className="overflow-hidden group bg-white border-2 border-gray-200 rounded-none shadow-[4px_4px_0px_0px_#d1d5db] hover:shadow-[8px_8px_0px_0px_#ff0a60] hover:border-pink-accent transition-all"
                     role="button"
                     tabIndex={0}
-                    onClick={() => setSelectedArticle(article)}
+                    onClick={() => openArticle(article)}
                     onKeyDown={(event) => {
                       if (event.key === "Enter" || event.key === " ") {
                         event.preventDefault();
-                        setSelectedArticle(article);
+                        openArticle(article);
                       }
                     }}
                   >
@@ -347,7 +395,7 @@ export function News() {
                           className="text-pink-accent hover:text-pink-accent/80 hover:bg-pink-50 rounded-none"
                           onClick={(event) => {
                             event.stopPropagation();
-                            setSelectedArticle(article);
+                            openArticle(article);
                           }}
                         >
                           Leer más
@@ -372,14 +420,15 @@ export function News() {
                 {regularArticles.map((article) => (
                   <Card
                     key={article.id}
+                    data-news-card
                     className="overflow-hidden group bg-white border-2 border-gray-200 rounded-none shadow-[4px_4px_0px_0px_#d1d5db] hover:shadow-[8px_8px_0px_0px_#ff0a60] hover:border-pink-accent transition-all"
                     role="button"
                     tabIndex={0}
-                    onClick={() => setSelectedArticle(article)}
+                    onClick={() => openArticle(article)}
                     onKeyDown={(event) => {
                       if (event.key === "Enter" || event.key === " ") {
                         event.preventDefault();
-                        setSelectedArticle(article);
+                        openArticle(article);
                       }
                     }}
                   >
@@ -415,7 +464,7 @@ export function News() {
                           className="text-pink-accent hover:text-pink-accent/80 hover:bg-pink-50 rounded-none"
                           onClick={(event) => {
                             event.stopPropagation();
-                            setSelectedArticle(article);
+                            openArticle(article);
                           }}
                         >
                           Leer
@@ -467,13 +516,12 @@ export function News() {
 
           {selectedArticle && (
             <div
-              className="fixed inset-0 z-[90] bg-black/55 px-4 sm:px-6 md:px-8 py-4 sm:py-6 flex items-center justify-center overflow-y-auto"
+              className="fixed inset-0 z-[90] flex items-center justify-center p-3 sm:p-4 md:p-6 bg-black/40 modal-overlay-enter"
               onClick={() => setSelectedArticle(null)}
             >
               <Card
-                ref={modalRef}
-                tabIndex={-1}
-                className="w-full max-w-3xl max-h-[92vh] overflow-y-auto bg-white border-2 border-pink-accent shadow-[10px_10px_0px_0px_#ff0a60] rounded-none"
+                key={selectedArticle.id}
+                className="w-full max-w-4xl h-[calc(100vh-1.5rem)] sm:h-[calc(100vh-2rem)] md:h-[calc(100vh-3rem)] max-h-[calc(100vh-1.5rem)] sm:max-h-[calc(100vh-2rem)] md:max-h-[calc(100vh-3rem)] overflow-y-auto bg-white border-2 border-pink-accent shadow-[10px_10px_0px_0px_#ff0a60] rounded-none modal-content-enter relative"
                 onClick={(event) => event.stopPropagation()}
               >
                 <div className="relative">
@@ -576,3 +624,4 @@ export function News() {
     </div>
   );
 }
+

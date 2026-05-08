@@ -23,3 +23,15 @@ export async function updateUserGoals(payload, token) {
     body: payload
   });
 }
+
+export async function getMenuConsumptionState(token) {
+  return apiRequest('/users/menu-consumption', { token });
+}
+
+export async function saveMenuConsumptionState(payload, token) {
+  return apiRequest('/users/menu-consumption', {
+    method: 'PUT',
+    token,
+    body: payload
+  });
+}

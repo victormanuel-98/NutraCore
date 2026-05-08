@@ -5,6 +5,7 @@ import { Button } from './ui/button';
 import { User, Camera, Save, Lock, Eye } from 'lucide-react';
 import { CloudinaryUploadWidget } from './ui/CloudinaryUploadWidget';
 import { Select, SelectContent, SelectItem, SelectTrigger } from './ui/select';
+import { Progress } from './ui/progress';
 import { useNotification } from '../context/NotificationContext';
 import { useAuth } from '../context/AuthContext';
 import { getUserProfile, getUserStats, updateUserGoals, updateUserProfile } from '../services/userService';
@@ -42,14 +43,12 @@ const toNumberOrNull = (value) => {
 const sanitizeNumericInput = (rawValue, allowDecimal = false) => {
   const source = String(rawValue ?? '').replace(',', '.');
   let sanitized = source.replace(allowDecimal ? /[^0-9.]/g : /[^0-9]/g, '');
-
   if (allowDecimal) {
     const firstDot = sanitized.indexOf('.');
     if (firstDot !== -1) {
       sanitized = `${sanitized.slice(0, firstDot + 1)}${sanitized.slice(firstDot + 1).replace(/\./g, '')}`;
     }
   }
-
   return sanitized;
 };
 
@@ -81,6 +80,7 @@ export function Profile() {
     carbs: '0',
     fats: '0'
   });
+
   const [profileData, setProfileData] = useState({
     name: '',
     email: '',
@@ -100,14 +100,11 @@ export function Profile() {
 
   const refreshStats = useCallback(async ({ silentErrors = true } = {}) => {
     if (!token) return;
-
     try {
       const statsResponse = await getUserStats(token);
       setStats(statsResponse?.data || null);
     } catch (error) {
-      if (!silentErrors) {
-        showNotification(error.message || 'No se pudieron actualizar las estadisticas', 'error');
-      }
+      if (!silentErrors) showNotification(error.message || 'No se pudieron actualizar las estadisticas', 'error');
     }
   }, [token, showNotification]);
 
@@ -118,10 +115,7 @@ export function Profile() {
       const requestId = profileRequestRef.current;
 
       try {
-        const [profileResponse, statsResponse] = await Promise.all([
-          getUserProfile(token),
-          getUserStats(token)
-        ]);
+        const [profileResponse, statsResponse] = await Promise.all([getUserProfile(token), getUserStats(token)]);
         if (requestId !== profileRequestRef.current) return;
 
         const user = profileResponse?.data || {};
@@ -166,7 +160,7 @@ export function Profile() {
     };
 
     loadProfile();
-  }, [token]);
+  }, [token, showNotification]);
 
   const bmi = useMemo(() => {
     if (stats?.bmi) return stats.bmi;
@@ -192,7 +186,6 @@ export function Profile() {
   const handleNumericArrow = (field, { step = 1, allowDecimal = false } = {}) => (event) => {
     if (event.key !== 'ArrowUp' && event.key !== 'ArrowDown') return;
     event.preventDefault();
-
     isEditingRef.current = true;
     const current = Number(numericDraftRef.current[field] === '' ? 0 : numericDraftRef.current[field]);
     const base = Number.isFinite(current) ? current : 0;
@@ -209,37 +202,30 @@ export function Profile() {
 
   const handleSave = async () => {
     if (!token) return;
-
     try {
       setSaving(true);
-
       await Promise.all([
-        updateUserProfile(
-          {
-            age: toNumberOrNull(numericDraftRef.current.age),
-            gender: profileData.gender,
-            height: toNumberOrNull(numericDraftRef.current.height),
-            weight: toNumberOrNull(numericDraftRef.current.weight),
-            avatar: profileData.avatar || null
-          },
-          token
-        ),
-        updateUserGoals(
-          {
-            targetWeight: toNumberOrNull(numericDraftRef.current.targetWeight),
-            dailyCalories: Number(numericDraftRef.current.dailyCalories || 0),
-            protein: Number(numericDraftRef.current.protein || 0),
-            carbs: Number(numericDraftRef.current.carbs || 0),
-            fats: Number(numericDraftRef.current.fats || 0),
-            activityLevel: profileData.activityLevel,
-            goal: profileData.goal
-          },
-          token
-        )
+        updateUserProfile({
+          age: toNumberOrNull(numericDraftRef.current.age),
+          gender: profileData.gender,
+          height: toNumberOrNull(numericDraftRef.current.height),
+          weight: toNumberOrNull(numericDraftRef.current.weight),
+          avatar: profileData.avatar || null
+        }, token),
+        updateUserGoals({
+          targetWeight: toNumberOrNull(numericDraftRef.current.targetWeight),
+          dailyCalories: Number(numericDraftRef.current.dailyCalories || 0),
+          protein: Number(numericDraftRef.current.protein || 0),
+          carbs: Number(numericDraftRef.current.carbs || 0),
+          fats: Number(numericDraftRef.current.fats || 0),
+          activityLevel: profileData.activityLevel,
+          goal: profileData.goal
+        }, token)
       ]);
-      isEditingRef.current = false;
 
+      isEditingRef.current = false;
       showNotification('Perfil actualizado correctamente', 'success');
+      refreshStats({ silentErrors: true });
     } catch (error) {
       showNotification(error.message || 'No se pudo guardar el perfil', 'error');
     } finally {
@@ -250,294 +236,184 @@ export function Profile() {
   const handlePasswordChange = async () => {
     if (!token) return;
     if (!passwordState.currentPassword || !passwordState.newPassword) {
-      showNotification('Completa ambas contrase√±as', 'info');
+      showNotification('Completa ambas contraseÒas', 'info');
       return;
     }
 
     try {
       await changePassword(passwordState, token);
       setPasswordState({ currentPassword: '', newPassword: '' });
-      showNotification('Contrase√±a actualizada', 'success');
+      showNotification('ContraseÒa actualizada', 'success');
     } catch (error) {
-      showNotification(error.message || 'No se pudo actualizar la contrase√±a', 'error');
+      showNotification(error.message || 'No se pudo actualizar la contraseÒa', 'error');
     }
   };
 
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 pt-24 px-4">
-        <div className="max-w-5xl mx-auto">
+        <div className="max-w-6xl mx-auto">
           <p className="text-gray-600">Cargando perfil...</p>
         </div>
       </div>
     );
   }
 
+  const completionItems = [
+    Boolean(profileData.age),
+    Boolean(profileData.gender && profileData.gender !== 'prefer-not-to-say'),
+    Boolean(profileData.height),
+    Boolean(profileData.weight),
+    Boolean(profileData.targetWeight),
+    Number(profileData.dailyCalories) > 0
+  ];
+  const completionPercent = Math.round((completionItems.filter(Boolean).length / completionItems.length) * 100);
+
   return (
     <div className="min-h-screen bg-gray-50 pt-24 pb-16 px-4 sm:px-6 lg:px-8 dark-pink-fields">
-      <div className="max-w-5xl mx-auto space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Mi Perfil</h1>
-          <p className="text-gray-600">Gestiona tu informacion y objetivos</p>
-        </div>
-
-        <div className="grid lg:grid-cols-3 gap-6 items-start">
-          <Card className="p-6 bg-white border-2 border-pink-accent shadow-[8px_8px_0px_0px_#ff0a60] rounded-none">
-            <div className="text-center space-y-4">
+      <div className="max-w-6xl mx-auto space-y-6">
+        <Card className="p-6 md:p-8 bg-white border-2 border-pink-accent shadow-[8px_8px_0px_0px_#ff0a60] rounded-none overflow-hidden">
+          <div className="grid lg:grid-cols-[300px_1fr] gap-6 items-start">
+            <div className="space-y-4">
               <div className="relative inline-block">
-                <div className="w-28 h-28 bg-pink-accent mx-auto flex items-center justify-center overflow-hidden" style={{ clipPath: 'polygon(25% 6%, 75% 6%, 100% 50%, 75% 94%, 25% 94%, 0 50%)' }}>
-                  {profileData.avatar ? (
-                    <img src={profileData.avatar} alt="Avatar" className="w-full h-full object-cover" />
-                  ) : (
-                    <User className="w-12 h-12 text-white" />
-                  )}
+                <div className="w-32 h-32 bg-pink-accent flex items-center justify-center overflow-hidden border-2 border-gray-900" style={{ clipPath: 'polygon(25% 6%, 75% 6%, 100% 50%, 75% 94%, 25% 94%, 0 50%)' }}>
+                  {profileData.avatar ? <img src={profileData.avatar} alt="Avatar" className="w-full h-full object-cover" /> : <User className="w-12 h-12 text-white" />}
                 </div>
-
-                <CloudinaryUploadWidget
-                  onUploadSuccess={(url) => handleChange('avatar', url)}
-                  multiple={false}
-                  folder="nutracore/avatars"
-                >
-                  <button className="absolute -bottom-2 -right-2 bg-white p-2 border-2 border-gray-900">
+                <CloudinaryUploadWidget onUploadSuccess={(url) => handleChange('avatar', url)} multiple={false} folder="nutracore/avatars">
+                  <button className="absolute -bottom-2 -right-2 bg-white p-2 border-2 border-gray-900 hover:bg-pink-50">
                     <Camera className="w-4 h-4" />
                   </button>
                 </CloudinaryUploadWidget>
               </div>
-
               <div>
-                <h2 className="text-xl font-bold text-gray-900">{profileData.name || 'Usuario'}</h2>
-                <p className="text-sm text-gray-600">{profileData.email}</p>
+                <h1 className="text-3xl text-gray-900 leading-none">{profileData.name || 'Usuario'}</h1>
+                <p className="text-sm text-gray-600 mt-2">{profileData.email}</p>
               </div>
-
-              <div className="text-left space-y-2 text-sm">
-                <div className="flex justify-between"><span className="text-gray-500">IMC</span><span className="font-semibold">{bmi || 'N/D'}</span></div>
-                <div className="flex justify-between"><span className="text-gray-500">Favoritos</span><span className="font-semibold">{stats?.totalFavorites ?? 0}</span></div>
-                <div className="flex justify-between"><span className="text-gray-500">Recetas</span><span className="font-semibold">{stats?.totalRecipes ?? 0}</span></div>
+              <div className="space-y-2">
+                <p className="text-xs uppercase tracking-wide text-gray-500">Perfil completado</p>
+                <Progress value={completionPercent} className="h-3" />
+                <p className="text-xs text-gray-600">{completionPercent}%</p>
               </div>
             </div>
-          </Card>
 
-          <Card className="lg:col-span-2 p-6 bg-white border-2 border-pink-accent shadow-[8px_8px_0px_0px_#ff0a60] rounded-none space-y-6">
+            <div className="grid sm:grid-cols-3 gap-3">
+              <StatTile label="IMC" value={bmi || 'N/D'} />
+              <StatTile label="Favoritos" value={stats?.totalFavorites ?? 0} />
+              <StatTile label="Recetas" value={stats?.totalRecipes ?? 0} />
+              <div className="sm:col-span-3 border-2 border-gray-200 p-3 bg-gray-50">
+                <p className="text-xs uppercase tracking-wide text-gray-500 mb-1">Estado del objetivo</p>
+                <p className="text-sm text-gray-700">{stats?.goalProgress ? `Actual ${stats.goalProgress.current} kg ∑ Objetivo ${stats.goalProgress.target} kg` : 'Configura peso actual y objetivo para activar seguimiento.'}</p>
+              </div>
+            </div>
+          </div>
+        </Card>
+
+        <div className="grid lg:grid-cols-[1fr_360px] gap-6 items-start">
+          <Card className="p-6 bg-white border-2 border-pink-accent shadow-[8px_8px_0px_0px_#ff0a60] rounded-none space-y-6">
             <section className="space-y-4">
-              <h3 className="text-lg font-bold text-gray-900">Datos Personales</h3>
+              <h3 className="text-lg font-bold text-gray-900">Identidad y cuerpo</h3>
               <div className="grid sm:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="name">Alias (fijo)</Label>
-                  <input id="name" value={profileData.name} disabled className="h-10 w-full border-2 border-gray-300 px-3 bg-gray-100 cursor-not-allowed" />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <input id="email" value={profileData.email} disabled className="h-10 w-full border-2 border-gray-300 px-3 bg-gray-100" />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="age">Edad</Label>
-                  <input
-                    id="age"
-                    type="text"
-                    inputMode="numeric"
-                    defaultValue={numericDraftRef.current.age}
-                    onChange={handleNumericChange('age')}
-                    onKeyDown={handleNumericArrow('age')}
-                    className="h-10 w-full border-2 border-gray-900 px-3"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="gender">Genero</Label>
+                <Field label="Alias (fijo)"><input value={profileData.name} disabled className="h-10 w-full border-2 border-gray-300 px-3 bg-gray-100" /></Field>
+                <Field label="Email"><input value={profileData.email} disabled className="h-10 w-full border-2 border-gray-300 px-3 bg-gray-100" /></Field>
+                <Field label="Edad"><input type="text" inputMode="numeric" defaultValue={numericDraftRef.current.age} onChange={handleNumericChange('age')} onKeyDown={handleNumericArrow('age')} className="h-10 w-full border-2 border-gray-900 px-3" /></Field>
+                <Field label="Genero">
                   <Select value={profileData.gender} onValueChange={(value) => handleChange('gender', value)}>
-                    <SelectTrigger className="h-10 w-full border-2 border-gray-900 px-3 bg-white rounded-none text-base">
-                      <span className="text-gray-900">{getOptionLabel(genderOptions, profileData.gender, 'Selecciona genero')}</span>
-                    </SelectTrigger>
-                    <SelectContent className="border-2 border-gray-900 rounded-none p-0">
-                      {genderOptions.map((option) => (
-                        <SelectItem key={option.value} value={option.value} className="rounded-none px-5 py-2.5 text-base hover:bg-pink-accent hover:text-white">
-                          {option.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
+                    <SelectTrigger className="h-10 w-full border-2 border-gray-900 px-3 bg-white rounded-none text-base"><span className="text-gray-900">{getOptionLabel(genderOptions, profileData.gender, 'Selecciona genero')}</span></SelectTrigger>
+                    <SelectContent className="border-2 border-gray-900 rounded-none p-0">{genderOptions.map((o) => <SelectItem key={o.value} value={o.value} className="rounded-none px-5 py-2.5 text-base hover:bg-pink-accent hover:text-white">{o.label}</SelectItem>)}</SelectContent>
                   </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="height">Altura (cm)</Label>
-                  <input
-                    id="height"
-                    type="text"
-                    inputMode="numeric"
-                    placeholder="Ej: 175"
-                    defaultValue={numericDraftRef.current.height}
-                    onChange={handleNumericChange('height')}
-                    onKeyDown={handleNumericArrow('height')}
-                    className="h-10 w-full border-2 border-gray-900 px-3 placeholder:text-gray-400"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="weight">Peso (kg)</Label>
-                  <input
-                    id="weight"
-                    type="text"
-                    inputMode="decimal"
-                    placeholder="Ej: 70"
-                    defaultValue={numericDraftRef.current.weight}
-                    onChange={handleNumericChange('weight', true)}
-                    onKeyDown={handleNumericArrow('weight', { step: 0.1, allowDecimal: true })}
-                    className="h-10 w-full border-2 border-gray-900 px-3 placeholder:text-gray-400"
-                  />
-                </div>
+                </Field>
+                <Field label="Altura (cm)"><input type="text" inputMode="numeric" defaultValue={numericDraftRef.current.height} onChange={handleNumericChange('height')} onKeyDown={handleNumericArrow('height')} className="h-10 w-full border-2 border-gray-900 px-3" /></Field>
+                <Field label="Peso (kg)"><input type="text" inputMode="decimal" defaultValue={numericDraftRef.current.weight} onChange={handleNumericChange('weight', true)} onKeyDown={handleNumericArrow('weight', { step: 0.1, allowDecimal: true })} className="h-10 w-full border-2 border-gray-900 px-3" /></Field>
               </div>
             </section>
 
             <section className="space-y-4">
-              <h3 className="text-lg font-bold text-gray-900">Objetivos Nutricionales</h3>
+              <h3 className="text-lg font-bold text-gray-900">Estrategia nutricional</h3>
               <div className="grid sm:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="goal">Objetivo</Label>
+                <Field label="Objetivo">
                   <Select value={profileData.goal} onValueChange={(value) => handleChange('goal', value)}>
-                    <SelectTrigger className="h-10 w-full border-2 border-gray-900 px-3 bg-white rounded-none text-base">
-                      <span className="text-gray-900">{getOptionLabel(goalOptions, profileData.goal, 'Selecciona objetivo')}</span>
-                    </SelectTrigger>
-                    <SelectContent className="border-2 border-gray-900 rounded-none p-0">
-                      {goalOptions.map((option) => (
-                        <SelectItem key={option.value} value={option.value} className="rounded-none px-5 py-2.5 text-base hover:bg-pink-accent hover:text-white">
-                          {option.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
+                    <SelectTrigger className="h-10 w-full border-2 border-gray-900 px-3 bg-white rounded-none text-base"><span className="text-gray-900">{getOptionLabel(goalOptions, profileData.goal, 'Selecciona objetivo')}</span></SelectTrigger>
+                    <SelectContent className="border-2 border-gray-900 rounded-none p-0">{goalOptions.map((o) => <SelectItem key={o.value} value={o.value} className="rounded-none px-5 py-2.5 text-base hover:bg-pink-accent hover:text-white">{o.label}</SelectItem>)}</SelectContent>
                   </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="activityLevel">Actividad</Label>
+                </Field>
+                <Field label="Actividad">
                   <Select value={profileData.activityLevel} onValueChange={(value) => handleChange('activityLevel', value)}>
-                    <SelectTrigger className="h-10 w-full border-2 border-gray-900 px-3 bg-white rounded-none text-base">
-                      <span className="text-gray-900">{getOptionLabel(activityOptions, profileData.activityLevel, 'Selecciona actividad')}</span>
-                    </SelectTrigger>
-                    <SelectContent className="border-2 border-gray-900 rounded-none p-0">
-                      {activityOptions.map((option) => (
-                        <SelectItem key={option.value} value={option.value} className="rounded-none px-5 py-2.5 text-base hover:bg-pink-accent hover:text-white">
-                          {option.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
+                    <SelectTrigger className="h-10 w-full border-2 border-gray-900 px-3 bg-white rounded-none text-base"><span className="text-gray-900">{getOptionLabel(activityOptions, profileData.activityLevel, 'Selecciona actividad')}</span></SelectTrigger>
+                    <SelectContent className="border-2 border-gray-900 rounded-none p-0">{activityOptions.map((o) => <SelectItem key={o.value} value={o.value} className="rounded-none px-5 py-2.5 text-base hover:bg-pink-accent hover:text-white">{o.label}</SelectItem>)}</SelectContent>
                   </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="targetWeight">Peso objetivo (kg)</Label>
-                  <input
-                    id="targetWeight"
-                    type="text"
-                    inputMode="decimal"
-                    placeholder="Ej: 68"
-                    defaultValue={numericDraftRef.current.targetWeight}
-                    onChange={handleNumericChange('targetWeight', true)}
-                    onKeyDown={handleNumericArrow('targetWeight', { step: 0.1, allowDecimal: true })}
-                    className="h-10 w-full border-2 border-gray-900 px-3 placeholder:text-gray-400"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="dailyCalories">Calor√≠as diarias</Label>
-                  <input
-                    id="dailyCalories"
-                    type="text"
-                    inputMode="numeric"
-                    placeholder="Ej: 2200"
-                    defaultValue={numericDraftRef.current.dailyCalories}
-                    onChange={handleNumericChange('dailyCalories')}
-                    onKeyDown={handleNumericArrow('dailyCalories')}
-                    className="h-10 w-full border-2 border-gray-900 px-3 placeholder:text-gray-400"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="protein">Prote√≠na (g)</Label>
-                  <input
-                    id="protein"
-                    type="text"
-                    inputMode="numeric"
-                    placeholder="Ej: 140"
-                    defaultValue={numericDraftRef.current.protein}
-                    onChange={handleNumericChange('protein')}
-                    onKeyDown={handleNumericArrow('protein')}
-                    className="h-10 w-full border-2 border-gray-900 px-3 placeholder:text-gray-400"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="carbs">Carbohidratos (g)</Label>
-                  <input
-                    id="carbs"
-                    type="text"
-                    inputMode="numeric"
-                    placeholder="Ej: 220"
-                    defaultValue={numericDraftRef.current.carbs}
-                    onChange={handleNumericChange('carbs')}
-                    onKeyDown={handleNumericArrow('carbs')}
-                    className="h-10 w-full border-2 border-gray-900 px-3 placeholder:text-gray-400"
-                  />
-                </div>
-                <div className="space-y-2 sm:col-span-2">
-                  <Label htmlFor="fats">Grasas (g)</Label>
-                  <input
-                    id="fats"
-                    type="text"
-                    inputMode="numeric"
-                    placeholder="Ej: 70"
-                    defaultValue={numericDraftRef.current.fats}
-                    onChange={handleNumericChange('fats')}
-                    onKeyDown={handleNumericArrow('fats')}
-                    className="h-10 w-full border-2 border-gray-900 px-3 placeholder:text-gray-400"
-                  />
-                </div>
+                </Field>
+                <Field label="Peso objetivo (kg)"><input type="text" inputMode="decimal" defaultValue={numericDraftRef.current.targetWeight} onChange={handleNumericChange('targetWeight', true)} onKeyDown={handleNumericArrow('targetWeight', { step: 0.1, allowDecimal: true })} className="h-10 w-full border-2 border-gray-900 px-3" /></Field>
+                <Field label="Calorias diarias"><input type="text" inputMode="numeric" defaultValue={numericDraftRef.current.dailyCalories} onChange={handleNumericChange('dailyCalories')} onKeyDown={handleNumericArrow('dailyCalories')} className="h-10 w-full border-2 border-gray-900 px-3" /></Field>
+                <Field label="Proteina (g)"><input type="text" inputMode="numeric" defaultValue={numericDraftRef.current.protein} onChange={handleNumericChange('protein')} onKeyDown={handleNumericArrow('protein')} className="h-10 w-full border-2 border-gray-900 px-3" /></Field>
+                <Field label="Carbohidratos (g)"><input type="text" inputMode="numeric" defaultValue={numericDraftRef.current.carbs} onChange={handleNumericChange('carbs')} onKeyDown={handleNumericArrow('carbs')} className="h-10 w-full border-2 border-gray-900 px-3" /></Field>
+                <Field label="Grasas (g)" className="sm:col-span-2"><input type="text" inputMode="numeric" defaultValue={numericDraftRef.current.fats} onChange={handleNumericChange('fats')} onKeyDown={handleNumericArrow('fats')} className="h-10 w-full border-2 border-gray-900 px-3" /></Field>
               </div>
             </section>
 
             <section className="space-y-4">
-              <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2"><Lock className="w-4 h-4" />Cambiar contrase√±a</h3>
+              <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2"><Lock className="w-4 h-4" />Seguridad de cuenta</h3>
               <div className="grid sm:grid-cols-2 gap-4">
                 <div className="relative">
-                  <input
-                    type={showCurrentPassword ? 'text' : 'password'}
-                    placeholder="Contrase√±a actual"
-                    value={passwordState.currentPassword}
-                    onChange={(e) => setPasswordState((prev) => ({ ...prev, currentPassword: e.target.value }))}
-                    className="h-10 w-full border-2 border-gray-900 px-3 pr-10"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowCurrentPassword((prev) => !prev)}
-                    className={`absolute right-2 top-2 p-1 ${showCurrentPassword ? 'text-pink-accent' : 'text-gray-600 hover:text-pink-accent'}`}
-                    aria-label={showCurrentPassword ? 'Ocultar contrase√±a actual' : 'Mostrar contrase√±a actual'}
-                  >
-                    <Eye className="w-5 h-5" />
-                  </button>
+                  <input type={showCurrentPassword ? 'text' : 'password'} placeholder="ContraseÒa actual" value={passwordState.currentPassword} onChange={(e) => setPasswordState((prev) => ({ ...prev, currentPassword: e.target.value }))} className="h-10 w-full border-2 border-gray-900 px-3 pr-10" />
+                  <button type="button" onClick={() => setShowCurrentPassword((p) => !p)} className={`absolute right-2 top-2 p-1 ${showCurrentPassword ? 'text-pink-accent' : 'text-gray-600 hover:text-pink-accent'}`}><Eye className="w-5 h-5" /></button>
                 </div>
                 <div className="relative">
-                  <input
-                    type={showNewPassword ? 'text' : 'password'}
-                    placeholder="Nueva contrase√±a"
-                    value={passwordState.newPassword}
-                    onChange={(e) => setPasswordState((prev) => ({ ...prev, newPassword: e.target.value }))}
-                    className="h-10 w-full border-2 border-gray-900 px-3 pr-10"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowNewPassword((prev) => !prev)}
-                    className={`absolute right-2 top-2 p-1 ${showNewPassword ? 'text-pink-accent' : 'text-gray-600 hover:text-pink-accent'}`}
-                    aria-label={showNewPassword ? 'Ocultar nueva contrase√±a' : 'Mostrar nueva contrase√±a'}
-                  >
-                    <Eye className="w-5 h-5" />
-                  </button>
+                  <input type={showNewPassword ? 'text' : 'password'} placeholder="Nueva contraseÒa" value={passwordState.newPassword} onChange={(e) => setPasswordState((prev) => ({ ...prev, newPassword: e.target.value }))} className="h-10 w-full border-2 border-gray-900 px-3 pr-10" />
+                  <button type="button" onClick={() => setShowNewPassword((p) => !p)} className={`absolute right-2 top-2 p-1 ${showNewPassword ? 'text-pink-accent' : 'text-gray-600 hover:text-pink-accent'}`}><Eye className="w-5 h-5" /></button>
                 </div>
               </div>
-              <Button type="button" variant="outline" onClick={handlePasswordChange}>Actualizar contrase√±a</Button>
+              <Button type="button" variant="outline" onClick={handlePasswordChange}>Actualizar contraseÒa</Button>
             </section>
 
             <div className="flex justify-end">
-              <Button onClick={handleSave} disabled={saving} className="bg-pink-accent hover:bg-pink-accent/90 text-white">
+              <Button onClick={handleSave} disabled={saving} className="bg-pink-accent hover:bg-pink-accent/90 text-white rounded-none">
                 <Save className="w-4 h-4 mr-2" />
                 {saving ? 'Guardando...' : 'Guardar cambios'}
               </Button>
+            </div>
+          </Card>
+
+          <Card className="p-6 bg-white border-2 border-pink-accent shadow-[8px_8px_0px_0px_#ff0a60] rounded-none space-y-4">
+            <h3 className="text-lg font-bold text-gray-900">Panel rapido</h3>
+            <QuickTip title="Ajusta tus macros" text="Si cambias entrenamiento, revisa calorias y proteina el mismo dia." />
+            <QuickTip title="Controla tu progreso" text="Comparar peso actual y objetivo mejora la adherencia semanal." />
+            <QuickTip title="Conecta con Dashboard" text="Despues de guardar, revisa el menu automatico para validar cobertura nutricional." />
+            <div className="border-2 border-gray-200 p-3 bg-gray-50">
+              <p className="text-xs uppercase tracking-wide text-gray-500 mb-1">Recordatorio</p>
+              <p className="text-sm text-gray-700">Guardar cambios sincroniza tus objetivos con el resto de mÛdulos.</p>
             </div>
           </Card>
         </div>
 
         <ProfileRecipeCollections token={token} onDataChanged={refreshStats} />
       </div>
+    </div>
+  );
+}
+
+function Field({ label, className = '', children }) {
+  return (
+    <div className={`space-y-2 ${className}`}>
+      <Label>{label}</Label>
+      {children}
+    </div>
+  );
+}
+
+function StatTile({ label, value }) {
+  return (
+    <div className="border-2 border-gray-200 p-3 bg-gray-50">
+      <p className="text-xs uppercase tracking-wide text-gray-500">{label}</p>
+      <p className="text-2xl font-bold text-gray-900">{value}</p>
+    </div>
+  );
+}
+
+function QuickTip({ title, text }) {
+  return (
+    <div className="border border-gray-200 p-3 bg-white">
+      <p className="text-sm font-semibold text-gray-900">{title}</p>
+      <p className="text-xs text-gray-600 mt-1">{text}</p>
     </div>
   );
 }
