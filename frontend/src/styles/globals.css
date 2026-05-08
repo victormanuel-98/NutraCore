@@ -608,8 +608,7 @@ svg.lucide,
   position: fixed;
   inset: 0;
   z-index: 200;
-  display: grid;
-  place-items: center;
+  display: block;
   overflow: hidden;
   background: #e7e7e7;
   opacity: 1;
@@ -622,44 +621,23 @@ svg.lucide,
 }
 
 .loading-logo-wrap {
-  position: relative;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -52%);
   z-index: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 22px;
+  justify-content: center;
+  gap: 0;
 }
 
 .hexa-n {
   position: relative;
-  width: clamp(132px, 18vw, 196px);
+  width: clamp(200px, 26vw, 300px);
   aspect-ratio: 1 / 1;
   filter: contrast(1.02) saturate(1.06);
-  animation: hexa-crt-drift 2.2s steps(2, end) infinite;
-}
-
-.hexa-n::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background: repeating-linear-gradient(
-    to bottom,
-    rgba(255, 255, 255, 0) 0 2px,
-    rgba(24, 39, 71, 0.11) 2px 3px
-  );
-  mix-blend-mode: multiply;
-  opacity: 0.2;
-  animation: scan-flicker 0.9s steps(2, end) infinite;
-}
-
-.hexa-n::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background: radial-gradient(circle at 50% 50%, transparent 62%, rgba(0, 0, 0, 0.16) 100%);
-  opacity: 0.3;
 }
 
 .hexa-n-svg {
@@ -671,39 +649,20 @@ svg.lucide,
   fill: var(--pink-accent);
 }
 
+.hexa-top-face {
+  fill: #a50d4f;
+}
+
+.hexa-shadow-face {
+  fill: #8f0b45;
+}
+
 .hexa-label {
   fill: #ffffff;
   font-family: 'Gajraj One', cursive;
   font-size: 34px;
   letter-spacing: 0.02em;
   dominant-baseline: middle;
-}
-
-.hexa-glitch {
-  position: absolute;
-  inset: 0;
-  opacity: 0.2;
-  pointer-events: none;
-  mix-blend-mode: screen;
-  will-change: transform, opacity, clip-path;
-}
-
-.hexa-glitch-a {
-  animation: logo-crt-rgb-a 380ms steps(2, end) infinite, logo-crt-slice-a 1.9s steps(2, end) infinite;
-}
-
-.hexa-glitch-b {
-  animation: logo-crt-rgb-b 420ms steps(2, end) infinite, logo-crt-slice-b 2.2s steps(2, end) infinite;
-}
-
-.hexa-glitch-a .hexa-solid,
-.hexa-glitch-a .hexa-label {
-  fill: #00d7ff;
-}
-
-.hexa-glitch-b .hexa-solid,
-.hexa-glitch-b .hexa-label {
-  fill: #ff2f87;
 }
 
 .loading-typewriter {
@@ -719,6 +678,17 @@ svg.lucide,
   line-height: 1;
 }
 
+.loading-corner-text {
+  position: fixed;
+  right: clamp(22px, 4vw, 52px);
+  bottom: clamp(18px, 4vw, 48px);
+  font-size: clamp(1rem, 1.8vw, 1.35rem);
+}
+
+.loading-word-animate {
+  animation: loading-word-breathe 1.2s ease-in-out infinite;
+}
+
 .loading-ellipsis {
   display: inline-block;
   width: 3ch;
@@ -726,6 +696,16 @@ svg.lucide,
   text-align: left;
   vertical-align: baseline;
   white-space: pre;
+}
+
+@keyframes loading-word-breathe {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
 }
 
 @keyframes logo-crt-rgb-a {
