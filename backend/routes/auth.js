@@ -347,25 +347,14 @@ router.post('/resend-verification', rateLimit({ keyPrefix: 'auth-resend', window
 
     const user = await User.findOne({ email: normalizedEmail });
 
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        error: 'No existe una cuenta con ese correo'
-      });
+    // Evita enumeracion de cuentas: devolvemos siempre una respuesta generica.
+    if (user && !user.isEmailVerified) {
+      await sendVerificationEmailForUser(user);
     }
-
-    if (user.isEmailVerified) {
-      return res.status(400).json({
-        success: false,
-        error: 'La cuenta ya est? verificada'
-      });
-    }
-
-    await sendVerificationEmailForUser(user);
 
     return res.json({
       success: true,
-      message: 'Correo de verificaci?n reenviado'
+      message: 'Si existe una cuenta pendiente de verificar para ese correo, se ha reenviado el enlace.'
     });
   } catch (error) {
     return res.status(500).json({

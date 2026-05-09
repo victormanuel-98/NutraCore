@@ -143,7 +143,10 @@ const createApp = ({ mongooseRef = mongoose } = {}) => {
     });
   }
 
-  app.use('/api/docs', docsRoutes);
+  const exposeDocs = process.env.NODE_ENV !== 'production' || String(process.env.ENABLE_PUBLIC_API_DOCS || '').toLowerCase() === 'true';
+  if (exposeDocs) {
+    app.use('/api/docs', docsRoutes);
+  }
   app.use('/api/auth', rateLimit({ keyPrefix: 'auth', ...authLimit }), authRoutes);
   app.use('/api/dishes', dishRoutes);
   app.use('/api/news', newsRoutes);
