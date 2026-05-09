@@ -1,10 +1,10 @@
 # Backend de NutraCore
 
-## Descripcion
+## Descripción
 
-El backend de NutraCore expone una API REST para autenticacion, usuarios, recetas, resenas, noticias, ingredientes y administracion. Tambien centraliza las reglas de negocio, la seguridad, la normalizacion de errores y la validacion automatizada del servidor.
+El backend de NutraCore expone una API REST para autenticación, usuarios, recetas, reseñas, noticias, ingredientes y administración. También centraliza las reglas de negocio, la seguridad, la normalización de errores y la validación automatizada del servidor.
 
-## Stack tecnico
+## Stack técnico
 
 - Node.js `20.x`
 - Express
@@ -18,38 +18,38 @@ El backend de NutraCore expone una API REST para autenticacion, usuarios, receta
 
 ```text
 backend/
-├── app.js
-├── server.js
-├── config/
-├── controllers/
-├── middleware/
-├── models/
-├── routes/
-├── services/
-├── scripts/
-├── docs/
-└── tests/
+|-- app.js
+|-- server.js
+|-- config/
+|-- controllers/
+|-- middleware/
+|-- models/
+|-- routes/
+|-- services/
+|-- scripts/
+|-- docs/
+`-- tests/
 ```
 
-## Modulos funcionales
+## Módulos funcionales
 
-- `auth`: registro, login, verificacion de email, perfil actual y cambio de contrasena
-- `users`: perfil, objetivos, estadisticas, consumo y gestion administrativa
-- `recipes`: catalogo, creacion, edicion, favoritos, restauracion y soft-delete
+- `auth`: registro, login, verificación de email, perfil actual y cambio de contraseña
+- `users`: perfil, objetivos, estadísticas, consumo y gestión administrativa
+- `recipes`: catálogo, creación, edición, favoritos, restauración y soft-delete
 - `reviews`: valoraciones y comentarios
 - `news`: noticias y contenido informativo
-- `ingredients`: integracion de ingredientes y perfiles nutricionales
-- `docs`: documentacion OpenAPI / Swagger
+- `ingredients`: integración de ingredientes y perfiles nutricionales
+- `docs`: documentación OpenAPI / Swagger
 
 ## Seguridad implementada
 
-- JWT para autenticacion
+- JWT para autenticación
 - middleware `protect` y control de roles
 - `helmet`
 - `hpp`
 - `express-mongo-sanitize`
 - rate limiting por dominio funcional
-- normalizacion de errores con codigos de maquina
+- normalización de errores con códigos de máquina
 
 ## Dependencias principales
 
@@ -101,20 +101,20 @@ Variables importantes:
 
 ## Arranque local
 
-Instalacion:
+Instalación:
 
 ```powershell
 cd backend
 npm install
 ```
 
-Ejecucion en desarrollo:
+Ejecución en desarrollo:
 
 ```powershell
 npm run dev
 ```
 
-Ejecucion en modo normal:
+Ejecución en modo normal:
 
 ```powershell
 npm start
@@ -154,20 +154,20 @@ La estrategia de pruebas del backend incluye:
 - integration tests
 - E2E funcionales sobre API
 
-Ejecucion recomendada:
+Ejecución recomendada:
 
 ```powershell
 npm test
 ```
 
-Documentacion relacionada:
+Documentación relacionada:
 
 - [backend/COVERAGE_REPORT.md](c:\Users\Usuario\Documents\NutraCore\backend\COVERAGE_REPORT.md)
 - [backend/TESTING_AND_SWAGGER.md](c:\Users\Usuario\Documents\NutraCore\backend\TESTING_AND_SWAGGER.md)
 
 ## Swagger / OpenAPI
 
-En desarrollo, la documentacion puede exponerse en:
+En desarrollo, la documentación puede exponerse en:
 
 - `/api/docs`
 
@@ -181,7 +181,7 @@ Construir imagen local del backend:
 docker build -t nutracore-backend ./backend
 ```
 
-Ejecutar con Docker Compose desde la raiz:
+Ejecutar con Docker Compose desde la raíz:
 
 ```powershell
 docker compose up --build backend mongo
@@ -193,7 +193,7 @@ Dockerfile usado:
 
 ## Despliegue
 
-El backend incluye una configuracion de despliegue para Render en:
+El backend incluye una configuración de despliegue para Render en:
 
 - [render.yaml](c:\Users\Usuario\Documents\NutraCore\render.yaml)
 
@@ -201,8 +201,7 @@ El backend incluye una configuracion de despliegue para Render en:
 
 Puntos defendibles del backend:
 
-- separacion entre rutas, modelos, servicios y middleware
+- separación entre rutas, modelos, servicios y middleware
 - reglas de negocio no triviales en recetas y usuarios
 - tratamiento de seguridad y errores
-- automatizacion de pruebas y cobertura
-
+- automatización de pruebas y cobertura

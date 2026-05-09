@@ -1,10 +1,10 @@
 # Frontend de NutraCore
 
-## Descripcion
+## Descripción
 
-El frontend de NutraCore es una SPA construida con React y Vite. Su objetivo es ofrecer una experiencia visual clara para autenticacion, consulta de recetas, dashboard, perfil, noticias, administracion y uso de NutraCore Lab.
+El frontend de NutraCore es una SPA construida con React y Vite. Su objetivo es ofrecer una experiencia visual clara para autenticación, consulta de recetas, dashboard, perfil, noticias, administración y uso de NutraCore Lab.
 
-## Stack tecnico
+## Stack técnico
 
 - React `18`
 - Vite
@@ -42,17 +42,17 @@ cross-env
 
 ```text
 frontend/
-├── public/
-├── src/
-│   ├── components/
-│   ├── context/
-│   ├── pages/
-│   ├── services/
-│   ├── styles/
-│   └── utils/
-├── tests/
-│   └── e2e/
-└── vite.config.js
+|-- public/
+|-- src/
+|   |-- components/
+|   |-- context/
+|   |-- pages/
+|   |-- services/
+|   |-- styles/
+|   `-- utils/
+|-- tests/
+|   `-- e2e/
+`-- vite.config.js
 ```
 
 ## Rutas principales
@@ -72,13 +72,13 @@ frontend/
 - `/cookies`
 - `/legal-notice`
 
-## Caracteristicas del frontend
+## Características del frontend
 
 - rutas protegidas para usuario autenticado
-- control de acceso por rol para el area admin
-- dashboard con informacion personalizada
-- catalogo de recetas con filtros y detalle
-- formularios de autenticacion y registro
+- control de acceso por rol para el área admin
+- dashboard con información personalizada
+- catálogo de recetas con filtros y detalle
+- formularios de autenticación y registro
 - secciones legales y de privacidad
 - tema y notificaciones mediante contextos
 
@@ -95,7 +95,7 @@ Variables principales:
 
 ## Arranque local
 
-Instalacion:
+Instalación:
 
 ```powershell
 cd frontend
@@ -108,13 +108,13 @@ Modo desarrollo:
 npm run dev
 ```
 
-Build de produccion:
+Build de producción:
 
 ```powershell
 npm run build
 ```
 
-Previsualizacion de build:
+Previsualización de la build:
 
 ```powershell
 npm run preview
@@ -136,12 +136,12 @@ npm run test:e2e:report
 El proyecto incorpora Playwright para validar:
 
 - responsive design
-- menu movil
+- menú móvil
 - formularios principales
 - estados de carga
 - manejo amigable de errores de red
 
-Ejecucion:
+Ejecución:
 
 ```powershell
 npm run test:e2e
@@ -161,7 +161,7 @@ Construir imagen local del frontend:
 docker build -t nutracore-frontend ./frontend
 ```
 
-Ejecutar con Docker Compose desde la raiz:
+Ejecutar con Docker Compose desde la raíz:
 
 ```powershell
 docker compose up --build frontend
@@ -173,13 +173,13 @@ Dockerfile usado:
 
 ## Espacio para recursos visuales del TFG
 
-### GIFs de recorrido de la aplicacion
+### GIFs de recorrido de la aplicación
 
 Pendiente de insertar:
 
 - GIF del flujo de registro y login
 - GIF del dashboard
-- GIF del catalogo de recetas
+- GIF del catálogo de recetas
 - GIF de NutraCore Lab
 - GIF del panel admin
 
@@ -189,7 +189,7 @@ Pendiente de insertar:
 
 - captura general de arquitectura visual
 - pantallas clave de Figma
-- comparativa entre diseno y resultado final
+- comparativa entre diseño y resultado final
 
 Ejemplo de bloque para insertar imagen:
 
@@ -201,8 +201,7 @@ Ejemplo de bloque para insertar imagen:
 
 Puntos destacables para defensa:
 
-- separacion entre componentes, servicios, contextos y rutas
-- proteccion de navegacion segun autenticacion y rol
-- validacion browser-level con Playwright
+- separación entre componentes, servicios, contextos y rutas
+- protección de navegación según autenticación y rol
+- validación browser-level con Playwright
 - experiencia responsive contemplada en pruebas
-
