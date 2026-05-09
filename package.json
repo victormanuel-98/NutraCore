@@ -7,6 +7,7 @@
     "install:all": "npm --prefix backend install && npm --prefix frontend install",
     "dev:backend": "npm --prefix backend run dev",
     "dev:frontend": "npm --prefix frontend run dev",
+    "test:frontend:e2e": "npm --prefix frontend run test:e2e",
     "docker:up": "docker compose up --build",
     "docker:down": "docker compose down",
     "docker:logs": "docker compose logs -f",
@@ -23,6 +24,9 @@
     "sonar:scan": "sonar-scanner",
     "sonar:scan:local": "sonar-scanner -Dsonar.host.url=http://localhost:9000",
     "quality:coverage": "npm --prefix backend run test:coverage"
+  },
+  "engines": {
+    "node": "20.x"
   },
   "devDependencies": {
     "concurrently": "^9.0.1",

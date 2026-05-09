@@ -238,14 +238,12 @@ const normalizeRecipePayload = (payload = {}) => {
     title: typeof payload.title === 'string' ? filterBadWords(payload.title.trim()) : '',
     description: typeof payload.description === 'string' ? filterBadWords(payload.description.trim()).slice(0, 1200) : '',
     ingredients: normalizeStringArray(payload.ingredients)
-      .map((item) => filterBadWords(item).slice(0, 180))
-      .slice(0, MAX_RECIPE_INGREDIENTS),
+      .map((item) => filterBadWords(item).slice(0, 180)),
     steps: normalizeStringArray(payload.steps)
-      .map((item) => filterBadWords(trimWords(item, MAX_STEP_WORDS)).slice(0, 500))
-      .slice(0, MAX_RECIPE_STEPS),
+      .map((item) => filterBadWords(trimWords(item, MAX_STEP_WORDS)).slice(0, 500)),
     category: typeof payload.category === 'string' ? payload.category.trim().toLowerCase() : '',
     images: Array.isArray(payload.images)
-      ? payload.images.filter((img) => typeof img === 'string' && img.trim() && isAllowedImageUrl(img)).slice(0, MAX_RECIPE_IMAGES)
+      ? payload.images.filter((img) => typeof img === 'string' && img.trim() && isAllowedImageUrl(img))
       : [],
     prepTime: Math.min(MAX_RECIPE_PREP_TIME, Math.max(0, toNumber(payload.prepTime))),
     difficulty: typeof payload.difficulty === 'string' ? normalizeDifficulty(payload.difficulty) : '',

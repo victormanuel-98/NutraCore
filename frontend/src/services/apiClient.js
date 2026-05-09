@@ -39,11 +39,16 @@ export async function apiRequest(path, { method = 'GET', token, body, headers = 
     finalHeaders['Content-Type'] = 'application/json';
   }
 
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    method,
-    headers: finalHeaders,
-    body: body === undefined ? undefined : isFormData ? body : JSON.stringify(body)
-  });
+  let response;
+  try {
+    response = await fetch(`${API_BASE_URL}${path}`, {
+      method,
+      headers: finalHeaders,
+      body: body === undefined ? undefined : isFormData ? body : JSON.stringify(body)
+    });
+  } catch (error) {
+    throw new Error(translateTechnicalError(error?.message || 'Error de red'));
+  }
 
   const payload = await parseJsonSafely(response);
 

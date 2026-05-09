@@ -33,6 +33,8 @@ coverage/
 .nyc_output/
 .eslintcache
 .cache/
+frontend/playwright-report/
+frontend/test-results/
 
 # Temp
 *.tmp

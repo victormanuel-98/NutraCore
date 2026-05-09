@@ -3,8 +3,10 @@ import { RouterProvider } from 'react-router-dom';
 import { LoadingScreen } from './components/LoadingScreen';
 import { router } from './routes';
 
+const shouldShowInitialLoader = import.meta.env.VITE_SKIP_LOADING_SCREEN !== '1';
+
 export default function App() {
-  const [showLoader, setShowLoader] = useState(true);
+  const [showLoader, setShowLoader] = useState(shouldShowInitialLoader);
 
   const handleLoaderComplete = useCallback(() => {
     setShowLoader(false);
@@ -19,4 +21,3 @@ export default function App() {
     </>
   );
 }
-
