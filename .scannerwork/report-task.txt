@@ -1,0 +1,6 @@
+projectKey=nutracore
+serverUrl=http://localhost:9000
+serverVersion=26.4.0.121862
+dashboardUrl=http://localhost:9000/dashboard?id=nutracore
+ceTaskId=db693b7a-8304-4601-80e1-402bfd69e683
+ceTaskUrl=http://localhost:9000/api/ce/task?id=db693b7a-8304-4601-80e1-402bfd69e683

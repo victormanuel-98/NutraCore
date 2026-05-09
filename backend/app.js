@@ -22,6 +22,25 @@ const parseAllowedOrigins = () =>
     .map((value) => value.trim())
     .filter(Boolean);
 
+const getDevOrigins = () => [
+  'http://localhost:5173',
+  'http://127.0.0.1:5173',
+  'http://localhost:5174',
+  'http://127.0.0.1:5174',
+  'http://localhost:4173',
+  'http://127.0.0.1:4173'
+];
+
+const getAllowedOrigins = () => {
+  const envOrigins = parseAllowedOrigins();
+
+  if (process.env.NODE_ENV === 'production') {
+    return envOrigins;
+  }
+
+  return [...new Set([...envOrigins, ...getDevOrigins()])];
+};
+
 const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 const matchesAllowedOrigin = (origin, allowedOrigins) =>
@@ -34,7 +53,7 @@ const matchesAllowedOrigin = (origin, allowedOrigins) =>
   });
 
 const buildCorsMiddleware = () => {
-  const allowedOrigins = parseAllowedOrigins();
+  const allowedOrigins = getAllowedOrigins();
   const isProd = process.env.NODE_ENV === 'production';
 
   // Dev fallback: permissive CORS if no allowlist provided.
