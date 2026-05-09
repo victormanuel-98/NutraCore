@@ -369,8 +369,8 @@ export function Profile() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 pt-24 pb-10 px-4 sm:px-6 lg:px-8 dark-pink-fields">
-      <div className="max-w-6xl mx-auto space-y-4 sm:space-y-6">
+    <div className="min-h-screen overflow-x-hidden bg-gray-50 px-4 pb-10 pt-24 sm:px-6 lg:px-8 dark-pink-fields">
+      <div className="mx-auto max-w-6xl space-y-4 overflow-x-hidden sm:space-y-6">
         <Card className={`${panelClass} p-4 sm:p-6 md:p-8 overflow-hidden`}>
           <div className="grid gap-6 lg:grid-cols-[280px_1fr] xl:grid-cols-[320px_1fr] items-start">
             <div className="space-y-4 sm:space-y-5">
@@ -564,7 +564,7 @@ export function Profile() {
           </Card>
         </div>
 
-        <div ref={recipesSectionRef}>
+        <div ref={recipesSectionRef} className="min-w-0 max-w-full overflow-hidden">
           <ProfileRecipeCollections token={token} onDataChanged={refreshStats} />
         </div>
       </div>

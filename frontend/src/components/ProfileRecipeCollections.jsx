@@ -253,7 +253,7 @@ export function ProfileRecipeCollections({ token, onDataChanged }) {
 
   return (
     <>
-      <Card className="rounded-none border-2 border-pink-accent bg-white p-4 shadow-[8px_8px_0px_0px_#ff0a60] sm:p-6">
+      <Card className="w-full min-w-0 max-w-full overflow-hidden rounded-none border-2 border-pink-accent bg-white p-4 shadow-[0px_4px_0px_0px_#ff0a60] sm:p-6 sm:shadow-[8px_8px_0px_0px_#ff0a60]">
         <div className="mb-4 flex flex-col justify-between gap-3 sm:mb-5 sm:flex-row sm:items-center">
           <div>
             <h3 className="text-2xl font-logo text-gray-900 sm:text-3xl">
@@ -272,8 +272,8 @@ export function ProfileRecipeCollections({ token, onDataChanged }) {
         {!loading && !error && !hasCollections && <p className="text-gray-500">Aún no tienes recetas en favoritos ni recetas propias.</p>}
 
         {!loading && !error && hasCollections && (
-          <div className="grid gap-5 xl:grid-cols-2 xl:gap-6">
-            <section className="space-y-3">
+          <div className="grid min-w-0 max-w-full gap-5 xl:grid-cols-2 xl:gap-6">
+            <section className="min-w-0 max-w-full space-y-3 overflow-hidden">
               <h4 className="text-lg font-bold text-gray-900">Favoritos</h4>
               {favoriteRecipes.length === 0 && <p className="text-sm text-gray-500">No tienes favoritos guardados.</p>}
               {favoriteRecipes.map((recipe) => (
@@ -299,7 +299,7 @@ export function ProfileRecipeCollections({ token, onDataChanged }) {
               ))}
             </section>
 
-            <section className="space-y-3">
+            <section className="min-w-0 max-w-full space-y-3 overflow-hidden">
               <h4 className="text-lg font-bold text-gray-900">Mis recetas</h4>
               {myRecipes.length === 0 && <p className="text-sm text-gray-500">Aún no publicaste recetas.</p>}
               {myRecipes.map((recipe) => (
@@ -574,32 +574,32 @@ function RecipeCard({ recipe, onOpen, actions }) {
           onOpen();
         }
       }}
-      className="border-2 border-gray-200 p-4 cursor-pointer transition-all hover:border-pink-accent/40 hover:shadow-[4px_4px_0px_0px_#ff0a60] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-accent"
+      className="w-full min-w-0 max-w-full cursor-pointer overflow-hidden border-2 border-gray-200 p-3 shadow-none transition-all hover:border-pink-accent/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-accent sm:p-4 sm:hover:shadow-[4px_4px_0px_0px_#ff0a60]"
     >
-      <div className="flex flex-col md:flex-row gap-4">
-        <div className="w-full md:w-28 h-28 border border-gray-200 bg-gray-200 overflow-hidden flex-shrink-0">
+      <div className="flex max-w-full flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
+        <div className="h-24 w-full max-w-full overflow-hidden border border-gray-200 bg-gray-200 sm:h-20 sm:w-24 sm:flex-shrink-0 md:h-28 md:w-28">
           <img
             src={getRecipeImage(recipe)}
             alt={`Imagen de ${recipe.title || 'receta'}`}
-            className="w-full h-full object-cover"
+            className="h-full w-full object-cover"
           />
         </div>
 
-        <div className="flex-1 min-w-0 space-y-2">
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div>
-              <h5 className="text-2xl font-bold text-gray-900 uppercase leading-tight">{recipe.title}</h5>
-              <p className="text-xs font-semibold text-gray-500 uppercase">
+        <div className="min-w-0 max-w-full flex-1 space-y-1.5 sm:space-y-2">
+          <div className="flex max-w-full min-w-0 flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+            <div className="min-w-0 max-w-full flex-1">
+              <h5 className="line-clamp-2 break-words text-lg font-bold uppercase leading-tight text-gray-900 sm:text-xl">{recipe.title}</h5>
+              <p className="max-w-full break-words text-[10px] font-semibold uppercase text-gray-500 sm:text-xs">
                 {(categoryLabels[recipe.category] || recipe.category || 'Sin categoría')} · {(difficultyLabels[recipe.difficulty] || recipe.difficulty || 'N/D')} · {recipe.prepTime || 0} min
               </p>
             </div>
-            <div className="flex items-center gap-2">{actions}</div>
+            <div className="flex max-w-full flex-wrap items-center gap-1.5 self-start sm:max-w-[8.5rem] sm:flex-shrink-0 sm:justify-end">{actions}</div>
           </div>
 
-          <p className="text-sm text-gray-600 line-clamp-2">{recipe.description}</p>
+          <p className="line-clamp-2 max-w-full break-words text-xs text-gray-600 sm:text-sm">{recipe.description}</p>
 
-          <div className="inline-flex items-center gap-1 text-xs font-semibold text-pink-accent">
-            <Eye className="w-3.5 h-3.5" />
+          <div className="inline-flex items-center gap-1 text-[11px] font-semibold text-pink-accent sm:text-xs">
+            <Eye className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
             Ver receta completa
           </div>
         </div>

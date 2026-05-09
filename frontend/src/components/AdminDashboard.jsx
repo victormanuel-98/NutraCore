@@ -128,9 +128,9 @@ export function AdminDashboard() {
   const formatTargetType = (code) => targetTypeLabelByCode[code] || code || 'N/D';
 
   return (
-    <div className="min-h-screen bg-gray-50 pt-24 pb-10 px-4 sm:px-6 lg:px-8 dark-pink-fields">
-      <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6">
-        <Card className="p-4 sm:p-6 md:p-8 bg-white border-2 border-pink-accent shadow-[8px_8px_0px_0px_#ff0a60] rounded-none">
+    <div className="min-h-screen overflow-x-hidden bg-gray-50 px-4 pb-10 pt-24 sm:px-6 lg:px-8 dark-pink-fields">
+      <div className="mx-auto max-w-7xl space-y-4 overflow-x-hidden sm:space-y-6">
+        <Card className="overflow-hidden rounded-none border-2 border-pink-accent bg-white p-4 shadow-[8px_8px_0px_0px_#ff0a60] sm:p-6 md:p-8">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div className="flex items-start gap-3">
               <Shield className="w-7 h-7 text-pink-accent" />
@@ -151,14 +151,14 @@ export function AdminDashboard() {
         {error ? <Card className="p-4 border-2 border-red-400 text-red-700">{error}</Card> : null}
         {loading ? <Card className="p-4">Cargando...</Card> : null}
 
-        <Card className="p-4 sm:p-5 border-2 border-pink-accent rounded-none">
+        <Card className="overflow-hidden rounded-none border-2 border-pink-accent p-4 sm:p-5">
           <div className="flex items-center gap-2 mb-4">
             <Users className="w-5 h-5 text-pink-accent" />
             <h2 className="font-bold text-gray-900 text-xl">Usuarios</h2>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="min-w-[760px] w-full text-sm">
+          <div className="hidden overflow-x-auto md:block">
+            <table className="w-full text-sm">
               <thead>
                 <tr className="text-center border-b border-gray-200">
                   <th className="py-3 px-2">Alias</th>
@@ -231,28 +231,105 @@ export function AdminDashboard() {
               </tbody>
             </table>
           </div>
+
+          <div className="space-y-3 md:hidden">
+            {users.map((user) => {
+              const busy = Boolean(actionLoadingById[user.id]);
+              const isDeleted = Boolean(user.deletedAt);
+
+              return (
+                <div key={user.id} className="border border-gray-200 p-3">
+                  <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3">
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-semibold text-gray-900">{user.name}</p>
+                      <p className="break-all text-[11px] text-gray-600">{user.email}</p>
+                    </div>
+                    <span className="text-[10px] font-semibold uppercase text-gray-500">{user.role}</span>
+                  </div>
+
+                  <div className="mt-3 grid grid-cols-3 gap-2 text-center">
+                    <div className="border border-gray-200 bg-gray-50 px-2 py-2">
+                      <p className="text-[10px] uppercase text-gray-500">Estado</p>
+                      <p className="text-[11px] font-semibold text-gray-900">{user.isActive ? 'Activo' : 'Suspendido'}</p>
+                    </div>
+                    <div className="border border-gray-200 bg-gray-50 px-2 py-2">
+                      <p className="text-[10px] uppercase text-gray-500">Recetas</p>
+                      <p className="text-[11px] font-semibold text-gray-900">{user.recipesCount || 0}</p>
+                    </div>
+                    <div className="border border-gray-200 bg-gray-50 px-2 py-2">
+                      <p className="text-[10px] uppercase text-gray-500">Borrado</p>
+                      <p className="text-[11px] font-semibold text-gray-900">{isDeleted ? 'Si' : 'No'}</p>
+                    </div>
+                  </div>
+
+                  {isDeleted ? <p className="mt-2 text-[11px] text-gray-500">Fecha de borrado: {fmtDate(user.deletedAt)}</p> : null}
+
+                  <div className="mt-3 grid grid-cols-2 gap-2">
+                    <Button
+                      variant="outline"
+                      className="h-8 border-2 border-gray-900 px-2 text-[11px]"
+                      onClick={() => handleOpenUserDetail(user)}
+                      disabled={busy}
+                    >
+                      <Eye className="mr-1 h-3.5 w-3.5" />
+                      Ver
+                    </Button>
+
+                    <Button
+                      variant="outline"
+                      className="h-8 border-2 border-gray-900 px-2 text-[11px]"
+                      onClick={() => handleSuspendToggle(user)}
+                      disabled={busy || isDeleted}
+                    >
+                      <UserX className="mr-1 h-3.5 w-3.5" />
+                      {user.isActive ? 'Suspender' : 'Reactivar'}
+                    </Button>
+
+                    <Button
+                      variant="outline"
+                      className="h-8 border-2 border-gray-900 px-2 text-[11px] hover:bg-red-600 hover:text-white"
+                      onClick={() => handleSoftDelete(user)}
+                      disabled={busy || isDeleted}
+                    >
+                      <Trash2 className="mr-1 h-3.5 w-3.5" />
+                      Eliminar
+                    </Button>
+
+                    <Button
+                      variant="outline"
+                      className="h-8 border-2 border-gray-900 px-2 text-[11px]"
+                      onClick={() => handleRestore(user)}
+                      disabled={busy || !isDeleted}
+                    >
+                      Restaurar
+                    </Button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </Card>
 
         {loadingUserDetail ? <Card className="p-4 border-2 border-pink-accent rounded-none">Cargando detalle de usuario...</Card> : null}
 
-        <Card className="p-4 sm:p-5 border-2 border-pink-accent rounded-none">
+        <Card className="overflow-hidden rounded-none border-2 border-pink-accent p-4 sm:p-5">
           <div className="flex items-center gap-2 mb-4">
             <History className="w-5 h-5 text-pink-accent" />
             <h2 className="font-bold text-gray-900 text-xl">Auditoría</h2>
           </div>
 
-          <div className="space-y-2 max-h-[420px] overflow-y-auto pr-1">
+          <div className="max-h-[420px] space-y-2 overflow-y-auto pr-1">
             {logs.map((log) => (
-              <div key={log._id} className="border border-gray-200 p-3">
-                <div className="grid md:grid-cols-[1.2fr_1fr] gap-2 items-center">
-                  <p className="text-sm font-semibold text-gray-900 text-center md:text-left">
+              <div key={log._id} className="border border-gray-200 p-3 sm:p-3.5">
+                <div className="grid gap-1.5 sm:grid-cols-[1.2fr_1fr] sm:items-center sm:gap-2">
+                  <p className="text-center text-sm font-semibold text-gray-900 sm:text-left">
                     {formatAuditAction(log.action)}
                   </p>
-                  <p className="text-xs text-gray-700 text-center md:text-right">{fmtDate(log.createdAt)}</p>
+                  <p className="text-center text-[11px] text-gray-700 sm:text-right sm:text-xs">{fmtDate(log.createdAt)}</p>
                 </div>
-                <div className="grid md:grid-cols-2 gap-1 mt-1 text-xs text-gray-600 text-center md:text-left">
-                  <p>Actor: {log.actor?.name || 'N/D'} ({log.actorRole})</p>
-                  <p className="md:text-right">Objetivo: {formatTargetType(log.targetType)} {log.targetId || ''}</p>
+                <div className="mt-1 grid gap-1 text-[11px] text-gray-600 sm:grid-cols-2 sm:text-xs">
+                  <p className="text-center sm:text-left">Actor: {log.actor?.name || 'N/D'} ({log.actorRole})</p>
+                  <p className="break-all text-center sm:text-right">Objetivo: {formatTargetType(log.targetType)} {log.targetId || ''}</p>
                 </div>
               </div>
             ))}
@@ -264,7 +341,7 @@ export function AdminDashboard() {
       {selectedUser ? (
         <div className="fixed inset-0 z-[90] flex items-center justify-center p-4 bg-black/40 modal-overlay-enter" onClick={() => setSelectedUser(null)}>
           <Card
-            className="w-full max-w-4xl max-h-[88vh] overflow-y-auto p-4 sm:p-6 md:p-8 border-2 border-pink-accent shadow-[8px_8px_0px_0px_#ff0a60] rounded-none modal-content-enter bg-white"
+            className="modal-content-enter max-h-[88vh] w-full max-w-4xl overflow-x-hidden overflow-y-auto rounded-none border-2 border-pink-accent bg-white p-4 shadow-[8px_8px_0px_0px_#ff0a60] sm:p-6 md:p-8"
             onClick={(event) => event.stopPropagation()}
           >
             <div className="mb-6 flex items-center justify-between gap-3">
