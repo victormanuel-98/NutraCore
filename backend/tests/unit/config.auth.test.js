@@ -57,6 +57,18 @@ describe('config/auth', () => {
     expect(next).toHaveBeenCalled();
   });
 
+  test('protect returns 401 when token version is stale', async () => {
+    jwt.verify.mockReturnValue({ id: 'u1', tokenVersion: 1 });
+    User.findById.mockReturnValue({ select: jest.fn().mockResolvedValue({ _id: 'u1', tokenVersion: 2, isActive: true }) });
+
+    const req = { headers: { authorization: 'Bearer abc' } };
+    const res = buildRes();
+    const next = jest.fn();
+    await protect(req, res, next);
+    expect(res.status).toHaveBeenCalledWith(401);
+    expect(next).not.toHaveBeenCalled();
+  });
+
   test('generateToken uses shorter expiration for admin', () => {
     generateToken({ _id: 'a1', role: 'admin', tokenVersion: 2 });
     expect(jwt.sign).toHaveBeenCalledWith(

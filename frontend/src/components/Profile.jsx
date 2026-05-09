@@ -307,7 +307,9 @@ export function Profile() {
     }
 
     try {
-      await changePassword({ currentPassword, newPassword }, token);
+      const response = await changePassword({ currentPassword, newPassword }, token);
+      const nextToken = response?.data?.token || token;
+      setSession({ token: nextToken, user: user || profileData });
       passwordDraftRef.current = { currentPassword: '', newPassword: '' };
       if (currentPasswordRef.current) currentPasswordRef.current.value = '';
       if (newPasswordRef.current) newPasswordRef.current.value = '';

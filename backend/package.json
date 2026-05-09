@@ -11,6 +11,7 @@
     "normalize-aliases": "node scripts/normalize-user-aliases.js",
     "migrate-static-assets": "node scripts/migrate-static-assets-to-cloudinary.js",
     "clean-db": "node scripts/clean-db.js",
+    "docs:export": "node scripts/export-openapi.js",
     "test": "jest --runInBand",
     "test:unit": "jest --runInBand tests/unit",
     "test:integration": "jest --runInBand tests/integration",
@@ -38,8 +39,9 @@
     "hpp": "^0.2.3",
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^8.23.1",
+    "node-mailjet": "^6.0.8",
     "nodemailer": "^8.0.7",
-    "node-mailjet": "^6.0.8"
+    "swagger-ui-dist": "^5.32.5"
   },
   "devDependencies": {
     "jest": "^30.3.0",

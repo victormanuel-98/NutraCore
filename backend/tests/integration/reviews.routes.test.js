@@ -48,6 +48,35 @@ describe('reviews routes', () => {
     expect(res.status).toBe(201);
   });
 
+  test('POST / preserves comment when updating only rating', async () => {
+    const reviewDoc = { rating: 4, comment: 'persist me', save: jest.fn().mockResolvedValue() };
+    Recipe.findById.mockResolvedValue({ _id: 'r1' });
+    Review.findOne.mockResolvedValue(reviewDoc);
+    const app = express();
+    app.use(express.json());
+    app.use('/api/reviews', reviewsRoutes);
+    const res = await request(app).post('/api/reviews').send({ recipeId: '507f1f77bcf86cd799439011', rating: 3 });
+    expect(res.status).toBe(201);
+    expect(reviewDoc.save).toHaveBeenCalled();
+    expect(reviewDoc.comment).toBe('persist me');
+  });
+
+  test('POST / clears comment when empty string is sent intentionally', async () => {
+    const reviewDoc = { rating: 4, comment: 'persist me', save: jest.fn().mockResolvedValue() };
+    Recipe.findById.mockResolvedValue({ _id: 'r1' });
+    Review.findOne.mockResolvedValue(reviewDoc);
+    const app = express();
+    app.use(express.json());
+    app.use('/api/reviews', reviewsRoutes);
+    const res = await request(app).post('/api/reviews').send({
+      recipeId: '507f1f77bcf86cd799439011',
+      rating: 4,
+      comment: ''
+    });
+    expect(res.status).toBe(201);
+    expect(reviewDoc.comment).toBe('');
+  });
+
   test('GET /recipe/:id hides comment for guests', async () => {
     Review.find.mockReturnValue({
       populate: () => ({

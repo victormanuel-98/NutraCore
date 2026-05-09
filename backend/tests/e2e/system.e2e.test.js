@@ -25,7 +25,11 @@ describe('system e2e', () => {
 
     const html = await request(app).get('/api/docs');
     expect(html.status).toBe(200);
-    expect(html.text).toMatch(/SwaggerUIBundle/);
+    expect(html.text).toMatch(/\/api\/docs\/assets\/swagger-ui\.css/);
+    expect(html.text).toMatch(/\/api\/docs\/swagger-init\.js/);
+
+    const css = await request(app).get('/api/docs/assets/swagger-ui.css');
+    expect(css.status).toBe(200);
 
     const spec = await request(app).get('/api/docs/openapi.json');
     expect(spec.status).toBe(200);

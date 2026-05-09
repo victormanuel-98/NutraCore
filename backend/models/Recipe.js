@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { normalizeEnumValue } = require('../utils/normalization');
 
 const RECIPE_CATEGORIES = [
   'desayuno',
@@ -34,6 +35,7 @@ const MAX_RECIPE_INGREDIENTS = 20;
 const MAX_RECIPE_STEPS = 20;
 const MAX_RECIPE_PREP_TIME = 999;
 const MAX_STEP_WORDS = 80;
+const normalizeRecipeDifficulty = (value) => normalizeEnumValue(value, RECIPE_DIFFICULTIES);
 
 const dataUrlRegex = /^data:image\/(png|jpe?g|webp|gif|avif|svg\+xml);base64,[A-Za-z0-9+/=\r\n]+$/i;
 const imageUrlRegex = /^https?:\/\/.+\.(png|jpe?g|webp)(\?.*)?$/i;
@@ -138,6 +140,7 @@ const recipeSchema = new mongoose.Schema(
     difficulty: {
       type: String,
       required: [true, 'La dificultad es obligatoria'],
+      set: normalizeRecipeDifficulty,
       enum: {
         values: RECIPE_DIFFICULTIES,
         message: 'Dificultad no valida'
@@ -227,6 +230,7 @@ module.exports.Recipe = Recipe;
 module.exports.RECIPE_CATEGORIES = RECIPE_CATEGORIES;
 module.exports.RECIPE_DIFFICULTIES = RECIPE_DIFFICULTIES;
 module.exports.RECIPE_TAG_OPTIONS = RECIPE_TAG_OPTIONS;
+module.exports.normalizeRecipeDifficulty = normalizeRecipeDifficulty;
 module.exports.DATA_URL_REGEX = dataUrlRegex;
 module.exports.MAX_RECIPE_IMAGES = MAX_RECIPE_IMAGES;
 module.exports.MAX_RECIPE_INGREDIENTS = MAX_RECIPE_INGREDIENTS;

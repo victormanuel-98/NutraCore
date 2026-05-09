@@ -34,10 +34,16 @@ jest.mock('../../models/AuditLog', () => ({
   find: jest.fn()
 }));
 
+jest.mock('../../models/MenuConsumption', () => ({
+  findOne: jest.fn(),
+  findOneAndUpdate: jest.fn()
+}));
+
 const User = require('../../models/User');
 const Recipe = require('../../models/Recipe');
 const Review = require('../../models/Review');
 const AuditLog = require('../../models/AuditLog');
+const MenuConsumption = require('../../models/MenuConsumption');
 const usersRoutes = require('../../routes/users');
 
 describe('users routes', () => {
@@ -324,5 +330,36 @@ describe('users routes', () => {
     app.use('/api/users', usersRoutes);
     const res = await request(app).patch('/api/users/admin/507f1f77bcf86cd799439011/status').send({ isActive: true });
     expect(res.status).toBe(403);
+  });
+
+  test('GET /menu-consumption returns persisted state', async () => {
+    MenuConsumption.findOne.mockReturnValue({
+      lean: jest.fn().mockResolvedValue({
+        plannerVersionByPeriod: { daily: { '2026-05-09': 2 }, weekly: {}, monthly: {} },
+        consumedByPeriod: { daily: { '2026-05-09': { r1: true } }, weekly: {}, monthly: {} }
+      })
+    });
+    const app = express();
+    app.use('/api/users', usersRoutes);
+    const res = await request(app).get('/api/users/menu-consumption');
+    expect(res.status).toBe(200);
+    expect(res.body.data.plannerVersionByPeriod.daily['2026-05-09']).toBe(2);
+  });
+
+  test('PUT /menu-consumption normalizes legacy payloads', async () => {
+    MenuConsumption.findOneAndUpdate.mockResolvedValue({
+      plannerVersionByPeriod: { daily: { legacy: 3 }, weekly: {}, monthly: {} },
+      consumedByPeriod: { daily: { legacy: { recipe1: true } }, weekly: {}, monthly: {} }
+    });
+    const app = express();
+    app.use(express.json());
+    app.use('/api/users', usersRoutes);
+    const res = await request(app).put('/api/users/menu-consumption').send({
+      plannerVersionByPeriod: { daily: 3 },
+      consumedByPeriod: { daily: { recipe1: true } }
+    });
+    expect(res.status).toBe(200);
+    expect(MenuConsumption.findOneAndUpdate).toHaveBeenCalled();
+    expect(res.body.data.plannerVersionByPeriod.daily.legacy).toBe(3);
   });
 });

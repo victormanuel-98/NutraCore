@@ -17,6 +17,14 @@ const filterBadWords = (text) => {
   return filtered;
 };
 
+const hasOwn = (object, key) => Object.prototype.hasOwnProperty.call(object || {}, key);
+
+const normalizeReviewComment = (value) => {
+  if (value === undefined) return undefined;
+  if (value === null) return '';
+  return filterBadWords(String(value)).trim();
+};
+
 /**
  * @route   POST /api/reviews
  * @desc    Add or update a review for a recipe
@@ -34,7 +42,7 @@ router.post('/', protect, requireBodyFields(['recipeId', 'rating']), async (req,
       });
     }
 
-    const filteredComment = filterBadWords(comment);
+    const filteredComment = normalizeReviewComment(comment);
 
     // Check if recipe exists
     const recipe = await Recipe.findById(recipeId);
@@ -51,7 +59,9 @@ router.post('/', protect, requireBodyFields(['recipeId', 'rating']), async (req,
     if (review) {
       // Update existing review
       review.rating = rating;
-      review.comment = filteredComment;
+      if (hasOwn(req.body, 'comment')) {
+        review.comment = filteredComment;
+      }
       await review.save();
     } else {
       // Create new review

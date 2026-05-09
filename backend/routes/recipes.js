@@ -17,6 +17,7 @@ const { searchIngredients, getIngredientNutritionProfile } = require('../service
 const { logAuditEvent } = require('../services/auditService');
 const { validateObjectIdParam } = require('../middleware/validation');
 const { sendError: sendHttpError } = require('../utils/http');
+const { normalizeEnumValue } = require('../utils/normalization');
 
 const router = express.Router();
 const MAX_LIMIT = 12;
@@ -92,6 +93,8 @@ const normalizeTag = (value = '') =>
     .toLowerCase()
     .replace(/\s+/g, '-')
     .replace(/[^a-z0-9-]/g, '');
+
+const normalizeDifficulty = (value) => normalizeEnumValue(value, RECIPE_DIFFICULTIES);
 
 const roundTo = (value, decimals = 1) => {
   const factor = 10 ** decimals;
@@ -245,7 +248,7 @@ const normalizeRecipePayload = (payload = {}) => {
       ? payload.images.filter((img) => typeof img === 'string' && img.trim() && isAllowedImageUrl(img)).slice(0, MAX_RECIPE_IMAGES)
       : [],
     prepTime: Math.min(MAX_RECIPE_PREP_TIME, Math.max(0, toNumber(payload.prepTime))),
-    difficulty: typeof payload.difficulty === 'string' ? payload.difficulty.trim().toLowerCase() : '',
+    difficulty: typeof payload.difficulty === 'string' ? normalizeDifficulty(payload.difficulty) : '',
     nutrition: {
       calories: toNumber(payload.nutrition?.calories),
       protein: toNumber(payload.nutrition?.protein),
@@ -390,7 +393,7 @@ router.get('/', optionalProtect, async (req, res) => {
     const filter = { isPublished: true, isDeleted: { $ne: true } };
 
     if (category) filter.category = String(category).trim().toLowerCase();
-    if (difficulty) filter.difficulty = String(difficulty).trim().toLowerCase();
+    if (difficulty) filter.difficulty = normalizeDifficulty(difficulty);
 
     if (author) {
       if (!mongoose.Types.ObjectId.isValid(author)) {

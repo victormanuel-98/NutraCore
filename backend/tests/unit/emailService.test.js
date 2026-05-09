@@ -58,8 +58,39 @@ describe('emailService', () => {
     const { sendVerificationEmail } = require('../../services/emailService');
     await sendVerificationEmail({ toEmail: 'a@a.com', userName: 'A', verifyUrl: 'http://x/verify' });
     expect(mockCreateTransport).toHaveBeenCalled();
+    expect(mockCreateTransport).toHaveBeenCalledWith(
+      expect.objectContaining({
+        host: 'smtp.example.com',
+        port: 587,
+        secure: false,
+        auth: expect.objectContaining({
+          user: 'user@example.com',
+          pass: 'secret'
+        })
+      })
+    );
     expect(mockVerify).toHaveBeenCalled();
     expect(mockSendMail).toHaveBeenCalled();
+  });
+
+  test('builds secure smtp config when secure env is enabled', async () => {
+    process.env.SMTP_HOST = 'smtp.example.com';
+    process.env.SMTP_PORT = '465';
+    process.env.SMTP_USER = 'user@example.com';
+    process.env.SMTP_PASS = 'secret';
+    process.env.SMTP_FROM = 'Nutra <no-reply@example.com>';
+    process.env.SMTP_SECURE = 'true';
+
+    const { buildSmtpTransportConfig } = require('../../services/emailService');
+    expect(buildSmtpTransportConfig()).toEqual({
+      host: 'smtp.example.com',
+      port: 465,
+      secure: true,
+      auth: {
+        user: 'user@example.com',
+        pass: 'secret'
+      }
+    });
   });
 
   test('falls back to ethereal mode when smtp config is missing', async () => {
@@ -91,6 +122,32 @@ describe('emailService', () => {
         subject: 'Suscripcion al boletin de NutraCore'
       })
     );
+  });
+
+  test('maps smtp certificate failures to user friendly errors', async () => {
+    process.env.SMTP_HOST = 'smtp.example.com';
+    process.env.SMTP_PORT = '587';
+    process.env.SMTP_USER = 'user@example.com';
+    process.env.SMTP_PASS = 'secret';
+    process.env.SMTP_FROM = 'Nutra <no-reply@example.com>';
+    mockVerify.mockRejectedValueOnce({ code: 'CERT_HAS_EXPIRED', message: 'certificate has expired' });
+
+    const { sendVerificationEmail } = require('../../services/emailService');
+    await expect(
+      sendVerificationEmail({ toEmail: 'a@a.com', userName: 'A', verifyUrl: 'http://x/verify' })
+    ).rejects.toThrow('certificado SSL del correo ha expirado');
+  });
+
+  test('maps mailjet authentication failures to user friendly errors', async () => {
+    process.env.MJ_APIKEY_PUBLIC = 'public_key';
+    process.env.MJ_APIKEY_PRIVATE = 'private_key';
+    process.env.MAIL_FROM = 'NutraCore <no-reply@example.com>';
+    mockMailjetRequest.mockRejectedValueOnce(new Error('Unauthorized'));
+
+    const { sendVerificationEmail } = require('../../services/emailService');
+    await expect(
+      sendVerificationEmail({ toEmail: 'a@a.com', userName: 'A', verifyUrl: 'http://x/verify' })
+    ).rejects.toThrow('Revisa credenciales Mailjet');
   });
 });
 

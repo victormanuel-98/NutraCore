@@ -30,7 +30,12 @@ jest.mock('../../models/Recipe', () => {
     Recipe,
     RECIPE_CATEGORIES: ['desayuno', 'almuerzo/cena'],
     RECIPE_DIFFICULTIES: ['facil', 'media', 'dificil'],
-    RECIPE_TAG_OPTIONS: ['rapido', 'facil']
+    RECIPE_TAG_OPTIONS: ['rapido', 'facil'],
+    MAX_RECIPE_IMAGES: 5,
+    MAX_RECIPE_INGREDIENTS: 20,
+    MAX_RECIPE_STEPS: 20,
+    MAX_RECIPE_PREP_TIME: 999,
+    MAX_STEP_WORDS: 80
   };
 });
 
@@ -134,6 +139,28 @@ describe('recipes routes', () => {
       tags: ['rapido']
     });
     expect(res.status).toBe(201);
+  });
+
+  test('POST / normalizes accented difficulty variants', async () => {
+    Recipe.create.mockResolvedValue({ _id: 'r2' });
+    Recipe.findById.mockReturnValue({
+      populate: jest.fn().mockResolvedValue({ _id: 'r2', title: 'Ok', difficulty: 'facil' })
+    });
+    const app = express();
+    app.use(express.json());
+    app.use('/api/recipes', recipesRoutes);
+    const res = await request(app).post('/api/recipes').send({
+      title: 'Receta',
+      description: 'Descripcion suficientemente larga',
+      ingredients: ['Avena (100 g)'],
+      steps: ['Paso 1'],
+      category: 'desayuno',
+      difficulty: '  FÁCIL  ',
+      prepTime: 10,
+      tags: ['rapido']
+    });
+    expect(res.status).toBe(201);
+    expect(Recipe.create).toHaveBeenCalledWith(expect.objectContaining({ difficulty: 'facil' }));
   });
 
   test('POST /:id/favorite blocks own recipe', async () => {

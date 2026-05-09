@@ -1,6 +1,7 @@
 const User = require('../../models/User');
 const Dish = require('../../models/Dish');
 const News = require('../../models/News');
+const Recipe = require('../../models/Recipe');
 const Review = require('../../models/Review');
 
 describe('model instance methods', () => {
@@ -72,5 +73,20 @@ describe('model instance methods', () => {
     expect(updateMock).toHaveBeenCalled();
 
     modelSpy.mockRestore();
+  });
+
+  test('Recipe normalizes accented difficulty values through schema setter', () => {
+    const recipe = new Recipe({
+      title: 'Receta valida',
+      description: 'Descripcion valida con mas de diez caracteres',
+      ingredients: ['Avena (100 g)'],
+      steps: ['Mezcla y sirve'],
+      category: 'desayuno',
+      difficulty: '  DIFÍCIL  ',
+      prepTime: 10,
+      author: '507f1f77bcf86cd799439011'
+    });
+
+    expect(recipe.difficulty).toBe('dificil');
   });
 });

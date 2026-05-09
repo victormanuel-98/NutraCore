@@ -14,6 +14,7 @@ export function ReviewSystem({ recipeId, averageRating, reviewsCount: initialCou
   const [submitting, setSubmitting] = useState(false);
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState('');
+  const [commentTouched, setCommentTouched] = useState(false);
   const [error, setError] = useState('');
 
   const fetchReviews = async () => {
@@ -34,6 +35,22 @@ export function ReviewSystem({ recipeId, averageRating, reviewsCount: initialCou
     fetchReviews();
   }, [recipeId, token]);
 
+  const userHasReviewed = useMemo(
+    () => reviews.find((review) => review.user?._id === user?._id),
+    [reviews, user?._id]
+  );
+
+  useEffect(() => {
+    if (!userHasReviewed) {
+      setComment('');
+      setCommentTouched(false);
+      return;
+    }
+
+    setComment(userHasReviewed.comment || '');
+    setCommentTouched(false);
+  }, [userHasReviewed?._id, userHasReviewed?.comment]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -44,10 +61,13 @@ export function ReviewSystem({ recipeId, averageRating, reviewsCount: initialCou
 
     try {
       setSubmitting(true);
-      const response = await addOrUpdateReview(recipeId, rating, comment, token);
+      const response = await addOrUpdateReview(recipeId, rating, comment, token, {
+        includeComment: commentTouched || !userHasReviewed
+      });
       if (response.success) {
         showNotification('¡Gracias por tu valoración!', 'success');
         setComment('');
+        setCommentTouched(false);
         setRating(0);
         setError('');
         fetchReviews();
@@ -60,7 +80,6 @@ export function ReviewSystem({ recipeId, averageRating, reviewsCount: initialCou
     }
   };
 
-  const userHasReviewed = reviews.find(r => r.user?._id === user?._id);
   const computedAverageRating = useMemo(() => {
     if (!Array.isArray(reviews) || reviews.length === 0) return averageRating || 0;
     const total = reviews.reduce((sum, review) => sum + Number(review.rating || 0), 0);
@@ -111,7 +130,10 @@ export function ReviewSystem({ recipeId, averageRating, reviewsCount: initialCou
             <div className="relative">
               <textarea
                 value={comment}
-                onChange={(e) => setComment(e.target.value)}
+                onChange={(e) => {
+                  setCommentTouched(true);
+                  setComment(e.target.value);
+                }}
                 placeholder="Escribe aquí tu comentario (opcional)..."
                 className="w-full min-h-[100px] p-4 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-pink-accent focus:border-transparent transition-all resize-none text-gray-700"
                 maxLength={1000}

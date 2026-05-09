@@ -58,14 +58,29 @@ const hasMailjetConfig = () => Boolean(mailjetPublicKey() && mailjetPrivateKey()
 const hasSmtpConfig = () =>
   Boolean(env('SMTP_HOST') && env('SMTP_PORT') && env('SMTP_USER') && env('SMTP_PASS') && env('SMTP_FROM'));
 
-const buildRealTransporter = () =>
-  nodemailer.createTransport({
-    service: 'gmail',
+const parseBooleanEnv = (value, fallback = false) => {
+  const normalized = env(value).toLowerCase();
+  if (!normalized) return fallback;
+  return ['1', 'true', 'yes', 'on'].includes(normalized);
+};
+
+const buildSmtpTransportConfig = () => {
+  const port = Number(env('SMTP_PORT'));
+  const secure = parseBooleanEnv('SMTP_SECURE', port === 465);
+
+  return {
+    host: env('SMTP_HOST'),
+    port: Number.isFinite(port) ? port : 587,
+    secure,
     auth: {
       user: env('SMTP_USER'),
       pass: env('SMTP_PASS')
     }
-  });
+  };
+};
+
+const buildRealTransporter = () =>
+  nodemailer.createTransport(buildSmtpTransportConfig());
 
 let etherealTransporter = null;
 let mailjetClient = null;
@@ -91,6 +106,7 @@ const getTransporter = async () => {
   if (hasSmtpConfig()) {
     const transporter = buildRealTransporter();
     await transporter.verify();
+    console.log(`Email transporter verificado por SMTP en ${env('SMTP_HOST')}:${env('SMTP_PORT')}`);
     return { transporter, mode: 'real' };
   }
 
@@ -255,5 +271,6 @@ const sendNewsletterSubscriptionEmail = async ({ toEmail }) => {
 
 module.exports = {
   sendVerificationEmail,
-  sendNewsletterSubscriptionEmail
+  sendNewsletterSubscriptionEmail,
+  buildSmtpTransportConfig
 };
