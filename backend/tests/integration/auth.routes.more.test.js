@@ -198,13 +198,14 @@ describe('auth routes additional', () => {
     expect(res.body.success).toBe(true);
   });
 
-  test('POST /resend-verification returns 404 when user does not exist', async () => {
+  test('POST /resend-verification returns generic 200 when user does not exist', async () => {
     User.findOne.mockResolvedValue(null);
     const app = express();
     app.use(express.json());
     app.use('/api/auth', authRoutes);
     const res = await request(app).post('/api/auth/resend-verification').send({ email: 'none@x.com' });
-    expect(res.status).toBe(404);
+    expect(res.status).toBe(200);
+    expect(res.body.success).toBe(true);
   });
 
   test('POST /resend-verification success path', async () => {
@@ -222,7 +223,7 @@ describe('auth routes additional', () => {
     expect(res.status).toBe(200);
   });
 
-  test('POST /resend-verification returns 400 when user is already verified', async () => {
+  test('POST /resend-verification returns generic 200 when user is already verified', async () => {
     User.findOne.mockResolvedValue({
       _id: 'u1',
       email: 'u@u.com',
@@ -233,7 +234,8 @@ describe('auth routes additional', () => {
     app.use(express.json());
     app.use('/api/auth', authRoutes);
     const res = await request(app).post('/api/auth/resend-verification').send({ email: 'u@u.com' });
-    expect(res.status).toBe(400);
+    expect(res.status).toBe(200);
+    expect(res.body.success).toBe(true);
   });
 
   test('GET /verify-email success path', async () => {
