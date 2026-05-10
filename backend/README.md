@@ -1,10 +1,10 @@
 # Backend de NutraCore
 
-## Descripcion
+## Descripción
 
-El backend de NutraCore expone una API REST para autenticacion, usuarios, recetas, resenas, noticias, ingredientes y administracion. Tambien centraliza las reglas de negocio, la seguridad, la normalizacion de errores y la validacion automatizada del servidor.
+El backend de NutraCore expone una API REST para autenticación, usuarios, recetas, reseñas, noticias, ingredientes y administración. También centraliza las reglas de negocio, la seguridad, la normalización de errores y la validación automatizada del servidor.
 
-## Stack tecnico
+## Stack técnico
 
 - Node.js `20.x`
 - Express
@@ -16,7 +16,7 @@ El backend de NutraCore expone una API REST para autenticacion, usuarios, receta
 
 ## Estructura destacada
 
-```text
+```
 backend/
 |-- app.js
 |-- server.js
@@ -31,29 +31,29 @@ backend/
 `-- tests/
 ```
 
-## Modulos funcionales
+## Módulos funcionales
 
-- `auth`: registro, login, verificacion de email, perfil actual y cambio de contrasena
-- `users`: perfil, objetivos, estadisticas, consumo y gestion administrativa
-- `recipes`: catalogo, creacion, edicion, favoritos, restauracion y soft-delete
+- `auth`: registro, login, verificación de email, perfil actual y cambio de contraseña
+- `users`: perfil, objetivos, estadísticas, consumo y gestión administrativa
+- `recipes`: catálogo, creación, edición, favoritos, restauración y soft-delete
 - `reviews`: valoraciones y comentarios
 - `news`: noticias y contenido informativo
-- `ingredients`: integracion de ingredientes y perfiles nutricionales
+- `ingredients`: integración de ingredientes y perfiles nutricionales
 - `docs`: documentacion OpenAPI / Swagger
 
 ## Seguridad implementada
 
-- JWT para autenticacion
+- JWT para autenticación
 - middleware `protect` y control de roles
 - `helmet`
 - `hpp`
 - `express-mongo-sanitize`
 - rate limiting por dominio funcional
-- normalizacion de errores con codigos de maquina
+- normalización de errores con códigos de máquina
 
 ## Dependencias principales
 
-```text
+```
 bcryptjs
 cloudinary
 cors
@@ -71,7 +71,7 @@ swagger-ui-dist
 
 Dependencias de desarrollo:
 
-```text
+```
 jest
 mongodb-memory-server
 nodemon
@@ -101,22 +101,22 @@ Variables importantes:
 
 ## Arranque local
 
-Instalacion:
+Instalación:
 
-```powershell
+```
 cd backend
 npm install
 ```
 
-Ejecucion en desarrollo:
+Ejecución en desarrollo:
 
-```powershell
+```
 npm run dev
 ```
 
-Ejecucion en modo normal:
+Ejecución en modo normal:
 
-```powershell
+```
 npm start
 ```
 
@@ -130,7 +130,7 @@ Healthcheck:
 
 ## Scripts disponibles
 
-```powershell
+```
 npm start
 npm run dev
 npm run seed
@@ -158,22 +158,22 @@ Tipos de prueba disponibles:
 
 Cobertura:
 
-- medicion informativa: `npm run test:coverage`
+- medición informativa: `npm run test:coverage`
 - umbral de control actual: `npm run test:coverage:70`
 
-Estado validado en la ultima revision:
+Estado validado en la última revisión:
 
 - backend E2E: `8` tests OK
 - backend global: `21` suites, `154` tests OK
 
-Resumen historico de cobertura disponible:
+Resumen histórico de cobertura disponible:
 
-- statements: `80.24%`
+- statements: `84.24%`
 - lines: `82.64%`
 - functions: `83.85%`
-- branches: `58.67%`
+- branches: `70.67%`
 
-Cobertura por modulo con mayor interes:
+Cobertura por módulo con mayor interés:
 
 - `routes/`: `78.19%` statements
 - `services/`: `84.61%` statements
@@ -184,34 +184,34 @@ Cobertura por modulo con mayor interes:
 Swagger / OpenAPI:
 
 - UI Swagger: `http://localhost:5000/api/docs`
-- especificacion OpenAPI: `http://localhost:5000/api/docs/openapi.json`
+- especificación OpenAPI: `http://localhost:5000/api/docs/openapi.json`
 - archivo fuente principal: `backend/docs/openapi.json`
 
-## Riesgos tecnicos detectados
+## Riesgos técnicos detectados
 
 Zonas con mayor margen de mejora:
 
 - flujos de error y edge cases en `news` y `dishes`
 - ramas complejas en `recipes`
-- hooks y metodos internos en `Recipe`, `Review` y `User`
-- ramas costosas en servicios con integracion externa, especialmente `openFoodFactsService`
+- hooks y métodos internos en `Recipe`, `Review` y `User`
+- ramas costosas en servicios con integración externa, especialmente `openFoodFactsService`
 
-Observacion funcional relevante:
+Observación funcional relevante:
 
 - el backend ya bloquea `REC-07` por exceso de contenido en lugar de truncarlo silenciosamente
-- el valor tecnico actual para ingredientes es `20`, no `25`
+- el valor técnico actual para ingredientes es `20`, no `25`
 
 ## Docker
 
 Construir imagen local del backend:
 
-```powershell
+```
 docker build -t nutracore-backend ./backend
 ```
 
 Ejecutar con Docker Compose desde la raiz:
 
-```powershell
+```
 docker compose up --build backend mongo
 ```
 
@@ -221,7 +221,7 @@ Dockerfile usado:
 
 ## Despliegue
 
-El backend incluye una configuracion de despliegue para Render en:
+El backend incluye una configuración de despliegue para Render en:
 
 - [render.yaml](c:\Users\Usuario\Documents\NutraCore\render.yaml)
 
