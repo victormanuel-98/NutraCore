@@ -197,28 +197,51 @@ Dockerfile usado:
 
 ## Espacio para recursos visuales del TFG
 
-### GIFs de recorrido de la aplicación
+### GIFs de recorrido de la aplicacion
 
-Pendiente de insertar:
+Flujos ya incorporados:
 
-- GIF del flujo de registro y login
-- GIF del dashboard
-- GIF del catalogo de recetas
-- GIF de NutraCore Lab
-- GIF del panel admin
+- Registro y login
+
+```md
+![Recorrido de registro y login](./public/images/gifs/registroylogin.gif)
+```
+
+- Dashboard
+
+```md
+![Recorrido del dashboard](./public/images/gifs/dashboard.gif)
+```
+
+- Catalogo / recetas
+
+```md
+![Recorrido de recetas](./public/images/gifs/verrecetas.gif)
+```
+
+- Panel de administracion
+
+```md
+![Recorrido del panel admin](./public/images/gifs/paneladmin.gif)
+```
 
 ### Mockups, wireframes y Figma
 
-Pendiente de insertar:
+Diseno base del proyecto (Figma):
+
+- Enlace principal:
+  - `https://www.figma.com/design/8pkDks1nir4MvdbSDJdRwb/VMRC-NutraCore?node-id=0-1&p=f&t=7ilexWrRwtQ0AxIT-0`
+
+Bloques sugeridos para documentacion visual complementaria:
 
 - captura general de arquitectura visual
-- pantallas clave de Figma
+- pantallas clave del prototipo
 - comparativa entre diseno y resultado final
 
-Ejemplo de bloque para insertar imagen:
+Ejemplo para insertar imagen exportada de Figma:
 
 ```md
-![Mockup de Figma](./docs/figma/mockup-home.png)
+![Vista general del prototipo en Figma](./public/images/figma/figma-home.png)
 ```
 
 ## Notas para la memoria del TFG
@@ -229,3 +252,4 @@ Puntos destacables para defensa:
 - Protección de navegación según autenticación y rol
 - Validación browser-level con Playwright
 - Experiencia responsive contemplada en pruebas
+
