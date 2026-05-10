@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { RecipeForm } from '../components/recipes/RecipeForm';
 import { MyRecipesList } from '../components/recipes/MyRecipesList';
-import { createRecipe } from '../services/recipeService';
+import { createRecipe, getRecipeMutationErrorMessage } from '../services/recipeService';
 import { useAuth } from '../context/AuthContext';
 
 export function CreateRecipePage() {
@@ -22,7 +22,7 @@ export function CreateRecipePage() {
       setSubmitState({ loading: false, success: 'Receta publicada correctamente.', error: '' });
       setRefreshKey((prev) => prev + 1);
     } catch (error) {
-      setSubmitState({ loading: false, success: '', error: error.message || 'No se pudo publicar la receta' });
+      setSubmitState({ loading: false, success: '', error: getRecipeMutationErrorMessage(error, { action: 'create' }) });
       throw error;
     }
   };

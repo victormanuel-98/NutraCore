@@ -7,7 +7,7 @@ import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { RecipeImageManager } from './RecipeImageManager';
 import { getIngredientNutritionProfile, searchIngredients } from '../../services/ingredientService';
-import { getAvailableRecipeTags } from '../../services/recipeService';
+import { getAvailableRecipeTags, getRecipeMutationErrorMessage } from '../../services/recipeService';
 
 const categories = ['desayuno', 'almuerzo/cena', 'merienda', 'snack', 'post-entreno', 'cena ligera'];
 const difficulties = ['fácil', 'media', 'difícil'];
@@ -708,7 +708,7 @@ export function RecipeForm({ onSubmit, isSubmitting = false }) {
       setIngredientPortions({ 0: defaultIngredientPortion });
       setActiveIngredientIndex(null);
     } catch (error) {
-      setFormError(error.message || 'No se pudo publicar la receta');
+      setFormError(getRecipeMutationErrorMessage(error, { action: 'create' }));
     }
   };
 

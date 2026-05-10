@@ -4,7 +4,7 @@ import { Card } from "./ui/card";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
-import { getRecipes, toggleFavorite } from "../services/recipeService";
+import { getFavoriteErrorMessage, getRecipes, toggleFavorite } from "../services/recipeService";
 import { useAuth } from "../context/AuthContext";
 import { Select, SelectContent, SelectItem, SelectTrigger } from "./ui/select";
 import { StarRating } from "./ui/StarRating";
@@ -352,7 +352,7 @@ export function Catalog() {
         "success"
       );
     } catch (err) {
-      showNotification(err.message || "Error al actualizar favorito", "error");
+      showNotification(getFavoriteErrorMessage(err, { action: 'toggle' }), "error");
     }
   };
 

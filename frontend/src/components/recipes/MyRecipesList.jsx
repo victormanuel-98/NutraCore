@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { ChevronDown, Pencil, Trash2, X } from 'lucide-react';
 import { Card } from '../ui/card';
 import { Button } from '../ui/button';
-import { deleteRecipe, getAvailableRecipeTags, getMyRecipes, updateRecipe } from '../../services/recipeService';
+import { deleteRecipe, getAvailableRecipeTags, getMyRecipes, getRecipeMutationErrorMessage, updateRecipe } from '../../services/recipeService';
 import { getRecipeImage } from '../../utils/recipeImage';
 import { RecipeImageManager } from './RecipeImageManager';
 
@@ -289,7 +289,7 @@ export function MyRecipesList({ token, refreshKey = 0 }) {
       await deleteRecipe(id, token);
       setRecipes((prev) => prev.filter((recipe) => recipe._id !== id));
     } catch (err) {
-      alert(err.message || 'No se pudo eliminar la receta');
+      alert(getRecipeMutationErrorMessage(err, { action: 'delete' }));
     }
   };
 
@@ -353,7 +353,7 @@ export function MyRecipesList({ token, refreshKey = 0 }) {
       setRecipes((prev) => prev.map((item) => (item._id === editingRecipe._id ? nextRecipe : item)));
       closeEditModal();
     } catch (err) {
-      alert(err.message || 'No se pudo actualizar la receta');
+      alert(getRecipeMutationErrorMessage(err, { action: 'update' }));
     } finally {
       setSavingEdition(false);
     }

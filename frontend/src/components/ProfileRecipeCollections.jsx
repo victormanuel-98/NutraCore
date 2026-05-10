@@ -6,6 +6,8 @@ import { Label } from './ui/label';
 import { RecipeDetail } from './recipes/RecipeDetail';
 import {
   deleteRecipe,
+  getFavoriteErrorMessage,
+  getRecipeMutationErrorMessage,
   getFavoriteRecipes,
   getMyRecipes,
   toggleFavorite,
@@ -147,7 +149,7 @@ export function ProfileRecipeCollections({ token, onDataChanged }) {
       await loadCollections({ silent: true });
       notifyParent();
     } catch (actionError) {
-      showNotification(actionError.message || 'No se pudo quitar el favorito', 'error');
+      showNotification(getFavoriteErrorMessage(actionError, { action: 'remove' }), 'error');
     } finally {
       setRemovingFavorite(false);
     }
@@ -176,7 +178,7 @@ export function ProfileRecipeCollections({ token, onDataChanged }) {
       await loadCollections({ silent: true });
       notifyParent();
     } catch (actionError) {
-      showNotification(actionError.message || 'No se pudo eliminar la receta', 'error');
+      showNotification(getRecipeMutationErrorMessage(actionError, { action: 'delete' }), 'error');
     } finally {
       setDeletingRecipe(false);
     }
@@ -245,7 +247,7 @@ export function ProfileRecipeCollections({ token, onDataChanged }) {
       await loadCollections({ silent: true });
       notifyParent();
     } catch (actionError) {
-      showNotification(actionError.message || 'No se pudo actualizar la receta', 'error');
+      showNotification(getRecipeMutationErrorMessage(actionError, { action: 'update' }), 'error');
     } finally {
       setSavingEdition(false);
     }
