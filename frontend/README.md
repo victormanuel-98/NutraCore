@@ -203,27 +203,19 @@ Flujos ya incorporados:
 
 - Registro y login
 
-```md
 ![Recorrido de registro y login](./public/images/gifs/registroylogin.gif)
-```
 
 - Dashboard
 
-```md
 ![Recorrido del dashboard](./public/images/gifs/dashboard.gif)
-```
 
 - Catalogo / recetas
 
-```md
 ![Recorrido de recetas](./public/images/gifs/verrecetas.gif)
-```
 
 - Panel de administracion
 
-```md
 ![Recorrido del panel admin](./public/images/gifs/paneladmin.gif)
-```
 
 ### Mockups, wireframes y Figma
 
