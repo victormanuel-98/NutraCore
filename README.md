@@ -1,56 +1,56 @@
 # NutraCore
 
-## Informacion general del TFG
+## Información general del TFG
 
-- Titulo del proyecto: `NutraCore`
+- Título del proyecto: `NutraCore`
 - Alumno: `VICTOR MANUEL RIDAO CHAVES`
-- Titulacion: `GRADO`
+- Titulación: `GRADO`
 - Asignatura / modalidad: `Trabajo Fin de Grado`
-- Curso academico: `2025-2026`
-- Centro / universidad: `ADAits`
+- Curso académico: `2025-2026`
+- Centro escolar: `Instituto Teconológico Superior ADA`
 - Tutor academico: `RICARDO RUIZ ANAYA`
 
-## Definicion del proyecto
+## Definición del proyecto
 
-NutraCore es una plataforma web orientada a nutricion, bienestar y planificacion alimentaria. El sistema permite gestionar autenticacion y perfiles, consultar y crear recetas con informacion nutricional, publicar resenas, consultar noticias y disponer de un panel administrativo para la gestion de contenido y usuarios.
+NutraCore es una plataforma web orientada a nutrición, bienestar y planificación alimentaria. El sistema permite gestionar autenticación y perfiles, consultar y crear recetas con informacion nutricional, publicar reseñas, consultar noticias y disponer de un panel administrativo para la gestión de contenido y usuarios.
 
-El proyecto se desarrolla como una solucion full stack separada en `frontend` y `backend`, con una API REST en Node.js/Express y una interfaz SPA construida con React y Vite.
+El proyecto se desarrolla como una solución full-stack separada en `frontend` y `backend`, con una API REST en Node.js/Express y una interfaz SPA construida con React y Vite.
 
 ## Objetivos del proyecto
 
-- Centralizar en una sola aplicacion herramientas de nutricion y seguimiento basico.
-- Facilitar la creacion y consulta de recetas con calculo nutricional automatico.
-- Ofrecer autenticacion segura, roles y proteccion de rutas.
-- Incorporar validacion automatizada mediante pruebas `unit`, `integration` y `e2e`.
-- Presentar una arquitectura modular, mantenible y defendible en un contexto academico de TFG.
+- Centralizar en una sola aplicación herramientas de nutrición y seguimiento básico.
+- Facilitar la creación y consulta de recetas con cálculo nutricional automático.
+- Ofrecer autenticación segura, uso de roles y protección de rutas.
+- Incorporar validación automatizada mediante pruebas `unitarias`, `integración` y `e2e`.
+- Presentar una arquitectura modular y mantenible en un contexto académico.
 
 ## Alcance funcional
 
-El sistema incluye las siguientes areas principales:
+El sistema incluye las siguientes áreas principales:
 
-- autenticacion, login, verificacion de correo y control de acceso
-- catalogo de recetas y buscador
-- NutraCore Lab para creacion y edicion de recetas
-- calculo automatico de macros y calorias
-- perfil de usuario y dashboard
-- sistema de resenas
-- panel administrativo
-- noticias / blog
+- AutenticaciÓn, login, verificaciÓn de correo y control de acceso.
+- Catálogo de recetas y buscador.
+- NutraCore Lab para la creación y edición de recetas.
+- Cálculo automático de macros y calorías.
+- Perfil de usuario y dashboard.
+- Sistema de reseñas.
+- Panel administrativo.
+- Sección de noticias enfocadas en la nutrición y los buenos hábitos.
 
 ## Arquitectura del proyecto
 
 ### Estructura principal
 
-```text
+```
 NutraCore/
-|-- backend/                 API REST, modelos, logica de negocio y pruebas backend
+|-- backend/                 API REST, modelos, lógica de negocio y pruebas backend
 |-- frontend/                SPA React, rutas, componentes y pruebas browser E2E
 |-- docker-compose.yml
 |-- render.yaml
 `-- sonar-project.properties
 ```
 
-### Tecnologias utilizadas
+### Tecnologías utilizadas
 
 Backend:
 
@@ -124,15 +124,15 @@ Dependencias de desarrollo:
 
 ## Estado actual del proyecto
 
-Estado tecnico consolidado:
+Estado técnico consolidado:
 
-- frontend con build verificada
-- backend operativo con healthcheck
-- validacion automatizada multinivel
+- Frontend con build verificada
+- Backend operativo con healthcheck
+- Validación automatizada multinivel
 - CI para backend y frontend E2E
 - Docker Compose para entorno local completo
 
-Resultados verificados en la ultima revision:
+Resultados verificados en la última revisión:
 
 - Frontend build: OK
 - Frontend Playwright E2E: `20` tests totales, `18` OK, `2` skipped por no aplicar al breakpoint
@@ -150,15 +150,13 @@ Cobertura funcional automatizada ya validada:
 
 ## Valor academico del TFG
 
-Desde el punto de vista tecnico y academico, el proyecto aporta:
+Desde el punto de vista técnico y académico, el proyecto aporta:
 
-- arquitectura separada y mantenible
-- logica de negocio no trivial
-- seguridad y validaciones reales
-- trazabilidad entre requisitos, casos de prueba y resultados
-- pruebas automatizadas de backend y de frontend en navegador real
-
-Esto hace que NutraCore sea un TFG solido y defendible, especialmente porque la validacion no depende solo de pruebas manuales.
+- Arquitectura separada y mantenible
+- Lógica de negocio no trivial
+- Seguridad y validaciones reales
+- Trazabilidad entre requisitos, casos de prueba y resultados
+- Pruebas automatizadas de backend y de frontend en navegador real
 
 ## Requisitos previos
 
@@ -167,7 +165,7 @@ Esto hace que NutraCore sea un TFG solido y defendible, especialmente porque la 
 - MongoDB en local o una URI remota valida
 - Docker Desktop si se va a usar contenedorizacion
 
-El proyecto incluye `.nvmrc` y `engines` para fijar la version recomendada de Node.
+El proyecto incluye `.nvmrc` y `engines` para fijar la versión recomendada de Node.
 
 ## Variables de entorno
 
@@ -202,19 +200,19 @@ Variables clave:
 - `VITE_API_URL`
 - `VITE_GAIUS_AVATAR_URL`
 
-## Como arrancar el proyecto
+## Cómo arrancar el proyecto
 
-### Opcion 1: desarrollo local
+### 1: desarrollo local
 
 Instalar dependencias:
 
-```powershell
+```
 npm run install:all
 ```
 
 Arrancar frontend y backend en paralelo:
 
-```powershell
+```
 npm run dev
 ```
 
@@ -224,11 +222,11 @@ Servicios esperados:
 - backend: `http://localhost:5000`
 - health: `http://localhost:5000/health`
 
-### Opcion 2: arranque manual por capas
+### 2: arranque manual por separado
 
 Backend:
 
-```powershell
+```
 cd backend
 npm install
 npm run dev
@@ -236,7 +234,7 @@ npm run dev
 
 Frontend:
 
-```powershell
+```
 cd frontend
 npm install
 npm run dev
@@ -246,7 +244,7 @@ npm run dev
 
 ### Arranque completo con Docker Compose
 
-```powershell
+```
 docker compose up --build
 ```
 
@@ -267,15 +265,15 @@ Puertos por defecto:
 
 ### Detener contenedores
 
-```powershell
+```
 docker compose down
 ```
 
 ### Como obtener las imagenes Docker
 
-Actualmente el proyecto no consume imagenes publicadas propias desde Docker Hub o GHCR. Las imagenes de aplicacion se generan localmente a partir de los Dockerfile del repositorio:
+Actualmente el proyecto no consume imagenes publicadas propias desde Docker Hub o GHCR. Las imagenes de aplicación se generan localmente a partir de los Dockerfile del repositorio:
 
-```powershell
+```
 docker build -t nutracore-backend ./backend
 docker build -t nutracore-frontend ./frontend
 ```
@@ -291,7 +289,7 @@ Imagenes base externas utilizadas:
 
 Backend:
 
-```powershell
+```
 npm --prefix backend run test
 npm --prefix backend run test:e2e
 npm --prefix backend run test:coverage
@@ -299,32 +297,32 @@ npm --prefix backend run test:coverage
 
 Frontend:
 
-```powershell
+```
 npm --prefix frontend run build
 npm --prefix frontend run test:e2e
 ```
 
-La validacion del proyecto se ha planteado en tres niveles:
+La validación del proyecto se ha planteado en tres niveles:
 
-- pruebas unitarias
-- pruebas de integracion
-- pruebas E2E de backend y frontend
+- Pruebas unitarias
+- Pruebas de integración
+- Pruebas E2E de backend y frontend
 
 ## Riesgos y consideraciones conocidas
 
-- La maquina local usada en la ultima revision corrio con Node `22.18.0`, pero el proyecto queda preparado y fijado para Node `20.x`.
-- El entorno local presento incidencias TLS al descargar dependencias y el navegador de Playwright. Esto afecta al entorno de trabajo, no al codigo funcional de NutraCore.
+- La máquina local usada en la última revisión corrió con Node `22.18.0`, pero el proyecto queda preparado y fijado para Node `20.x`.
+- El entorno local presentó incidencias TLS al descargar dependencias y el navegador de Playwright. Esto afecta al entorno de trabajo, no al código funcional de NutraCore.
 - Existe una divergencia documental a vigilar: el plan funcional mencionaba `25` ingredientes como umbral, mientras la implementacion backend vigente trabaja con `20`.
 
 ## Hoja de ruta resumida
 
-Lineas de mejora posteriores recomendadas:
+Líneas de mejora posteriores recomendadas:
 
-- endurecimiento de seguridad de transporte y dependencias
-- observabilidad y logging estructurado
-- mejora de metricas operativas
-- optimizacion de indices y consultas
-- aumento de cobertura por ramas en backend
+- Endurecimiento de seguridad de transporte y dependencias
+- Observabilidad y logging estructurado
+- Mejora de métricas operativas
+- Optimización de indices y consultas
+- Aumento de cobertura por ramas en backend
 
 ## Despliegue y herramientas adicionales
 
