@@ -1,10 +1,10 @@
 # Frontend de NutraCore
 
-## Descripción
+## Descripcion
 
-El frontend de NutraCore es una SPA construida con React y Vite. Su objetivo es ofrecer una experiencia visual clara para autenticación, consulta de recetas, dashboard, perfil, noticias, administración y uso de NutraCore Lab.
+El frontend de NutraCore es una SPA construida con React y Vite. Su objetivo es ofrecer una experiencia visual clara para autenticacion, consulta de recetas, dashboard, perfil, noticias, administracion y uso de NutraCore Lab.
 
-## Stack técnico
+## Stack tecnico
 
 - React `18`
 - Vite
@@ -72,13 +72,13 @@ frontend/
 - `/cookies`
 - `/legal-notice`
 
-## Características del frontend
+## Caracteristicas del frontend
 
 - rutas protegidas para usuario autenticado
-- control de acceso por rol para el área admin
-- dashboard con información personalizada
-- catálogo de recetas con filtros y detalle
-- formularios de autenticación y registro
+- control de acceso por rol para el area admin
+- dashboard con informacion personalizada
+- catalogo de recetas con filtros y detalle
+- formularios de autenticacion y registro
 - secciones legales y de privacidad
 - tema y notificaciones mediante contextos
 
@@ -95,7 +95,7 @@ Variables principales:
 
 ## Arranque local
 
-Instalación:
+Instalacion:
 
 ```powershell
 cd frontend
@@ -108,13 +108,13 @@ Modo desarrollo:
 npm run dev
 ```
 
-Build de producción:
+Build de produccion:
 
 ```powershell
 npm run build
 ```
 
-Previsualización de la build:
+Previsualizacion de la build:
 
 ```powershell
 npm run preview
@@ -131,17 +131,32 @@ npm run test:e2e
 npm run test:e2e:report
 ```
 
-## Pruebas E2E del frontend
+## Validacion E2E del frontend
 
-El proyecto incorpora Playwright para validar:
+El proyecto incorpora Playwright para validar comportamiento real en navegador.
 
-- responsive design
-- menú móvil
-- formularios principales
-- estados de carga
+Cobertura funcional browser-level:
+
+- responsive del formulario de registro
+- responsive del catalogo y de sus cards
+- menu movil usable
+- feedback visual de carga en login
 - manejo amigable de errores de red
 
-Ejecución:
+Breakpoints validados:
+
+- `375x667`
+- `393x852`
+- `768x1024`
+- desktop `1280px+`
+
+Estado verificado:
+
+- `20` tests totales
+- `18` OK
+- `2` skipped por no aplicar al breakpoint
+
+Ejecucion:
 
 ```powershell
 npm run test:e2e
@@ -153,6 +168,15 @@ Reporte HTML:
 npm run test:e2e:report
 ```
 
+## Integracion con backend
+
+El frontend consume la API definida en `VITE_API_URL` y esta preparado para:
+
+- autenticacion con JWT
+- rutas protegidas
+- gestion de errores traducidos a mensajes amigables
+- consumo de endpoints de recetas, usuarios, noticias y autenticacion
+
 ## Docker
 
 Construir imagen local del frontend:
@@ -161,7 +185,7 @@ Construir imagen local del frontend:
 docker build -t nutracore-frontend ./frontend
 ```
 
-Ejecutar con Docker Compose desde la raíz:
+Ejecutar con Docker Compose desde la raiz:
 
 ```powershell
 docker compose up --build frontend
@@ -173,13 +197,13 @@ Dockerfile usado:
 
 ## Espacio para recursos visuales del TFG
 
-### GIFs de recorrido de la aplicación
+### GIFs de recorrido de la aplicacion
 
 Pendiente de insertar:
 
 - GIF del flujo de registro y login
 - GIF del dashboard
-- GIF del catálogo de recetas
+- GIF del catalogo de recetas
 - GIF de NutraCore Lab
 - GIF del panel admin
 
@@ -189,7 +213,7 @@ Pendiente de insertar:
 
 - captura general de arquitectura visual
 - pantallas clave de Figma
-- comparativa entre diseño y resultado final
+- comparativa entre diseno y resultado final
 
 Ejemplo de bloque para insertar imagen:
 
@@ -201,7 +225,7 @@ Ejemplo de bloque para insertar imagen:
 
 Puntos destacables para defensa:
 
-- separación entre componentes, servicios, contextos y rutas
-- protección de navegación según autenticación y rol
-- validación browser-level con Playwright
+- separacion entre componentes, servicios, contextos y rutas
+- proteccion de navegacion segun autenticacion y rol
+- validacion browser-level con Playwright
 - experiencia responsive contemplada en pruebas

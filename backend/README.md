@@ -1,10 +1,10 @@
 # Backend de NutraCore
 
-## Descripción
+## Descripcion
 
-El backend de NutraCore expone una API REST para autenticación, usuarios, recetas, reseñas, noticias, ingredientes y administración. También centraliza las reglas de negocio, la seguridad, la normalización de errores y la validación automatizada del servidor.
+El backend de NutraCore expone una API REST para autenticacion, usuarios, recetas, resenas, noticias, ingredientes y administracion. Tambien centraliza las reglas de negocio, la seguridad, la normalizacion de errores y la validacion automatizada del servidor.
 
-## Stack técnico
+## Stack tecnico
 
 - Node.js `20.x`
 - Express
@@ -31,25 +31,25 @@ backend/
 `-- tests/
 ```
 
-## Módulos funcionales
+## Modulos funcionales
 
-- `auth`: registro, login, verificación de email, perfil actual y cambio de contraseña
-- `users`: perfil, objetivos, estadísticas, consumo y gestión administrativa
-- `recipes`: catálogo, creación, edición, favoritos, restauración y soft-delete
+- `auth`: registro, login, verificacion de email, perfil actual y cambio de contrasena
+- `users`: perfil, objetivos, estadisticas, consumo y gestion administrativa
+- `recipes`: catalogo, creacion, edicion, favoritos, restauracion y soft-delete
 - `reviews`: valoraciones y comentarios
 - `news`: noticias y contenido informativo
-- `ingredients`: integración de ingredientes y perfiles nutricionales
-- `docs`: documentación OpenAPI / Swagger
+- `ingredients`: integracion de ingredientes y perfiles nutricionales
+- `docs`: documentacion OpenAPI / Swagger
 
 ## Seguridad implementada
 
-- JWT para autenticación
+- JWT para autenticacion
 - middleware `protect` y control de roles
 - `helmet`
 - `hpp`
 - `express-mongo-sanitize`
 - rate limiting por dominio funcional
-- normalización de errores con códigos de máquina
+- normalizacion de errores con codigos de maquina
 
 ## Dependencias principales
 
@@ -101,20 +101,20 @@ Variables importantes:
 
 ## Arranque local
 
-Instalación:
+Instalacion:
 
 ```powershell
 cd backend
 npm install
 ```
 
-Ejecución en desarrollo:
+Ejecucion en desarrollo:
 
 ```powershell
 npm run dev
 ```
 
-Ejecución en modo normal:
+Ejecucion en modo normal:
 
 ```powershell
 npm start
@@ -144,34 +144,62 @@ npm run test:unit
 npm run test:integration
 npm run test:e2e
 npm run test:coverage
+npm run test:coverage:70
 ```
 
-## Pruebas
+## Testing, cobertura y Swagger
 
-La estrategia de pruebas del backend incluye:
+Tipos de prueba disponibles:
 
-- unit tests
-- integration tests
-- E2E funcionales sobre API
+- unitarias: `npm run test:unit`
+- integracion: `npm run test:integration`
+- E2E: `npm run test:e2e`
+- suite completa: `npm test`
 
-Ejecución recomendada:
+Cobertura:
 
-```powershell
-npm test
-```
+- medicion informativa: `npm run test:coverage`
+- umbral de control actual: `npm run test:coverage:70`
 
-Documentación relacionada:
+Estado validado en la ultima revision:
 
-- [backend/COVERAGE_REPORT.md](c:\Users\Usuario\Documents\NutraCore\backend\COVERAGE_REPORT.md)
-- [backend/TESTING_AND_SWAGGER.md](c:\Users\Usuario\Documents\NutraCore\backend\TESTING_AND_SWAGGER.md)
+- backend E2E: `8` tests OK
+- backend global: `21` suites, `154` tests OK
 
-## Swagger / OpenAPI
+Resumen historico de cobertura disponible:
 
-En desarrollo, la documentación puede exponerse en:
+- statements: `80.24%`
+- lines: `82.64%`
+- functions: `83.85%`
+- branches: `58.67%`
 
-- `/api/docs`
+Cobertura por modulo con mayor interes:
 
-El comportamiento depende de `NODE_ENV` y de `ENABLE_PUBLIC_API_DOCS`.
+- `routes/`: `78.19%` statements
+- `services/`: `84.61%` statements
+- `middleware/`: `88.54%` statements
+- `config/`: `75.38%` statements
+- `models/`: `80.74%` statements
+
+Swagger / OpenAPI:
+
+- UI Swagger: `http://localhost:5000/api/docs`
+- especificacion OpenAPI: `http://localhost:5000/api/docs/openapi.json`
+- archivo fuente principal: `backend/docs/openapi.json`
+
+## Riesgos tecnicos detectados
+
+Zonas con mayor margen de mejora:
+
+- flujos de error y edge cases en `news` y `dishes`
+- ramas complejas en `recipes`
+- hooks y metodos internos en `Recipe`, `Review` y `User`
+- ramas costosas en servicios con integracion externa, especialmente `openFoodFactsService`
+
+Observacion funcional relevante:
+
+- el backend ya bloquea `REC-07` por exceso de contenido en lugar de truncarlo silenciosamente
+- el valor tecnico actual para ingredientes es `20`, no `25`
 
 ## Docker
 
@@ -181,7 +209,7 @@ Construir imagen local del backend:
 docker build -t nutracore-backend ./backend
 ```
 
-Ejecutar con Docker Compose desde la raíz:
+Ejecutar con Docker Compose desde la raiz:
 
 ```powershell
 docker compose up --build backend mongo
@@ -193,15 +221,33 @@ Dockerfile usado:
 
 ## Despliegue
 
-El backend incluye una configuración de despliegue para Render en:
+El backend incluye una configuracion de despliegue para Render en:
 
 - [render.yaml](c:\Users\Usuario\Documents\NutraCore\render.yaml)
+
+## Roadmap de mejora
+
+Sprint 1:
+
+- reforzar transporte seguro y dependencias de correo
+- consolidar CORS whitelist y proxy real
+- mantener middleware de seguridad HTTP y sanitizacion
+- unificar el contrato de errores
+- mantener CI minima obligatoria
+
+Sprint 2:
+
+- introducir observabilidad y logging estructurado
+- ampliar metricas y checks operativos
+- optimizar indices y consultas
+- estudiar cache externa si hay necesidad de escalado
+- subir cobertura por ramas en rutas criticas
 
 ## Notas para la memoria del TFG
 
 Puntos defendibles del backend:
 
-- separación entre rutas, modelos, servicios y middleware
+- separacion entre rutas, modelos, servicios y middleware
 - reglas de negocio no triviales en recetas y usuarios
 - tratamiento de seguridad y errores
-- automatización de pruebas y cobertura
+- automatizacion de pruebas y cobertura
