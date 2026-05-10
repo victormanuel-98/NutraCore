@@ -224,18 +224,6 @@ Diseno base del proyecto (Figma):
 - Enlace principal:
   - `https://www.figma.com/design/8pkDks1nir4MvdbSDJdRwb/VMRC-NutraCore?node-id=0-1&p=f&t=7ilexWrRwtQ0AxIT-0`
 
-Bloques sugeridos para documentacion visual complementaria:
-
-- captura general de arquitectura visual
-- pantallas clave del prototipo
-- comparativa entre diseno y resultado final
-
-Ejemplo para insertar imagen exportada de Figma:
-
-```md
-![Vista general del prototipo en Figma](./public/images/figma/figma-home.png)
-```
-
 ## Notas para la memoria del TFG
 
 Puntos destacables para defensa:
