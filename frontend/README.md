@@ -1,10 +1,10 @@
 # Frontend de NutraCore
 
-## Descripcion
+## Descripción
 
-El frontend de NutraCore es una SPA construida con React y Vite. Su objetivo es ofrecer una experiencia visual clara para autenticacion, consulta de recetas, dashboard, perfil, noticias, administracion y uso de NutraCore Lab.
+El frontend de NutraCore es una SPA construida con React y Vite. Su objetivo es ofrecer una experiencia visual clara para autenticación, consulta de recetas, dashboard, perfil, noticias, administración y uso de NutraCore Lab.
 
-## Stack tecnico
+## Stack técnico
 
 - React `18`
 - Vite
@@ -15,7 +15,7 @@ El frontend de NutraCore es una SPA construida con React y Vite. Su objetivo es 
 
 ## Dependencias principales
 
-```text
+```
 react
 react-dom
 react-router-dom
@@ -32,7 +32,7 @@ tailwind-merge
 
 Dependencias de desarrollo:
 
-```text
+```
 vite
 @playwright/test
 cross-env
@@ -40,7 +40,7 @@ cross-env
 
 ## Estructura principal
 
-```text
+```
 frontend/
 |-- public/
 |-- src/
@@ -72,15 +72,15 @@ frontend/
 - `/cookies`
 - `/legal-notice`
 
-## Caracteristicas del frontend
+## Características del frontend
 
-- rutas protegidas para usuario autenticado
-- control de acceso por rol para el area admin
-- dashboard con informacion personalizada
-- catalogo de recetas con filtros y detalle
-- formularios de autenticacion y registro
-- secciones legales y de privacidad
-- tema y notificaciones mediante contextos
+- Rutas protegidas para usuario autenticado
+- Control de acceso por rol para el área admin
+- Dashboard con información personalizada
+- Catálogo de recetas con filtros y detalle
+- Formularios de autenticación y registro
+- Secciones legales y de privacidad
+- Tema y notificaciones mediante contextos
 
 ## Variables de entorno
 
@@ -95,34 +95,34 @@ Variables principales:
 
 ## Arranque local
 
-Instalacion:
+Instalación:
 
-```powershell
+```
 cd frontend
 npm install
 ```
 
 Modo desarrollo:
 
-```powershell
+```
 npm run dev
 ```
 
-Build de produccion:
+Build de producción:
 
-```powershell
+```
 npm run build
 ```
 
-Previsualizacion de la build:
+Previsualización de la build:
 
-```powershell
+```
 npm run preview
 ```
 
 ## Scripts disponibles
 
-```powershell
+```
 npm run dev
 npm run dev:e2e
 npm run build
@@ -131,15 +131,15 @@ npm run test:e2e
 npm run test:e2e:report
 ```
 
-## Validacion E2E del frontend
+## Validación E2E del frontend
 
 El proyecto incorpora Playwright para validar comportamiento real en navegador.
 
 Cobertura funcional browser-level:
 
 - responsive del formulario de registro
-- responsive del catalogo y de sus cards
-- menu movil usable
+- responsive del catálogo y de sus cards
+- menú móvil usable
 - feedback visual de carga en login
 - manejo amigable de errores de red
 
@@ -168,26 +168,26 @@ Reporte HTML:
 npm run test:e2e:report
 ```
 
-## Integracion con backend
+## Integración con backend
 
 El frontend consume la API definida en `VITE_API_URL` y esta preparado para:
 
-- autenticacion con JWT
-- rutas protegidas
-- gestion de errores traducidos a mensajes amigables
-- consumo de endpoints de recetas, usuarios, noticias y autenticacion
+- Autenticación con JWT
+- Rutas protegidas
+- Gestión de errores traducidos a mensajes amigables
+- Consumo de endpoints de recetas, usuarios, noticias y autenticación
 
 ## Docker
 
 Construir imagen local del frontend:
 
-```powershell
+```
 docker build -t nutracore-frontend ./frontend
 ```
 
-Ejecutar con Docker Compose desde la raiz:
+Ejecutar con Docker Compose desde la raíz:
 
-```powershell
+```
 docker compose up --build frontend
 ```
 
@@ -197,7 +197,7 @@ Dockerfile usado:
 
 ## Espacio para recursos visuales del TFG
 
-### GIFs de recorrido de la aplicacion
+### GIFs de recorrido de la aplicación
 
 Pendiente de insertar:
 
@@ -225,7 +225,7 @@ Ejemplo de bloque para insertar imagen:
 
 Puntos destacables para defensa:
 
-- separacion entre componentes, servicios, contextos y rutas
-- proteccion de navegacion segun autenticacion y rol
-- validacion browser-level con Playwright
-- experiencia responsive contemplada en pruebas
+- Separación entre componentes, servicios, contextos y rutas
+- Protección de navegación según autenticación y rol
+- Validación browser-level con Playwright
+- Experiencia responsive contemplada en pruebas
