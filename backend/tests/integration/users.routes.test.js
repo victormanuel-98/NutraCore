@@ -179,6 +179,16 @@ describe('users routes', () => {
     expect(res.body.data.totalFavorites).toBe(2);
   });
 
+  test('GET /stats handles internal error', async () => {
+    User.findById.mockImplementation(() => {
+      throw new Error('stats db down');
+    });
+    const app = express();
+    app.use('/api/users', usersRoutes);
+    const res = await request(app).get('/api/users/stats');
+    expect(res.status).toBe(500);
+  });
+
   test('GET /admin/:id returns 404 when user not found', async () => {
     User.findById.mockReturnValue({
       select: jest.fn().mockReturnValue({
@@ -332,6 +342,27 @@ describe('users routes', () => {
     expect(res.status).toBe(403);
   });
 
+  test('PATCH /admin/:id/status returns 500 on unexpected errors', async () => {
+    User.findById.mockRejectedValue(new Error('status fail'));
+    const app = express();
+    app.use(express.json());
+    app.use('/api/users', usersRoutes);
+    const res = await request(app).patch('/api/users/admin/507f1f77bcf86cd799439011/status').send({ isActive: true });
+    expect(res.status).toBe(500);
+  });
+
+  test('PATCH /admin/:id/status returns 403 when cannot manage target user', async () => {
+    User.findById.mockResolvedValue({
+      _id: 'u2',
+      role: 'admin'
+    });
+    const app = express();
+    app.use(express.json());
+    app.use('/api/users', usersRoutes);
+    const res = await request(app).patch('/api/users/admin/507f1f77bcf86cd799439011/status').send({ isActive: true });
+    expect(res.status).toBe(403);
+  });
+
   test('GET /menu-consumption returns persisted state', async () => {
     MenuConsumption.findOne.mockReturnValue({
       lean: jest.fn().mockResolvedValue({
@@ -361,5 +392,34 @@ describe('users routes', () => {
     expect(res.status).toBe(200);
     expect(MenuConsumption.findOneAndUpdate).toHaveBeenCalled();
     expect(res.body.data.plannerVersionByPeriod.daily.legacy).toBe(3);
+  });
+
+  test('GET /menu-consumption returns defaults when no persisted doc', async () => {
+    MenuConsumption.findOne.mockReturnValue({ lean: jest.fn().mockResolvedValue(null) });
+    const app = express();
+    app.use('/api/users', usersRoutes);
+    const res = await request(app).get('/api/users/menu-consumption');
+    expect(res.status).toBe(200);
+    expect(res.body.data.plannerVersionByPeriod.daily).toBe(0);
+  });
+
+  test('GET /menu-consumption returns 500 on db error', async () => {
+    MenuConsumption.findOne.mockReturnValue({ lean: jest.fn().mockRejectedValue(new Error('menu fail')) });
+    const app = express();
+    app.use('/api/users', usersRoutes);
+    const res = await request(app).get('/api/users/menu-consumption');
+    expect(res.status).toBe(500);
+  });
+
+  test('PUT /menu-consumption returns 500 on db error', async () => {
+    MenuConsumption.findOneAndUpdate.mockRejectedValue(new Error('update fail'));
+    const app = express();
+    app.use(express.json());
+    app.use('/api/users', usersRoutes);
+    const res = await request(app).put('/api/users/menu-consumption').send({
+      plannerVersionByPeriod: { daily: { a: 1 } },
+      consumedByPeriod: { daily: { bucket: { r1: true } } }
+    });
+    expect(res.status).toBe(500);
   });
 });

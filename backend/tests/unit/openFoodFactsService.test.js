@@ -41,6 +41,17 @@ describe('openFoodFactsService', () => {
     expect(out[0]).toHaveProperty('id');
   });
 
+  test('searchIngredients clamps result limit and supports typo matches', async () => {
+    emitJsonResponse({
+      'en:broccoli': { name: { en: 'broccoli', es: 'brocoli' } },
+      'en:banana': { name: { en: 'banana', es: 'platano' } }
+    });
+    const svc = require('../../services/openFoodFactsService');
+    const out = await svc.searchIngredients('brocoli', 999);
+    expect(out.length).toBeLessThanOrEqual(50);
+    expect(out[0].id).toBe('en:broccoli');
+  });
+
   test('getIngredientNutritionProfile uses fallback when no products', async () => {
     emitJsonResponse({ products: [] });
     const svc = require('../../services/openFoodFactsService');
@@ -66,5 +77,16 @@ describe('openFoodFactsService', () => {
     });
     expect(out.averageMacros.calories).toBe(150);
     expect(out.productsAnalyzed).toBe(2);
+  });
+
+  test('getIngredientNutritionProfile returns null average when no products and no fallback', async () => {
+    emitJsonResponse({ products: [] });
+    const svc = require('../../services/openFoodFactsService');
+    const out = await svc.getIngredientNutritionProfile({
+      ingredientId: 'en:unknown-ingredient',
+      ingredientName: 'xxzzqq'
+    });
+    expect(out.averageMacros).toBeNull();
+    expect(out.productsAnalyzed).toBe(0);
   });
 });

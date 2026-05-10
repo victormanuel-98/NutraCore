@@ -49,6 +49,16 @@ describe('news routes', () => {
     expect(res.status).toBe(200);
   });
 
+  test('GET /featured returns 500 when query fails', async () => {
+    News.find.mockImplementation(() => {
+      throw new Error('db fail featured');
+    });
+    const app = express();
+    app.use('/api/news', newsRoutes);
+    const res = await request(app).get('/api/news/featured');
+    expect(res.status).toBe(500);
+  });
+
   test('POST /newsletter/subscribe sends confirmation email', async () => {
     const app = express();
     app.use(express.json());
@@ -56,6 +66,14 @@ describe('news routes', () => {
     const res = await request(app).post('/api/news/newsletter/subscribe').send({ email: 'reader@gmail.com' });
     expect(res.status).toBe(200);
     expect(sendNewsletterSubscriptionEmail).toHaveBeenCalledWith({ toEmail: 'reader@gmail.com' });
+  });
+
+  test('POST /newsletter/subscribe returns 400 when email missing', async () => {
+    const app = express();
+    app.use(express.json());
+    app.use('/api/news', newsRoutes);
+    const res = await request(app).post('/api/news/newsletter/subscribe').send({});
+    expect(res.status).toBe(400);
   });
 
   test('POST /newsletter/subscribe rejects long local part', async () => {
@@ -76,12 +94,30 @@ describe('news routes', () => {
     expect(res.status).toBe(404);
   });
 
+  test('GET /:id increments views on success', async () => {
+    const incrementViews = jest.fn().mockResolvedValue();
+    News.findById.mockResolvedValue({ _id: 'n1', incrementViews });
+    const app = express();
+    app.use('/api/news', newsRoutes);
+    const res = await request(app).get('/api/news/507f1f77bcf86cd799439011');
+    expect(res.status).toBe(200);
+    expect(incrementViews).toHaveBeenCalled();
+  });
+
   test('POST /:id/like increments likes', async () => {
     News.findById.mockResolvedValue({ likes: 7, addLike: jest.fn().mockResolvedValue() });
     const app = express();
     app.use('/api/news', newsRoutes);
     const res = await request(app).post('/api/news/507f1f77bcf86cd799439011/like');
     expect(res.status).toBe(200);
+  });
+
+  test('POST /:id/like returns 500 when addLike fails', async () => {
+    News.findById.mockResolvedValue({ likes: 7, addLike: jest.fn().mockRejectedValue(new Error('like fail')) });
+    const app = express();
+    app.use('/api/news', newsRoutes);
+    const res = await request(app).post('/api/news/507f1f77bcf86cd799439011/like');
+    expect(res.status).toBe(500);
   });
 
   test('GET /user/saved returns user saved news', async () => {
@@ -119,6 +155,27 @@ describe('news routes', () => {
     expect(res.body.success).toBe(true);
   });
 
+  test('POST /:id/save removes saved state when already saved', async () => {
+    const newsId = { toString: () => 'n1' };
+    const removeSave = jest.fn().mockResolvedValue();
+    News.findById.mockResolvedValue({
+      _id: newsId,
+      saves: 2,
+      addSave: jest.fn().mockResolvedValue(),
+      removeSave
+    });
+    User.findById.mockResolvedValue({
+      savedNews: [newsId],
+      save: jest.fn().mockResolvedValue()
+    });
+    const app = express();
+    app.use('/api/news', newsRoutes);
+    const res = await request(app).post('/api/news/507f1f77bcf86cd799439011/save');
+    expect(res.status).toBe(200);
+    expect(removeSave).toHaveBeenCalled();
+    expect(res.body.data.isSaved).toBe(false);
+  });
+
   test('GET /categories/list returns aggregated categories', async () => {
     News.aggregate.mockResolvedValue([{ _id: 'nutrition', count: 5 }]);
     const app = express();
@@ -126,6 +183,14 @@ describe('news routes', () => {
     const res = await request(app).get('/api/news/categories/list');
     expect(res.status).toBe(200);
     expect(res.body.data).toHaveLength(1);
+  });
+
+  test('GET /categories/list returns 500 when aggregate fails', async () => {
+    News.aggregate.mockRejectedValue(new Error('agg fail'));
+    const app = express();
+    app.use('/api/news', newsRoutes);
+    const res = await request(app).get('/api/news/categories/list');
+    expect(res.status).toBe(500);
   });
 
   test('GET / handles internal error', async () => {
@@ -144,5 +209,15 @@ describe('news routes', () => {
     app.use('/api/news', newsRoutes);
     const res = await request(app).post('/api/news/507f1f77bcf86cd799439011/like');
     expect(res.status).toBe(404);
+  });
+
+  test('POST /:id/share increments shares', async () => {
+    const incrementShares = jest.fn().mockResolvedValue();
+    News.findById.mockResolvedValue({ shares: 4, incrementShares });
+    const app = express();
+    app.use('/api/news', newsRoutes);
+    const res = await request(app).post('/api/news/507f1f77bcf86cd799439011/share');
+    expect(res.status).toBe(200);
+    expect(incrementShares).toHaveBeenCalled();
   });
 });

@@ -3,6 +3,7 @@ const Dish = require('../../models/Dish');
 const News = require('../../models/News');
 const Recipe = require('../../models/Recipe');
 const Review = require('../../models/Review');
+const MenuConsumption = require('../../models/MenuConsumption');
 
 describe('model instance methods', () => {
   test('User toPublicProfile and calculateBMI', () => {
@@ -75,6 +76,21 @@ describe('model instance methods', () => {
     modelSpy.mockRestore();
   });
 
+  test('Review calculateAverageRating sets zero values when no stats', async () => {
+    Review.aggregate = jest.fn().mockResolvedValue([]);
+    const updateMock = jest.fn().mockResolvedValue({});
+    const mongoose = require('mongoose');
+    const modelSpy = jest.spyOn(mongoose, 'model').mockReturnValue({ findByIdAndUpdate: updateMock });
+
+    await Review.calculateAverageRating('recipe2');
+    expect(updateMock).toHaveBeenCalledWith('recipe2', {
+      reviewsCount: 0,
+      averageRating: 0
+    });
+
+    modelSpy.mockRestore();
+  });
+
   test('Recipe normalizes accented difficulty values through schema setter', () => {
     const recipe = new Recipe({
       title: 'Receta valida',
@@ -88,5 +104,11 @@ describe('model instance methods', () => {
     });
 
     expect(recipe.difficulty).toBe('dificil');
+  });
+
+  test('MenuConsumption has expected defaults', () => {
+    const doc = new MenuConsumption({ user: '507f1f77bcf86cd799439011' });
+    expect(doc.plannerVersionByPeriod).toEqual({ daily: 0, weekly: 0, monthly: 0 });
+    expect(doc.consumedByPeriod).toEqual({ daily: {}, weekly: {}, monthly: {} });
   });
 });

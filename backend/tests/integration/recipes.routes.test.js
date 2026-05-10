@@ -198,6 +198,16 @@ describe('recipes routes', () => {
     expect(res.body.success).toBe(true);
   });
 
+  test('GET /featured/popular returns 500 on failure', async () => {
+    Recipe.find.mockImplementation(() => {
+      throw new Error('featured fail');
+    });
+    const app = express();
+    app.use('/api/recipes', recipesRoutes);
+    const res = await request(app).get('/api/recipes/featured/popular?limit=11');
+    expect(res.status).toBe(500);
+  });
+
   test('GET /user/me returns own recipes', async () => {
     Recipe.find.mockReturnValue({
       populate: jest.fn().mockReturnValue({
@@ -210,6 +220,16 @@ describe('recipes routes', () => {
     expect(res.status).toBe(200);
   });
 
+  test('GET /user/me returns 500 on failure', async () => {
+    Recipe.find.mockImplementation(() => {
+      throw new Error('me fail');
+    });
+    const app = express();
+    app.use('/api/recipes', recipesRoutes);
+    const res = await request(app).get('/api/recipes/user/me');
+    expect(res.status).toBe(500);
+  });
+
   test('GET /user/favorites returns favorites list', async () => {
     Recipe.find.mockReturnValue({
       populate: jest.fn().mockReturnValue({
@@ -220,6 +240,16 @@ describe('recipes routes', () => {
     app.use('/api/recipes', recipesRoutes);
     const res = await request(app).get('/api/recipes/user/favorites');
     expect(res.status).toBe(200);
+  });
+
+  test('GET /user/favorites returns 500 on failure', async () => {
+    Recipe.find.mockImplementation(() => {
+      throw new Error('fav fail');
+    });
+    const app = express();
+    app.use('/api/recipes', recipesRoutes);
+    const res = await request(app).get('/api/recipes/user/favorites');
+    expect(res.status).toBe(500);
   });
 
   test('POST /:id/favorite toggles when recipe belongs to another user', async () => {
@@ -353,6 +383,15 @@ describe('recipes routes', () => {
     expect(res.status).toBe(404);
   });
 
+  test('PUT /:id returns 500 on unexpected error', async () => {
+    Recipe.findById.mockRejectedValue(new Error('put fail'));
+    const app = express();
+    app.use(express.json());
+    app.use('/api/recipes', recipesRoutes);
+    const res = await request(app).put('/api/recipes/507f1f77bcf86cd799439011').send({ title: 'x' });
+    expect(res.status).toBe(500);
+  });
+
   test('DELETE /:id returns 403 for non owner', async () => {
     Recipe.findById.mockResolvedValue({
       _id: 'r1',
@@ -381,6 +420,14 @@ describe('recipes routes', () => {
     expect(res.status).toBe(200);
   });
 
+  test('DELETE /:id returns 500 on unexpected error', async () => {
+    Recipe.findById.mockRejectedValue(new Error('delete fail'));
+    const app = express();
+    app.use('/api/recipes', recipesRoutes);
+    const res = await request(app).delete('/api/recipes/507f1f77bcf86cd799439011');
+    expect(res.status).toBe(500);
+  });
+
   test('PATCH /:id/restore returns 404 when recipe missing', async () => {
     jest.resetModules();
     jest.doMock('../../config/auth', () => ({
@@ -396,6 +443,14 @@ describe('recipes routes', () => {
     app.use('/api/recipes', adminRoutes);
     const res = await request(app).patch('/api/recipes/507f1f77bcf86cd799439011/restore');
     expect(res.status).toBe(404);
+  });
+
+  test('POST /:id/favorite returns 500 on unexpected error', async () => {
+    Recipe.findById.mockRejectedValue(new Error('favorite fail'));
+    const app = express();
+    app.use('/api/recipes', recipesRoutes);
+    const res = await request(app).post('/api/recipes/507f1f77bcf86cd799439011/favorite');
+    expect(res.status).toBe(500);
   });
 
 });
