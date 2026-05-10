@@ -45,8 +45,8 @@ export function LoadingScreen({ onComplete, minimumMs = 2400 }) {
             </g>
           </svg>
         </div>
-        <p className="loading-typewriter loading-word-animate loading-corner-text">
-          Cargando
+        <p className="loading-typewriter loading-word-animate loading-status-text">
+          <span className="loading-status-label">Cargando</span>
           <span className="loading-ellipsis" aria-hidden="true">
             {loadingDots}
           </span>

@@ -100,17 +100,17 @@ export function CookieConsentBanner() {
   if (!visible) return null;
 
   return (
-    <div className="fixed bottom-3 left-3 z-[140] w-[min(360px,calc(100vw-1.25rem))]">
+    <div className="cookie-banner fixed bottom-3 left-3 z-[140] w-[min(360px,calc(100vw-1.25rem))]">
       <div className="rounded-lg border-2 border-[#ff0a60] bg-white shadow-[0_8px_18px_rgba(2,8,23,0.14)]">
-        <div className="p-2 sm:p-2.5">
+        <div className="cookie-banner__inner p-2 sm:p-2.5">
           <h3 className="font-navbar text-[1rem] leading-none text-slate-900">Cookies</h3>
 
-          <p className="mt-1 text-[10px] leading-3.5 text-slate-800">
+          <p className="cookie-banner__copy mt-1 text-[10px] leading-3.5 text-slate-800">
             <span className="block">Usamos cookies necesarias y opcionales para análisis y personalización.</span>
             <span className="block">Puedes aceptar, rechazar o configurar tus preferencias.</span>
           </p>
 
-          <p className="mt-0.5 text-[10px] text-slate-800">
+          <p className="cookie-banner__links mt-0.5 text-[10px] text-slate-800">
             <Link to="/cookies" className="text-pink-accent hover:underline">
               Cookies
             </Link>{' '}
@@ -120,25 +120,25 @@ export function CookieConsentBanner() {
             </Link>
           </p>
 
-          <div className="mt-1.5 flex flex-wrap gap-1.5">
+          <div className="cookie-banner__actions mt-1.5 flex flex-wrap gap-1.5">
             <button
               type="button"
               onClick={handleRejectOptional}
-              className="rounded-md border border-slate-300 px-2 py-0.5 text-[10px] font-medium text-slate-800 transition-colors hover:bg-slate-50"
+              className="cookie-banner__button rounded-md border border-slate-300 px-2 py-0.5 text-[10px] font-medium text-slate-800 transition-colors hover:bg-slate-50"
             >
               Rechazar
             </button>
             <button
               type="button"
               onClick={() => setShowConfig((prev) => !prev)}
-              className="rounded-md border border-slate-300 px-2 py-0.5 text-[10px] font-medium text-slate-800 transition-colors hover:bg-slate-50"
+              className="cookie-banner__button rounded-md border border-slate-300 px-2 py-0.5 text-[10px] font-medium text-slate-800 transition-colors hover:bg-slate-50"
             >
               {showConfig ? 'Ocultar' : 'Configurar'}
             </button>
             <button
               type="button"
               onClick={handleAcceptAll}
-              className="rounded-md bg-pink-accent px-2 py-0.5 text-[10px] font-semibold text-white transition-colors hover:bg-pink-accent/90"
+              className="cookie-banner__button cookie-banner__button-primary rounded-md bg-pink-accent px-2 py-0.5 text-[10px] font-semibold text-white transition-colors hover:bg-pink-accent/90"
             >
               Aceptar
             </button>

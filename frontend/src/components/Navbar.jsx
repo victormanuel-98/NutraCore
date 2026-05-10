@@ -135,19 +135,14 @@ export function Navbar() {
               {isDark ? <Sun className="w-6 h-6" /> : <Moon className="w-6 h-6" />}
             </Button>
 
-            <div className="md:hidden flex items-center">
-              <button className="p-2 mr-1 shrink-0" onClick={() => setMobileMenuOpen(!mobileMenuOpen)} aria-label={mobileMenuOpen ? 'Cerrar menú' : 'Abrir menú'}>
+            <div className="md:hidden flex items-center justify-end w-full">
+              <button
+                className="p-2 shrink-0"
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                aria-label={mobileMenuOpen ? 'Cerrar menú' : 'Abrir menú'}
+              >
                 {mobileMenuOpen ? <X className={`w-6 h-6 ${mobileIconColor}`} /> : <Menu className={`w-6 h-6 ${mobileIconColor}`} />}
               </button>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={toggleTheme}
-                className={loginButtonClasses}
-                aria-label="Cambiar tema"
-              >
-                {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-              </Button>
             </div>
           </div>
         </div>
@@ -155,37 +150,52 @@ export function Navbar() {
 
       {mobileMenuOpen && (
         <div className={`${mobileMenuClasses} mobile-menu-animate`}>
-          <div className="px-4 py-4 space-y-3">
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                to={link.href}
-                className={`block break-words py-2 font-navbar text-base ${
-                  location.pathname === link.href
-                    ? hasScrolled
-                      ? 'text-pink-accent font-semibold'
-                      : 'text-white font-semibold'
-                    : hasScrolled
-                    ? 'text-pink-accent/90'
-                    : 'text-white/90'
-                }`}
-                onClick={() => setMobileMenuOpen(false)}
+          <div className="mobile-menu-panel px-4 py-4 space-y-4">
+            <div className="mobile-menu-links-grid">
+              {navLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  to={link.href}
+                  className={`mobile-menu-link-card ${
+                    location.pathname === link.href
+                      ? hasScrolled
+                        ? 'mobile-menu-link-card-active-light'
+                        : 'mobile-menu-link-card-active-dark'
+                      : hasScrolled
+                      ? 'mobile-menu-link-card-idle-light'
+                      : 'mobile-menu-link-card-idle-dark'
+                  }`}
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <span className="mobile-menu-link-label">{link.name}</span>
+                </Link>
+              ))}
+            </div>
+            <div className={`mobile-theme-row ${hasScrolled ? 'border-pink-accent/20' : 'border-white/20'}`}>
+              <span className={hasScrolled ? 'text-pink-accent/90' : 'text-white/90'}>Modo visual</span>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={toggleTheme}
+                className={`mobile-theme-toggle ${loginButtonClasses}`}
+                aria-label="Cambiar tema"
               >
-                {link.name}
-              </Link>
-            ))}
+                {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+                <span>{isDark ? 'Modo claro' : 'Modo oscuro'}</span>
+              </Button>
+            </div>
             <div className={`pt-4 space-y-2 ${hasScrolled ? 'border-t border-pink-accent/20' : 'border-t border-white/20'}`}>
               {!isAuthenticated ? (
                 <>
-                  <Link to="/login" onClick={() => setMobileMenuOpen(false)}>
-                    <Button variant="ghost" className={`w-full ${loginButtonClasses}`}>
+                  <Link className="block" to="/login" onClick={() => setMobileMenuOpen(false)}>
+                    <Button variant="ghost" className={`mobile-auth-btn w-full justify-center ${loginButtonClasses}`}>
                       Iniciar sesión
                     </Button>
                   </Link>
-                  <Link to="/register" onClick={() => setMobileMenuOpen(false)}>
+                  <Link className="block pt-1.5" to="/register" onClick={() => setMobileMenuOpen(false)}>
                     <Button
                       variant="ghost"
-                      className={`w-full ${registerButtonClasses} font-semibold`}
+                      className={`mobile-auth-btn w-full justify-center ${registerButtonClasses} font-semibold`}
                       style={{
                         backgroundColor: hasScrolled ? 'var(--pink-accent)' : '#ffffff',
                         color: hasScrolled ? '#ffffff' : 'var(--pink-accent)',

@@ -19,11 +19,11 @@ export function RecipeDetail({ recipe, onClose }) {
 
   return (
     <div 
-      className="recipe-modal-overlay fixed inset-0 z-[60] flex items-center justify-center p-4 sm:p-6 modal-overlay-enter"
+      className="recipe-modal-overlay recipe-detail-mobile fixed inset-0 z-[60] flex items-center justify-center p-3 sm:p-6 modal-overlay-enter"
       onClick={onClose}
     >
       <div 
-        className="bg-white w-full max-w-4xl max-h-[90vh] overflow-hidden border-2 border-pink-accent shadow-[8px_8px_0px_0px_#ff0a60] modal-content-enter relative"
+        className="recipe-detail-mobile__panel bg-white w-full max-w-4xl max-h-[90vh] overflow-hidden border-2 border-pink-accent shadow-[8px_8px_0px_0px_#ff0a60] modal-content-enter relative"
         onClick={(e) => e.stopPropagation()}
       >
         <button 
@@ -33,9 +33,9 @@ export function RecipeDetail({ recipe, onClose }) {
           <PixelX size={18} className="modal-close-icon transition-colors group-hover:text-pink-accent/80" />
         </button>
 
-        <div className="max-h-[90vh] overflow-y-auto">
+        <div className="recipe-detail-mobile__scroll max-h-[90vh] overflow-y-auto">
         {/* Header con Imagen */}
-        <div className="relative h-64 sm:h-80 w-full overflow-hidden">
+        <div className="recipe-detail-mobile__hero relative h-64 sm:h-80 w-full overflow-hidden">
           {recipe.image ? (
             <img 
               src={recipe.image.replace('/upload/', '/upload/f_auto,q_auto,w_1200/')} 
@@ -47,11 +47,11 @@ export function RecipeDetail({ recipe, onClose }) {
               <ChefHat size={64} className="text-gray-300" />
             </div>
           )}
-          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-6 sm:p-8">
+          <div className="recipe-detail-mobile__hero-copy absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-6 sm:p-8">
             <Badge className="mb-3 bg-pink-accent text-white border-none">
               {recipe.category}
             </Badge>
-            <h2 className="text-3xl sm:text-4xl font-bold text-white font-logo leading-tight">
+            <h2 className="recipe-detail-mobile__title text-3xl sm:text-4xl font-bold text-white font-logo leading-tight">
               {recipe.title}
             </h2>
             <div className="mt-4">
@@ -60,7 +60,7 @@ export function RecipeDetail({ recipe, onClose }) {
           </div>
         </div>
 
-        <div className="p-6 sm:p-8 space-y-8">
+        <div className="recipe-detail-mobile__body p-6 sm:p-8 space-y-8">
           {/* Métricas Rápidas */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             <MetricCard icon={<Clock className="text-pink-accent" />} label="Tiempo" value={`${recipe.prepTime} min`} />

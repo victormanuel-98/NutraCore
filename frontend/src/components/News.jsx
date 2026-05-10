@@ -733,7 +733,7 @@ export function News() {
               />
             </div>
 
-            <div className="flex flex-wrap gap-2">
+            <div className="news-filter-group flex flex-wrap gap-2">
               {categories.map((category) => (
                 <Badge
                   key={category}
@@ -782,20 +782,20 @@ export function News() {
                       </Badge>
                     </div>
 
-                    <div className="flex flex-1 flex-col p-3 sm:p-4 lg:p-5 space-y-3">
-                      <h3 className="text-base sm:text-lg lg:text-xl font-bold text-gray-900 group-hover:text-pink-accent transition-colors line-clamp-3 min-h-[4.2rem] sm:min-h-[5.4rem]">
+                    <div className="news-card-body flex flex-1 flex-col p-3 sm:p-4 lg:p-5 space-y-3">
+                      <h3 className="news-card-title text-base sm:text-lg lg:text-xl font-bold text-gray-900 group-hover:text-pink-accent transition-colors line-clamp-3 min-h-[4.2rem] sm:min-h-[5.4rem]">
                         {article.title}
                       </h3>
 
-                      <p className="text-xs sm:text-sm text-gray-600 leading-relaxed line-clamp-4 min-h-[5.2rem] sm:min-h-[6.4rem]">{article.excerpt}</p>
+                      <p className="news-card-excerpt text-xs sm:text-sm text-gray-600 leading-relaxed line-clamp-4 min-h-[5.2rem] sm:min-h-[6.4rem]">{article.excerpt}</p>
 
-                      <div className="mt-auto flex flex-col gap-3 border-t border-gray-100 pt-4 min-[480px]:flex-row min-[480px]:items-center min-[480px]:justify-between">
-                        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-gray-500">
-                          <div className="flex items-center gap-1">
+                      <div className="news-card-footer mt-auto flex flex-col gap-3 border-t border-gray-100 pt-4 min-[480px]:flex-row min-[480px]:items-center min-[480px]:justify-between">
+                        <div className="news-card-meta flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-gray-500">
+                          <div className="news-card-meta-item flex items-center gap-1">
                             <Calendar className="w-4 h-4" />
                             <span>{article.date}</span>
                           </div>
-                          <div className="flex items-center gap-1">
+                          <div className="news-card-meta-item flex items-center gap-1">
                             <Clock className="w-4 h-4" />
                             <span>{article.readTime} min</span>
                           </div>
@@ -850,20 +850,20 @@ export function News() {
                       </Badge>
                     </div>
 
-                    <div className="flex flex-1 flex-col p-3 sm:p-4 space-y-2.5">
-                      <h3 className="text-sm sm:text-base font-bold text-gray-900 group-hover:text-pink-accent transition-colors line-clamp-3 min-h-[3.8rem] sm:min-h-[4.7rem]">
+                    <div className="news-card-body flex flex-1 flex-col p-3 sm:p-4 space-y-2.5">
+                      <h3 className="news-card-title text-sm sm:text-base font-bold text-gray-900 group-hover:text-pink-accent transition-colors line-clamp-3 min-h-[3.8rem] sm:min-h-[4.7rem]">
                         {article.title}
                       </h3>
 
-                      <p className="text-xs sm:text-sm text-gray-600 leading-relaxed line-clamp-4 min-h-[4.8rem] sm:min-h-[6rem]">{article.excerpt}</p>
+                      <p className="news-card-excerpt text-xs sm:text-sm text-gray-600 leading-relaxed line-clamp-4 min-h-[4.8rem] sm:min-h-[6rem]">{article.excerpt}</p>
 
-                      <div className="mt-auto flex flex-col gap-3 border-t border-gray-100 pt-3 min-[480px]:flex-row min-[480px]:items-center min-[480px]:justify-between">
-                        <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-xs text-gray-500">
-                          <div className="flex items-center gap-1">
+                      <div className="news-card-footer mt-auto flex flex-col gap-3 border-t border-gray-100 pt-3 min-[480px]:flex-row min-[480px]:items-center min-[480px]:justify-between">
+                        <div className="news-card-meta flex flex-wrap items-center gap-x-3 gap-y-2 text-xs text-gray-500">
+                          <div className="news-card-meta-item flex items-center gap-1">
                             <Calendar className="w-3 h-3" />
                             <span>{article.date}</span>
                           </div>
-                          <div className="flex items-center gap-1">
+                          <div className="news-card-meta-item flex items-center gap-1">
                             <Clock className="w-3 h-3" />
                             <span>{article.readTime} min</span>
                           </div>
@@ -937,29 +937,29 @@ export function News() {
 
           {selectedArticle && (
             <div
-              className="fixed inset-0 z-[90] flex items-center justify-center p-3 sm:p-4 md:p-6 bg-black/40 modal-overlay-enter"
+              className="news-article-modal fixed inset-0 z-[90] flex items-center justify-center p-3 sm:p-4 md:p-6 bg-black/40 modal-overlay-enter"
               onClick={() => setSelectedArticle(null)}
             >
               <Card
                 key={selectedArticle.id}
-                className="w-full max-w-4xl h-[calc(100vh-1.5rem)] sm:h-[calc(100vh-2rem)] md:h-[calc(100vh-3rem)] max-h-[calc(100vh-1.5rem)] sm:max-h-[calc(100vh-2rem)] md:max-h-[calc(100vh-3rem)] overflow-y-auto bg-white border-2 border-pink-accent shadow-[10px_10px_0px_0px_#ff0a60] rounded-none modal-content-enter relative"
+                className="news-article-modal__panel w-full max-w-4xl h-[calc(100vh-1.5rem)] sm:h-[calc(100vh-2rem)] md:h-[calc(100vh-3rem)] max-h-[calc(100vh-1.5rem)] sm:max-h-[calc(100vh-2rem)] md:max-h-[calc(100vh-3rem)] overflow-y-auto bg-white border-2 border-pink-accent shadow-[10px_10px_0px_0px_#ff0a60] rounded-none modal-content-enter relative"
                 onClick={(event) => event.stopPropagation()}
               >
                 <div className="relative">
-                  <div className="aspect-[16/8] overflow-hidden border-b-2 border-pink-accent/40">
+                  <div className="news-article-modal__hero aspect-[16/8] overflow-hidden border-b-2 border-pink-accent/40">
                     <NewsImage src={selectedArticle.image} alt={selectedArticle.title} featured />
                   </div>
                   <button
                     type="button"
                     aria-label="Cerrar artículo"
                     onClick={() => setSelectedArticle(null)}
-                    className="absolute top-3 right-3 h-11 w-11 border-2 border-pink-accent/40 bg-white/95 text-pink-accent hover:bg-pink-50 hover:border-pink-accent transition-all duration-200 flex items-center justify-center rounded-full group hover:scale-105"
+                    className="news-article-modal__close absolute top-3 right-3 h-11 w-11 border-2 border-pink-accent/40 bg-white/95 text-pink-accent hover:bg-pink-50 hover:border-pink-accent transition-all duration-200 flex items-center justify-center rounded-full group hover:scale-105"
                   >
                     <PixelX size={18} className="text-pink-accent pixel-icon group-hover:text-pink-accent" />
                   </button>
                 </div>
 
-                <div className="space-y-6 p-4 sm:p-6 md:p-8">
+                <div className="news-article-modal__body space-y-6 p-4 sm:p-6 md:p-8">
                   <div className="flex flex-wrap items-center gap-2">
                     <Badge className="bg-pink-accent text-white rounded-none">{selectedArticle.category}</Badge>
                     <span className="text-sm text-gray-500 inline-flex items-center gap-1">
@@ -972,7 +972,7 @@ export function News() {
                     </span>
                   </div>
 
-                  <h3 className="text-2xl font-bold leading-tight text-gray-900 md:text-3xl">{selectedArticle.title}</h3>
+                  <h3 className="news-article-modal__title text-2xl font-bold leading-tight text-gray-900 md:text-3xl">{selectedArticle.title}</h3>
 
                   <div className="space-y-5 text-gray-700 leading-relaxed">
                     <p className="text-base md:text-lg text-gray-800">{renderFormattedText(selectedArticle.excerpt)}</p>

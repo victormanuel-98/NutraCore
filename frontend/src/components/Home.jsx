@@ -262,27 +262,27 @@ export function Home() {
 
       <section id="indice" data-home-snap="true" className="home-snap-section flex items-start bg-gray-50 px-4 py-5 sm:px-6 sm:py-8 lg:items-center lg:px-8">
         <div className="mx-auto max-w-7xl">
-          <Card className="mb-4 p-4 text-center reveal-item bg-white border-2 border-pink-accent shadow-[8px_8px_0px_0px_#ff0a60] rounded-none sm:mb-6 sm:p-5 md:p-7">
+          <Card className="home-index-mobile mb-4 p-4 text-center reveal-item bg-white border-2 border-pink-accent shadow-[8px_8px_0px_0px_#ff0a60] rounded-none sm:mb-6 sm:p-5 md:p-7">
             <h2 className="mb-2 text-xl font-bold text-gray-900 sm:text-2xl lg:text-4xl">Todo lo que necesitas</h2>
             <p className="mx-auto max-w-3xl text-xs text-gray-600 sm:text-sm lg:text-lg">
               Herramientas inteligentes diseñadas para hacer tu alimentación más eficiente.
             </p>
           </Card>
 
-          <div className="grid grid-cols-2 gap-3 md:grid-cols-2 lg:gap-5">
+          <div className="home-index-grid grid grid-cols-2 gap-3 md:grid-cols-2 lg:gap-5">
             {indexCards.map(({ icon: Icon, title, description, destination }) => (
               <button
                 type="button"
                 key={title}
                 onClick={() => handleIndexCardClick(destination)}
-                className="text-left"
+                className="home-index-grid__item text-left"
               >
-                <Card className="index-card-hover h-full cursor-pointer rounded-none border-2 border-pink-accent bg-white p-3 shadow-[5px_5px_0px_0px_#ff0a60] sm:p-4 md:p-5">
-                  <div className="mb-2 flex h-8 w-8 items-center justify-center border border-pink-accent/40 bg-pink-accent/10 transition-colors sm:h-9 sm:w-9">
+                <Card className="home-index-card index-card-hover h-full cursor-pointer rounded-none border-2 border-pink-accent bg-white p-3 shadow-[5px_5px_0px_0px_#ff0a60] sm:p-4 md:p-5">
+                  <div className="home-index-card__icon mb-2 flex h-8 w-8 items-center justify-center border border-pink-accent/40 bg-pink-accent/10 transition-colors sm:h-9 sm:w-9">
                     <Icon className="pixel-icon h-4 w-4 text-pink-accent sm:h-[18px] sm:w-[18px]" strokeWidth={2.5} />
                   </div>
-                  <h3 className="mb-1 text-sm font-bold text-gray-900 transition-colors sm:text-base">{title}</h3>
-                  <p className="text-[0.72rem] leading-relaxed text-gray-600 transition-colors sm:text-xs">{description}</p>
+                  <h3 className="home-index-card__title mb-1 text-sm font-bold text-gray-900 transition-colors sm:text-base">{title}</h3>
+                  <p className="home-index-card__description text-[0.72rem] leading-relaxed text-gray-600 transition-colors sm:text-xs">{description}</p>
                 </Card>
               </button>
             ))}

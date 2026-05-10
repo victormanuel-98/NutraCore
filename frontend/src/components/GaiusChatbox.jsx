@@ -350,7 +350,7 @@ export function GaiusChatbox() {
   return (
     <div className="gaius-chatbox" aria-live="polite" style={{ '--gaius-footer-offset': `${footerOffset}px` }}>
       {isOpen ? (
-        <section className="gaius-window" aria-label="Chat de GAIUS">
+        <section className="gaius-window gaius-window-mobile" aria-label="Chat de GAIUS">
           <header className="gaius-header">
             <div className="gaius-avatar-wrap">
               <img
@@ -372,7 +372,7 @@ export function GaiusChatbox() {
 
           <div
             ref={messagesRef}
-            className="gaius-messages"
+            className="gaius-messages gaius-messages-mobile"
             onWheel={containScroll}
           >
             {messages.map((message) => (
@@ -417,7 +417,7 @@ export function GaiusChatbox() {
             ) : null}
           </div>
 
-          <form className="gaius-input-row" onSubmit={handleSubmit}>
+          <form className="gaius-input-row gaius-input-row-mobile" onSubmit={handleSubmit}>
             <textarea
               ref={inputRef}
               value={input}
